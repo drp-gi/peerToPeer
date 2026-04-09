@@ -13,7 +13,7 @@ peerToPeer/ \
 └───public/ \
 │ index.html \
 │ style.css \
-│ script.js \
+│ script.js 
 
 CODED PARTS CUURENTLY LOOKS LIKE THIS
 - First page
@@ -24,7 +24,7 @@ Since the user registered earlier, their email has been saved to the database, s
 <img width="1906" height="1016" alt="image" src="https://github.com/user-attachments/assets/eec62a3b-b877-47af-9dca-7abbebbafcab" />
 
 
-
+THAT'S ALL that has been done - AYA (April 9, 2026)
 
 ## Setup Instructions
 1. **Clone the repo**
