@@ -1,19 +1,19 @@
 # Peer-to-Peer Learning Platform
 
-This is a HTML/ CSS / Node.js / Javascript /SQLite3 project for our school group project.
+This is a HTML/ CSS / Node.js / Javascript /SQLite3 project for our school group project. \
 
 
-Folder directory as of April 9, 2026
-peerToPeer/
-│ server.js
-│ package.json
-│ package-lock.json
-│ .gitignore
-│ README.md
-└───public/
-│ index.html
-│ style.css
-│ script.js
+Folder directory as of April 9, 2026 \
+peerToPeer/ \
+│ server.js \
+│ package.json \
+│ package-lock.json \
+│ .gitignore \
+│ README.md \
+└───public/ \
+│ index.html \
+│ style.css \
+│ script.js \
 
 CODED PARTS CUURENTLY LOOKS LIKE THIS
 - First page
