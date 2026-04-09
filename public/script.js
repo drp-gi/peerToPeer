@@ -2,9 +2,9 @@
 const authModal = document.getElementById('authModal');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
-const getStartedBtn = document.getElementById('getStartedBtn');
-const loginBtn = document.getElementById('loginBtn');
-const closeBtn = document.querySelector('.close');
+const getStartedBtn = document.getElementById('getStartedBtn');  //register
+const loginBtn = document.getElementById('loginBtn');               //login
+const closeBtn = document.querySelector('.close');      
 
 // SHOW REGISTER FORM
 getStartedBtn.onclick = () => {
@@ -39,31 +39,44 @@ closeBtn.onclick = () => {
 
 
 // REGISTER
-        registerForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
+    registerForm.onsubmit = async (e) => {
+    e.preventDefault();
 
-            try {
-                const res = await fetch('http://localhost:3000/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
+    const name = document.getElementById('registerName').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
 
-                const data = await res.json();
-                if(data.success){
-                    alert('Registered successfully!');
-                    authModal.style.display = 'none';
-                } else {
-                    alert(`❌ ${data.message || 'Registration failed'}`);
-                }
-            } catch(err) {
-                console.error(err);
-                alert('❌ Error connecting to server');
-            }
-    };
+    try {
+        const res = await fetch('http://localhost:3000/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+        console.log("Server response:", data); // 🔹 DEBUG
+
+        if (data.success) {
+            alert('Registered successfully!');
+            authModal.style.display = 'none';
+
+            // store user info for the profile page
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userName', name);
+
+            // redirect to profile page
+            window.location.href = 'complete-profile.html';
+        } else {
+            alert(`❌ ${data.message || 'Registration failed'}`);
+        }
+
+    } catch (err) {
+        console.error("Error connecting to server:", err);
+        alert('❌ Error connecting to server');
+    }
+};
+
+
         // LOGIN
         loginForm.onsubmit = async (e) => {
             e.preventDefault();

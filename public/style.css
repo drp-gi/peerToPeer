@@ -7,7 +7,7 @@ header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 20px 40px; background: #fff;
 }
-.logo { color: #38b6ff; font-weight: 700; font-size: 28px; }
+.logo { color: #38b6ff; font-weight: 700; font-size: 28px; font-family: 'Baloo 2', sans-serif}
 
 /* MAIN CONTENT */
 .main {
@@ -55,3 +55,162 @@ header {
     width: 80%; margin: 10px 0; padding: 10px; text-align: center;
     border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;
 }
+
+
+
+
+/*CSS FOR ADDING SETTING UP PROFILE */
+
+
+/* ===== HEADER ===== */
+.profile-header-ui {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: #fff;
+}
+.profile-logo-ui {
+    color: #38b6ff;
+    font-weight: 700;
+    font-size: 28px;
+}
+
+/* ===== OUTER BOX ===== */
+.profile-wrapper-ui {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 85vh;
+}
+.profile-card-ui {
+    background: #fff;
+    width: 420px;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: left;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* ===== TITLE ===== */
+.profile-title-ui {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #4b4b4b;
+}
+
+/* ===== INNER BOX ===== */
+.profile-inner-box-ui {
+    border: 1px solid #eee;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* ===== PROFILE PIC ===== */
+.profile-pic-wrap-ui {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.profile-pic-input-ui { display: none; }
+.profile-pic-circle-ui {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #777;
+    font-size: 12px;
+    overflow: hidden;
+    transition: 0.2s;
+}
+.profile-pic-circle-ui:hover { background: #e0e0e0; }
+.profile-pic-circle-ui img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ===== DISPLAY NAME ===== */
+.profile-name-display-ui {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    color: #4b4b4b;
+    margin-bottom: 15px;
+}
+
+/* ===== FORM INPUTS ===== */
+.profile-form-ui input[type="text"] {
+    width: 100%;
+    margin: 10px auto;
+    padding: 10px;
+    text-align: left;       /* changed from center */
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    display: block;
+    font-size: 14px;
+}
+
+/* ===== LABELS LEFT-ALIGNED ===== */
+.profile-label-ui {
+    text-align: left;
+    width: 85%;
+    margin: 15px auto 5px;
+    font-weight: 600;
+    color: #4b4b4b;
+}
+
+/* ===== TAG INPUT BOX ===== */
+.profile-tag-input-box-ui {
+    width: 100%;
+    margin: auto;
+    padding: 8px 0 0 0;
+    text-align: left;
+}
+.profile-tag-input-box-ui input {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 6px 0;
+}
+
+/* ===== TAGS ===== */
+.profile-tags-ui {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.profile-tag-ui {
+    background: #f0f0f0;          /* light gray */
+    border: 1px solid #38b6ff;    /* bluish border */
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.profile-tag-remove-ui {
+    cursor: pointer;
+    font-weight: bold;
+    color: #38b6ff;               /* remove button in bluish */
+}
+
+/* ===== BUTTON ===== */
+.profile-action-btn-ui {
+    display: block;
+    width: 85%;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    margin: 20px auto 0;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    background: #38b6ff;
+    color: white;
+    border: none;
+}
+.profile-action-btn-ui:hover { background: #2a96d1; }
