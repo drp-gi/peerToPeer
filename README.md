@@ -15,6 +15,15 @@ peerToPeer/
 │ style.css
 │ script.js
 
+CODED PARTS CUURENTLY LOOKS LIKE THIS
+- First page
+<img width="1894" height="905" alt="image" src="https://github.com/user-attachments/assets/66b1fd43-b3f9-4afe-a41e-4375f1c512af" />
+-Register Page
+<img width="1890" height="903" alt="image" src="https://github.com/user-attachments/assets/7a495ea3-f121-4d2c-867c-88f144532c08" />
+Since the user registered earlier, their email has been saved to the database, so there will be an alert that they can't use the account
+<img width="1906" height="1016" alt="image" src="https://github.com/user-attachments/assets/eec62a3b-b877-47af-9dca-7abbebbafcab" />
+
+
 
 
 ## Setup Instructions
