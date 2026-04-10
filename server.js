@@ -5,8 +5,9 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(cors());    
+app.use(express.json({ limit: '10mb' }));                           //to resize image cause clicking cant proceed to dashboard
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static('public'));
 
 const db = new sqlite3.Database('users.db');

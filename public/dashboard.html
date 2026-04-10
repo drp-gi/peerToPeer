@@ -1,24 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tandem - Home</title>
+  <link rel="stylesheet" href="styles-dashboard.css" />
 </head>
 <body>
-    <p> Im the dashboard, still empty tho</p>
-    <p></p> 
+
+<div class="wrap">
+
+  <div class="sidebar">
+    <div class="logo">Tandem</div>
+
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      HOME
+    </div>
+
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="7" r="4"/>
+        <path d="M5.5 21c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/>
+        <path d="M18 7l2 2-2 2"/>
+      </svg>
+      MENTORS
+    </div>
+
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      PROFILE
+    </div>
+
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="8" height="8" rx="1"/>
+        <rect x="13" y="3" width="8" height="8" rx="1"/>
+        <rect x="3" y="13" width="8" height="8" rx="1"/>
+        <rect x="13" y="13" width="8" height="8" rx="1"/>
+      </svg>
+      ABOUT US
+    </div>
+
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      MESSAGES
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="topbar">
+      <div class="credits-badge">
+        +5
+        <div class="coin"><span>$</span></div>
+      </div>
+      <svg class="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </div>
+
+    <div class="profile-header">
+      <div class="avatar">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="30" cy="22" r="13" fill="#a0c4d8"/>
+          <ellipse cx="30" cy="52" rx="20" ry="14" fill="#a0c4d8"/>
+          <rect x="22" y="18" width="16" height="12" rx="4" fill="#666" opacity="0.5"/>
+          <rect x="24" y="20" width="4" height="7" rx="1" fill="#ccc" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="profile-info">
+        <div class="profile-top-row">
+          <div class="profile-name">GARY ALLISON</div>
+          <div class="profile-rating"><span class="rating-star">★</span>0.0</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div class="profile-credits">5 Credits</div>
+      </div>
+    </div>
+
+    <div class="section-title">Daily Log-in</div>
+    <div class="section-sub">Log-in every day to earn extra credits.</div>
+    <div class="login-grid">
+      <div class="day-card">
+        <div class="day-label">Mon</div>
+        <div class="day-reward">+1 <div class="mini-coin"><span>$</span></div></div>
+      </div>
+      <div class="day-card">
+        <div class="day-label">Tues</div>
+        <div class="day-reward">+2 <div class="mini-coin"><span>$</span></div></div>
+      </div>
+      <div class="day-card">
+        <div class="day-label">Wed</div>
+        <div class="day-reward">+1 <div class="mini-coin"><span>$</span></div></div>
+      </div>
+      <div class="day-card">
+        <div class="day-label">Thurs</div>
+        <div class="day-reward">+2 <div class="mini-coin"><span>$</span></div></div>
+      </div>
+      <div class="day-card">
+        <div class="day-label">Fri</div>
+        <div class="day-reward">+1 <div class="mini-coin"><span>$</span></div></div>
+      </div>
+      <div class="day-card">
+        <div class="day-label">Sat</div>
+        <div class="day-reward">+2 <div class="mini-coin"><span>$</span></div></div>
+      </div>
+      <div class="day-card day-highlight">
+        <div class="day-label day-label-highlight">Sun</div>
+        <div class="day-reward day-reward-highlight">+5 <div class="mini-coin"><span>$</span></div></div>
+      </div>
+    </div>
+
+    <div class="terms-section">
+      <div class="section-title">TERMS</div>
+      <div class="section-heading">Everything you need to know</div>
+      <div class="term-item">
+        <div class="term-icon">
+          <div class="gold-coin"></div>
+        </div>
+        <div class="term-text">
+          <strong>Credits</strong>
+          <p>Credits are the currency of learning. Each credit equals 30 minutes of mentoring time, learners spend them to book sessions, and mentors earn them by teaching. Everyone starts with 3 credits, creating a fair cycle of growth and sharing.</p>
+        </div>
+      </div>
+      <div class="term-item">
+        <div class="term-icon">
+          <svg class="gold-star" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="19,3 23.5,14 36,14.5 26.5,22.5 29.5,35 19,28.5 8.5,35 11.5,22.5 2,14.5 14.5,14" fill="#f5a623" stroke="#e09010" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="term-text">
+          <strong>Rating</strong>
+          <p>At the end of each session, learners rate their mentors, showing how satisfied they were with the guidance received.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="find-mentors">
+      <div class="find-header">
+        <div class="section-title no-margin">FIND MENTORS</div>
+        <button class="btn-explore">Explore Mentors</button>
+      </div>
+      <div class="find-sub">Browse available mentors and book a session.</div>
+    </div>
+
+    <div class="upcoming-section">
+      <div class="up-heading">Upcoming Sessions</div>
+      <div class="session-box">
+        <div class="filter-row">
+          <div class="filter-select">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            All subjects
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+        <div class="no-session">No session yet.</div>
+      </div>
+    </div>
+
+    <div class="message-section">
+      <div class="up-heading">Message</div>
+      <div class="msg-box">
+        <div class="msg-empty">Chat box is empty.</div>
+      </div>
+    </div>
+
+    <div class="about">About Tandem</div>
+
+  </div>
+</div>
+
 </body>
-
-<!-- Add JS coding to suppoort the dashboard page -->
-<!-- -->
- 
-
-
-
-
-
-
 </html>
-<!-- Imagine being forced to do advanced web coding for your first WebDev project =Nyfe -->
- 

@@ -1,6 +1,6 @@
 /* GENERAL RESET */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Baloo 2', sans-serif; background: #f7f7f7; }
+body { font-family: 'Baloo 2', sans-serif; background: #ffffff; }
 
 /* HEADER */
 header {
@@ -40,7 +40,7 @@ header {
     justify-content: center; align-items: center;
 }
 .modal-content {
-    background-color: #fff; padding: 30px; border-radius: 10px;
+    background-color: #fff; padding: 50px; border-radius: 10px;
     width: 90%; max-width: 400px; position: relative; text-align: center;
 }
 .close {
@@ -50,14 +50,38 @@ header {
 
 /* LOGIN / REGISTER FORM */
 .auth-form { display: none; flex-direction: column; align-items: center; }
-.auth-form h2 { text-align: center; margin-bottom: 20px; }
-.auth-form input, .auth-form button {
-    width: 80%; margin: 10px 0; padding: 10px; text-align: center;
-    border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;
+.auth-form h2 { text-align: center; margin-bottom: 5px; color: #38b6ff; font-size: 35px;}
+.auth-form input{
+    width: 80%; margin: 18px 19px; padding: 15px; text-align: left; font-weight: 600;
+    border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; font-family: 'Open Sans', sans-serif;
+}
+.auth-form button {
+    text-align: center;
+    font-family: 'Baloo 2', sans-serif; 
+    font-size: 16px;
+     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+     margin-bottom: 20px;
+}
+
+.auth-form p {
+    font-family: 'Open-Sans', sans-serif; 
+    color: black;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+.subtitle2 {
+    font-size: 12px;
+    color: #919191;
+    
 }
 
 
-
+/*CSS FOR ADDING SETTING UP PROFILE */
 
 /*CSS FOR ADDING SETTING UP PROFILE */
 
@@ -94,9 +118,11 @@ header {
 
 /* ===== TITLE ===== */
 .profile-title-ui {
-    font-size: 22px;
     margin-bottom: 20px;
-    color: #4b4b4b;
+    text-align: center;
+    margin-bottom: 5px; 
+    color: #38b6ff; 
+    font-size: 35px;
 }
 
 /* ===== INNER BOX ===== */
@@ -126,8 +152,9 @@ header {
     font-size: 12px;
     overflow: hidden;
     transition: 0.2s;
+    border: 2px solid #2a96d1;
 }
-.profile-pic-circle-ui:hover { background: #e0e0e0; }
+.profile-pic-circle-ui:hover { background: #e0e0e0;}
 .profile-pic-circle-ui img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ===== DISPLAY NAME ===== */
@@ -142,8 +169,8 @@ header {
 /* ===== FORM INPUTS ===== */
 .profile-form-ui input[type="text"] {
     width: 100%;
-    margin: 10px auto;
-    padding: 10px;
+    margin: 4px auto;
+    padding: 15px;
     text-align: left;       /* changed from center */
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -155,17 +182,18 @@ header {
 .profile-label-ui {
     text-align: left;
     width: 85%;
-    margin: 15px auto 5px;
-    font-weight: 600;
-    color: #4b4b4b;
+    font-weight: 900;
+    color: #38b6ff; 
+    font-size: 20px;
+    font-family: 'Baloo 2', sans-serif;
 }
 
 /* ===== TAG INPUT BOX ===== */
 .profile-tag-input-box-ui {
     width: 100%;
-    margin: auto;
-    padding: 8px 0 0 0;
-    text-align: left;
+   
+    text-align: left;  
+    position: relative; /* needed so dropdown positions correctly */
 }
 .profile-tag-input-box-ui input {
     border: none;
@@ -179,7 +207,7 @@ header {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 2px;
 }
 .profile-tag-ui {
     background: #f0f0f0;          /* light gray */
@@ -201,10 +229,11 @@ header {
 /* ===== BUTTON ===== */
 .profile-action-btn-ui {
     display: block;
-    width: 85%;
+    width: 100%;
     padding: 14px;
     border-radius: 12px;
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 17px;
     margin: 20px auto 0;
     text-align: center;
     cursor: pointer;
@@ -212,5 +241,39 @@ header {
     background: #38b6ff;
     color: white;
     border: none;
+    font-family: 'Baloo 2', sans-serif;
 }
 .profile-action-btn-ui:hover { background: #2a96d1; }
+
+
+/* ===== DROPDOWN ===== */
+
+.profile-dropdown-ui {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  z-index: 10;
+  max-height: 180px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+position: absolute;
+  top: calc(100% + 4px);
+}
+.profile-dropdown-item-ui {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #4b4b4b;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 2px 4px;
+}
+.profile-dropdown-item-ui:hover,
+.profile-dropdown-item-ui.active {
+  background: #f0f0f0;
+  color: #38b6ff;
+}
