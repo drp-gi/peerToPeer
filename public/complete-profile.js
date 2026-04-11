@@ -48,29 +48,26 @@ profileInput.addEventListener("change", () => {             //replaced this as i
         img.src = e.target.result;
     };
     reader.readAsDataURL(file);
-});  
-
-
+});
 
 // Tag Inputs
-// Suggestions list for each field
 const SKILL_SUGGESTIONS = [
-  "Public Speaking", "Leadership", "Time Management", "Confidence Building", "Networking", "Creative Writing", "Content Writing", "Copywriting", 
-  "Emotional Intelligence", "Critical Thinking", "Problem Solving", "Decision Making", "Negotiation", "Active Listening", "Communication Skills", 
-  "Teamwork", "Collaboration", "Research Skills", "Reading Comprehension", "Note-Taking", "Academic Writing", "Essay Writing", "Analytical Thinking", 
-  "Mathematical Reasoning", "Scientific Thinking", "Productivity", "Goal Setting", "Self-Discipline", "Mindfulness", "Adaptability", "Responsibility", 
-  "Initiative Taking", "Foreign Language Learning", "Music", "Photography", "Cooking", "Fitness", "Creative Thinking", "Design Thinking", "Content Creation", 
-  "JavaScript", "Python", "TypeScript", "Node.js", "React", "HTML & CSS", "SQL", "Git", "Figma", "UI/UX Design", "Graphic Design", "Video Editing", "Photo Editing", 
-  "SEO", "Marketing", "Data Analysis", "Excel", "Data Visualization", "Basic AI Literacy", "Exam Preparation", "Memorization Techniques", "Speed Reading", 
-  "Class Participation", "Group Project Management", "Homework Planning", "Research Paper Writing", "Thesis Writing", "Laboratory Skills", "Citation (APA/MLA)", 
+  "Public Speaking", "Leadership", "Time Management", "Confidence Building", "Networking", "Creative Writing", "Content Writing", "Copywriting",
+  "Emotional Intelligence", "Critical Thinking", "Problem Solving", "Decision Making", "Negotiation", "Active Listening", "Communication Skills",
+  "Teamwork", "Collaboration", "Research Skills", "Reading Comprehension", "Note-Taking", "Academic Writing", "Essay Writing", "Analytical Thinking",
+  "Mathematical Reasoning", "Scientific Thinking", "Productivity", "Goal Setting", "Self-Discipline", "Mindfulness", "Adaptability", "Responsibility",
+  "Initiative Taking", "Foreign Language Learning", "Music", "Photography", "Cooking", "Fitness", "Creative Thinking", "Design Thinking", "Content Creation",
+  "JavaScript", "Python", "TypeScript", "Node.js", "React", "HTML & CSS", "SQL", "Git", "Figma", "UI/UX Design", "Graphic Design", "Video Editing", "Photo Editing",
+  "SEO", "Marketing", "Data Analysis", "Excel", "Data Visualization", "Basic AI Literacy", "Exam Preparation", "Memorization Techniques", "Speed Reading",
+  "Class Participation", "Group Project Management", "Homework Planning", "Research Paper Writing", "Thesis Writing", "Laboratory Skills", "Citation (APA/MLA)",
   "Time Management in Exams"
 ];
 
 const GROWTH_SUGGESTIONS = [
-  "Procrastination", "Poor Time Management", "Lack of Study Habits", "Easily Distracted", "Short Attention Span", "Overthinking", 
-  "Low Confidence", "Public Speaking", "Shyness in Class Participation", "Weak Writing Skills", "Poor Reading Comprehension", 
-  "Difficulty Understanding Lessons", "Poor Memory Retention", "Exam Anxiety", "Weak Listening Skills", "Poor Communication Skills", "Difficulty in Group Work", 
-  "Avoiding Leadership Roles", "Lack of Initiative", "Peer Pressure Susceptibility", "Overuse of Social Media", "Poor Digital Discipline", 
+  "Procrastination", "Poor Time Management", "Lack of Study Habits", "Easily Distracted", "Short Attention Span", "Overthinking",
+  "Low Confidence", "Public Speaking", "Shyness in Class Participation", "Weak Writing Skills", "Poor Reading Comprehension",
+  "Difficulty Understanding Lessons", "Poor Memory Retention", "Exam Anxiety", "Weak Listening Skills", "Poor Communication Skills", "Difficulty in Group Work",
+  "Avoiding Leadership Roles", "Lack of Initiative", "Peer Pressure Susceptibility", "Overuse of Social Media", "Poor Digital Discipline",
   "Disorganized Notes and Files", "Inconsistent Academic Performance", "Public Speaking", "Leadership", "Time Management", "Confidence",
   "Networking", "Creative Writing", "Emotional Intelligence", "Critical Thinking",
   "Decision Making", "Negotiation", "Active Listening", "Productivity",
@@ -84,8 +81,8 @@ function setupTagInput(inputId, containerId, suggestions) {
 
   // --- Creating a the dropdown div for the dropdown skills 
   const dropdown = document.createElement('div');
-  dropdown.className = 'profile-dropdown-ui';       //class name of our div
-  input.parentNode.insertBefore(dropdown, input.nextSibling); // we place that new div right after the input field in the page
+  dropdown.className = 'profile-dropdown-ui';
+  input.parentNode.insertBefore(dropdown, input.nextSibling);
 
   let activeIndex = -1;
 
@@ -133,9 +130,7 @@ function setupTagInput(inputId, containerId, suggestions) {
   input.addEventListener('input', () => {
     const val = input.value.trim().toLowerCase();
     if (!val) { closeDropdown(); return; }
-    const matches = suggestions
-      .filter(s => s.toLowerCase().includes(val))
-      .slice(0, 8);
+    const matches = suggestions.filter(s => s.toLowerCase().includes(val)).slice(0, 8);
     openDropdown(matches);
   });
 
@@ -177,28 +172,38 @@ const userName = localStorage.getItem('userName');
 document.getElementById('displayNameText').textContent = userName || 'New User';
 
 // Form submit
-document.getElementById('profileForm').addEventListener('submit', async e=>{
+document.getElementById('profileForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = localStorage.getItem('userEmail');
     const username = document.getElementById('usernameInput').value.trim();
 
     const skills = Array.from(document.querySelectorAll('#skillTags .profile-tag-ui'))
-                        .map(tag => tag.textContent.replace('×','').trim());
+                        .map(tag => tag.textContent.replace('×', '').trim());
     const growth = Array.from(document.querySelectorAll('#growthTags .profile-tag-ui'))
-                        .map(tag => tag.textContent.replace('×','').trim());
+                        .map(tag => tag.textContent.replace('×', '').trim());
 
-    try{
+    try {
         const res = await fetch('http://localhost:3000/complete-profile', {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json' },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, username, skills, growth, profile_pic: profilePicData })
         });
         const data = await res.json();
-        if(data.success){
+        if (data.success) {
+            localStorage.setItem('tandem_username', username);
+            if (profilePicData) {
+                localStorage.setItem('tandem_profile_pic', profilePicData);
+            }
+            if (localStorage.getItem('tandem_credits') === null) {
+                localStorage.setItem('tandem_credits', '5');
+            }
+
             alert('Profile saved! Redirecting to dashboard...');
             window.location.href = 'dashboard.html';
-        } else alert(data.message || 'Error saving profile');
-    } catch(err){
+        } else {
+            alert(data.message || 'Error saving profile');
+        }
+    } catch (err) {
         console.error(err);
         alert('Error connecting to server');
     }

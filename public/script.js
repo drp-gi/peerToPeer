@@ -2,8 +2,8 @@
 const authModal = document.getElementById('authModal');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
-const getStartedBtn = document.getElementById('getStartedBtn');  //register
-const loginBtn = document.getElementById('loginBtn');               //login
+const getStartedBtn = document.getElementById('getStartedBtn');
+const loginBtn = document.getElementById('loginBtn');
 const closeBtn = document.querySelector('.close');      
 
 // SHOW REGISTER FORM
@@ -27,19 +27,8 @@ closeBtn.onclick = () => {
     registerForm.style.display = 'none';
 };
 
-
-
-
-
-
-// =========================================
-//Update your script.js to POST data to backend, meaning when user inputs
-// their name,email, password on register it WILL add data to backend
-// =========================================
-
-
 // REGISTER
-    registerForm.onsubmit = async (e) => {
+registerForm.onsubmit = async (e) => {
     e.preventDefault();
 
     const name = document.getElementById('registerName').value;
@@ -54,17 +43,14 @@ closeBtn.onclick = () => {
         });
 
         const data = await res.json();
-        console.log("Server response:", data); // 🔹 DEBUG
 
         if (data.success) {
             alert('Registered successfully!');
             authModal.style.display = 'none';
 
-            // store user info for the profile page
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userName', name);
 
-            // redirect to profile page
             window.location.href = 'complete-profile.html';
         } else {
             alert(`❌ ${data.message || 'Registration failed'}`);
@@ -76,31 +62,49 @@ closeBtn.onclick = () => {
     }
 };
 
+// LOGIN - Loads credits from database
+loginForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
 
-        // LOGIN
-        loginForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+    try {
+        const res = await fetch('http://localhost:3000/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
-           try {
-                    const res = await fetch('http://localhost:3000/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-          });
-
-            const data = await res.json();
-            if(data.success){
-                alert(`Welcome back, ${data.name}!`);
-                authModal.style.display = 'none';
-                // redirect to dashboard or store user session here
-            } else {
+        const data = await res.json();
+        
+        if (data.success) {
+            // Clear any existing data
+            localStorage.clear();
+            
+            // Store user info in localStorage
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userName', data.name);
+            localStorage.setItem('tandem_username', data.username || '');
+            
+            // IMPORTANT: Store credits from database (this is the source of truth)
+            const creditsFromDB = data.credits || 5;
+            console.log('🔐 Login - Credits from database:', creditsFromDB);
+            localStorage.setItem('tandem_credits', creditsFromDB);
+            localStorage.setItem('tandem_last_login_date', data.last_login_date || '');
+            
+            if (data.profile_pic) {
+                localStorage.setItem('tandem_profile_pic', data.profile_pic);
+            }
+            
+            alert(`Welcome back, ${data.name}! You have ${creditsFromDB} credits.`);
+            authModal.style.display = 'none';
+            window.location.href = 'dashboard.html';
+        } else {
             alert(`❌ ${data.message || 'Login failed'}`);
-            }
+        }
 
-            } catch(err) {
-                console.error(err);
-                alert('❌ Error connecting to server');
-            }
-        };
+    } catch(err) {
+        console.error(err);
+        alert('❌ Error connecting to server');
+    }
+};
