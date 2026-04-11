@@ -11,13 +11,14 @@ peerToPeer/ \
 │ .gitignore \
 │ README.md \
 └───public/ \
-        │ index.html \
-        │ style.css \
-        │ script.js \
-        | complete-profile.html \
-        |complete-profile.js
+       &ensp; │ index.html \
+        &ensp;│ style.css \
+       &ensp; │ script.js \
+       &ensp; | complete-profile.html \
+       &ensp; |complete-profile.js
 
-CODED PARTS CUURENTLY LOOKS LIKE THIS
+
+
 
 
 
