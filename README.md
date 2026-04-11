@@ -41,17 +41,21 @@ peerToPeer/ \
 - After watching the tutorial GIT videos I sent on Google Chats, you may utilize text editors such as Visual Studio Code
 - Make sure you have Git installed - https://git-scm.com/install/windows
 - In the terminal section of VS CODE type
-
+   ```bash
+     git --version 
+    ```
+If it shows a git version THEN you successfully installed Git <br>
+Type this to now clone our projects repo to your pc <br>
     ```bash
     git clone https://github.com/drp-gi/peerToPeer.git
     cd peerToPeer
     ```
-2. Install dependencies
+2. Install dependencies -  It downloads and adds packages (extra tools/libraries) into your Node.js project so you can use them in your code.
     ```bash
     npm install
     ```
 
-3. Run the Server
+3. Run the Server - This is so that you can view our website, how it looks and works
     ```bash
     node server.js
     ```
