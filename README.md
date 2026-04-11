@@ -57,9 +57,9 @@ Type this to now clone our projects repo to your pc <br>
 
  <br><br>
 2. Install dependencies -  It downloads and adds packages (extra tools/libraries) into your Node.js project so you can use them in your code.
-    ```bash
-    npm install
-    ```
+```bash
+        npm install
+```
 
 3. Run the Server - This is so that you can view our website, how it looks and works
     ```bash
