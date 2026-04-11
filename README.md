@@ -50,10 +50,10 @@ If it shows a git version THEN you successfully installed Git <br><br>
 
 Type this to now clone our projects repo to your pc <br>
 
-    ```bash
+```bash
     git clone https://github.com/drp-gi/peerToPeer.git
     cd peerToPeer
-    ```
+```
 
  <br><br>
 2. Install dependencies -  It downloads and adds packages (extra tools/libraries) into your Node.js project so you can use them in your code.
