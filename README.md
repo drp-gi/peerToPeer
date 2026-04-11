@@ -1,9 +1,14 @@
 # Peer-to-Peer Learning Platform
 
-U am currently utilizing HTML/ CSS / Node.js / Javascript /SQLite3 project for our school group project. \
-READ THIS PLS TO GET THE GIST OF HOW OUR WEBSITE WORKS (FLOW OF THE SITE)-> https://docs.google.com/document/d/17OiwG9rmDQaGLFygZHHXRR4K_HmHCd7sJZskdv8B3j0/edit?usp=sharing
+We are currently utilizing HTML/ CSS / Node.js / Javascript /SQLite3 project for our school group project. <br><br>
 
-Folder directory as of April 9, 2026 \
+
+
+READ THIS PLS TO GET THE GIST OF HOW OUR WEBSITE WORKS (FLOW OF THE SITE)-> 
+
+https://docs.google.com/document/d/17OiwG9rmDQaGLFygZHHXRR4K_HmHCd7sJZskdv8B3j0/edit?usp=sharing<br>
+
+Folder directory as of April 10, 2026 \
 peerToPeer/ \
 │ server.js \
 │ package.json \
@@ -11,61 +16,100 @@ peerToPeer/ \
 │ .gitignore \
 │ README.md \
 └───public/ \
-│ index.html \
-│ style.css \
-│ script.js \
-| complete-profile.html \
-|complete-profile.js
-
-CODED PARTS CUURENTLY LOOKS LIKE THIS
-- First page
-<img width="1894" height="905" alt="image" src="https://github.com/user-attachments/assets/66b1fd43-b3f9-4afe-a41e-4375f1c512af" />
--Register Page
-<img width="1890" height="903" alt="image" src="https://github.com/user-attachments/assets/7a495ea3-f121-4d2c-867c-88f144532c08" />
-Since the user registered earlier, their email has been saved to the database, so there will be an alert that they can't use the account
-<img width="1906" height="1016" alt="image" src="https://github.com/user-attachments/assets/eec62a3b-b877-47af-9dca-7abbebbafcab" /> \
-
--After Register Page for users who did not register before
-<img width="1907" height="934" alt="image" src="https://github.com/user-attachments/assets/5431efa4-7a2e-473f-a794-029ca724555a" /> \
-
-It will then proceed to a new page, where the user needs to complete their credentials to proceed to dashboard
-<img width="1894" height="908" alt="image" src="https://github.com/user-attachments/assets/c3da3c19-3dbf-4fbc-88d6-be4e2cfbd42b" />
+       &emsp;│ index.html \
+       &emsp;│ style.css \
+       &emsp;│ script.js \
+       &emsp;| complete-profile.html \
+       &emsp;|complete-profile.js
 
 
-User then fills up credentials such as adding a profile pic, username, skills, and growth(meaning areas where they need help with)
-<img width="1892" height="906" alt="image" src="https://github.com/user-attachments/assets/81e9d39e-6ae2-41c4-b97c-a2a2fcb9a7a0" />
 
 
-BUT When clicking proceed to dashboard it has an ERROR, idk why, I cant read codes \
-Next step - > when clicking Proceed to DashBoard button it should open dashboard.html
 
-THAT'S ALL that has been done - AYA (April 9, 2026)
+<br><br><br>
+
+
+
+
+
+
+
+<br>
 
 ## Setup Instructions
 1. **Clone the repo**
 - After watching the tutorial GIT videos I sent on Google Chats, you may utilize text editors such as Visual Studio Code
-- In the terminal section type
+- Make sure you have Git installed - https://git-scm.com/install/windows
+- In the terminal section of VS CODE type
+   ```bash
+     git --version 
+    ```
+If it shows a git version THEN you successfully installed Git <br><br>
 
-    ```bash
+
+
+Type this to now clone our projects repo to your pc <br>
+
+```bash
     git clone https://github.com/drp-gi/peerToPeer.git
     cd peerToPeer
-    ```
-2. Install dependencies
-    ```bash
-    npm install
-    ```
+```
 
-3. Run the Server
+ <br><br>
+2. Install dependencies -  It downloads and adds packages (extra tools/libraries) into your Node.js project so you can use them in your code.
+```bash
+        npm install
+```
+
+3. Run the Server - This is so that you can view our website, how it looks and works
     ```bash
     node server.js
     ```
 
 4. Open the project in your browser
-   - Go to http://localhost:3000 (or whichever port your server uses).
+   - Go to http://localhost:3000 (or whichever port your server uses). <br><br><br><br><br>
   
-  5. Start testing project, remeber the terms CLONE, ADD, COMMIT, PUSH
+5. Make a branch of the project through here, branch in simpler terms is your personal copy of all the main code where you can test, debug and create your own parts
+     <img width="1347" height="732" alt="image" src="https://github.com/user-attachments/assets/4fa1a68d-7926-41ea-901a-323b36d37b76" />
+
+6. Start adding your own parts, adding features and stuff you are assigned to
+   After you are done and your part is working\
+   <img width="1348" height="727" alt="image" src="https://github.com/user-attachments/assets/8e007e34-c3da-48a0-8718-bc31520a579a" />
+
+   <img width="1346" height="727" alt="image" src="https://github.com/user-attachments/assets/4146cc3e-7f17-4123-a9a9-c5dd91ef50e1" />
+
+   <img width="1491" height="852" alt="image" src="https://github.com/user-attachments/assets/21cd6e6b-9688-4a6f-ad4b-d484dd21427b" />
+
+   <img width="1429" height="752" alt="image" src="https://github.com/user-attachments/assets/0624c255-dae4-4d86-b6d6-aaa84ec41fdf" />
+
+<img width="1198" height="630" alt="image" src="https://github.com/user-attachments/assets/6c4bbcbf-9d30-4fd3-b6b5-f089a5a5c2ca" />
+
+
+<img width="1487" height="757" alt="image" src="https://github.com/user-attachments/assets/08954093-a632-4d20-998c-6582a69656f1" />
+
+
+   <img width="1402" height="668" alt="image" src="https://github.com/user-attachments/assets/cbb90ce3-15f4-4d04-b474-66a2975fe30c" />
+
+<img width="1400" height="669" alt="image" src="https://github.com/user-attachments/assets/06c9bd6b-fd45-4bf2-b6a0-5df10dacc155" />
+
+<img width="1315" height="628" alt="image" src="https://github.com/user-attachments/assets/1479197a-f43a-4643-b9fa-e4320c54cca3" />
+
+<img width="1128" height="608" alt="image" src="https://github.com/user-attachments/assets/f372b949-0ff5-4ab5-acce-7c3a1e96a00b" />
+
+
+
+\Nice job on vreating a branch then merging it to the main branch!!
+
+
+
 
 **Notes**
+everytime you wanna run ur website you type this, on the terminal on your vs code
+``` bash
+node server.js 
+```
+then click/open the http://localhost:3000
+<br>
 node_modules/ and users.db are ignored by Git.
 Make sure to run npm install before running the server.
 If you add new dependencies, don’t forget to run npm install again.
