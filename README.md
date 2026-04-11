@@ -1,12 +1,12 @@
 # Peer-to-Peer Learning Platform
 
-We are currently utilizing HTML/ CSS / Node.js / Javascript /SQLite3 project for our school group project. 
+We are currently utilizing HTML/ CSS / Node.js / Javascript /SQLite3 project for our school group project. <br><br>
 
 
 
 READ THIS PLS TO GET THE GIST OF HOW OUR WEBSITE WORKS (FLOW OF THE SITE)-> 
 
-https://docs.google.com/document/d/17OiwG9rmDQaGLFygZHHXRR4K_HmHCd7sJZskdv8B3j0/edit?usp=sharing
+https://docs.google.com/document/d/17OiwG9rmDQaGLFygZHHXRR4K_HmHCd7sJZskdv8B3j0/edit?usp=sharing<br>
 
 Folder directory as of April 10, 2026 \
 peerToPeer/ \
@@ -16,11 +16,17 @@ peerToPeer/ \
 │ .gitignore \
 │ README.md \
 └───public/ \
-       &ensp; │ index.html \
-        &ensp;│ style.css \
-       &ensp; │ script.js \
-       &ensp; | complete-profile.html \
-       &ensp; |complete-profile.js
+       &emsp;│ index.html \
+       &emsp;│ style.css \
+       &emsp;│ script.js \
+       &emsp;| complete-profile.html \
+       &emsp;|complete-profile.js
+
+
+
+
+
+<br><br><br>
 
 
 
@@ -28,14 +34,7 @@ peerToPeer/ \
 
 
 
-
-
-
-
-
-
-
-THAT'S ALL that has been done - AYA (April 11, 2026)
+<br>
 
 ## Setup Instructions
 1. **Clone the repo**
@@ -95,6 +94,12 @@ THAT'S ALL that has been done - AYA (April 11, 2026)
 
 
 **Notes**
+everytime you wanna run ur website you type this, on the terminal on your vs code
+``` bash
+node server.js 
+```
+then click/open the http://localhost:3000
+<br>
 node_modules/ and users.db are ignored by Git.
 Make sure to run npm install before running the server.
 If you add new dependencies, don’t forget to run npm install again.
