@@ -3,6 +3,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const path = require('path');
 const app = express();
 
 app.use(cors());    
@@ -10,16 +11,16 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static('public'));
 
-const db = new sqlite3.Database('users.db');
+// Use an absolute path for the database file to ensure it persists
+const dbPath = path.join(__dirname, 'users.db');
+const db = new sqlite3.Database(dbPath);
 
-// DROP and recreate tables to ensure clean state
+console.log(`Database path: ${dbPath}`);
+
+// Create table if not exists (won't delete existing data)
 db.serialize(() => {
-    // Drop existing tables if they exist
-    db.run(`DROP TABLE IF EXISTS users`);
-    
-    // Create fresh table
     db.run(`
-    CREATE TABLE users (
+    CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         email TEXT UNIQUE,
@@ -35,7 +36,13 @@ db.serialize(() => {
         if (err) {
             console.error('Error creating table:', err);
         } else {
-            console.log('Database table created successfully');
+            console.log('Database table ready');
+            // Count users to verify data exists
+            db.get("SELECT COUNT(*) as count FROM users", (err, result) => {
+                if (!err && result) {
+                    console.log(`Total users in database: ${result.count}`);
+                }
+            });
         }
     });
 });
@@ -45,7 +52,6 @@ app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
     console.log('Registration attempt for:', email);
     
-    // First check if user exists
     db.get("SELECT email FROM users WHERE email = ?", [email], async (err, existingUser) => {
         if (err) {
             console.error('Database error:', err);
@@ -187,4 +193,15 @@ app.post('/update-credits', (req, res) => {
     );
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+// Get all users (for debugging)
+app.get('/users', (req, res) => {
+    db.all("SELECT id, name, email, username, credits, last_login_date FROM users", (err, users) => {
+        if (err) {
+            return res.json({ success: false, message: 'Error fetching users' });
+        }
+        res.json({ success: true, users });
+    });
+});
+
+const PORT = 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
