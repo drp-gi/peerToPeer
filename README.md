@@ -57,11 +57,11 @@ peerToPeer/ \
     ```
 
 4. Open the project in your browser
-   - Go to http://localhost:3000 (or whichever port your server uses).
+   - Go to http://localhost:3000 (or whichever port your server uses). <br><br><br><br><br>
   
 5. Make a branch of the project through here, branch in simpler terms is your personal copy of all the main code where you can test, debug and create your own parts
      <img width="1347" height="732" alt="image" src="https://github.com/user-attachments/assets/4fa1a68d-7926-41ea-901a-323b36d37b76" />
-\
+
 6. Start adding your own parts, adding features and stuff you are assigned to
    After you are done and your part is working\
    <img width="1348" height="727" alt="image" src="https://github.com/user-attachments/assets/8e007e34-c3da-48a0-8718-bc31520a579a" />
