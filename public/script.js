@@ -94,7 +94,7 @@ closeBtn.onclick = () => {
             if(data.success){
                 alert(`Welcome back, ${data.name}!`);
                 authModal.style.display = 'none';
-                // redirect to dashboard or store user session here
+                window.location.href = 'dashboard.html';
             } else {
             alert(`❌ ${data.message || 'Login failed'}`);
             }
