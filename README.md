@@ -56,9 +56,9 @@ THAT'S ALL that has been done - AYA (April 11, 2026)
   
 5. Make a branch of the project through here, branch in simpler terms is your personal copy of all the main code where you can test, debug and create your own parts
      <img width="1347" height="732" alt="image" src="https://github.com/user-attachments/assets/4fa1a68d-7926-41ea-901a-323b36d37b76" />
-
+\
 6. Start adding your own parts, adding features and stuff you are assigned to
-   After you are done and your part is working
+   After you are done and your part is working\
    <img width="1348" height="727" alt="image" src="https://github.com/user-attachments/assets/8e007e34-c3da-48a0-8718-bc31520a579a" />
 
    <img width="1346" height="727" alt="image" src="https://github.com/user-attachments/assets/4146cc3e-7f17-4123-a9a9-c5dd91ef50e1" />
