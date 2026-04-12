@@ -80,7 +80,6 @@ header {
     
 }
 
-
 /*CSS FOR ADDING SETTING UP PROFILE */
 
 /*CSS FOR ADDING SETTING UP PROFILE */
@@ -171,7 +170,7 @@ header {
     width: 100%;
     margin: 4px auto;
     padding: 15px;
-    text-align: left;       /* changed from center */
+    text-align: left;
     border-radius: 6px;
     border: 1px solid #ccc;
     display: block;
@@ -191,9 +190,8 @@ header {
 /* ===== TAG INPUT BOX ===== */
 .profile-tag-input-box-ui {
     width: 100%;
-   
     text-align: left;  
-    position: relative; /* needed so dropdown positions correctly */
+    position: relative;
 }
 .profile-tag-input-box-ui input {
     border: none;
@@ -210,8 +208,8 @@ header {
     margin-top: 2px;
 }
 .profile-tag-ui {
-    background: #f0f0f0;          /* light gray */
-    border: 1px solid #38b6ff;    /* bluish border */
+    background: #f0f0f0;
+    border: 1px solid #38b6ff;
     color: #333;
     padding: 5px 10px;
     border-radius: 20px;
@@ -223,7 +221,7 @@ header {
 .profile-tag-remove-ui {
     cursor: pointer;
     font-weight: bold;
-    color: #38b6ff;               /* remove button in bluish */
+    color: #38b6ff;
 }
 
 /* ===== BUTTON ===== */
@@ -245,9 +243,7 @@ header {
 }
 .profile-action-btn-ui:hover { background: #2a96d1; }
 
-
 /* ===== DROPDOWN ===== */
-
 .profile-dropdown-ui {
   display: none;
   position: absolute;
@@ -261,7 +257,7 @@ header {
   max-height: 180px;
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-position: absolute;
+  position: absolute;
   top: calc(100% + 4px);
 }
 .profile-dropdown-item-ui {
