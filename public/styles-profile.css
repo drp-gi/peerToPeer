@@ -1,0 +1,410 @@
+/* ============================================================
+   styles-profile.css  — Profile page styles
+   ============================================================ */
+
+/* Page title */
+.pg-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #29b6d8;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.pg-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 20px;
+}
+.pg-subtitle-sm {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+/* ── PROFILE CARD ── */
+.pf-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  background: #fff;
+}
+
+/* Left section */
+.pf-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 200px;
+}
+
+.pf-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #d0e8f0;
+  border: 2px solid #29b6d8;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.pf-avatar svg { width: 52px; height: 52px; }
+.pf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.pf-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: #222;
+  letter-spacing: 0.5px;
+}
+.pf-handle {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 2px;
+}
+.pf-bio {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+.edit-btn:hover {
+  border-color: #29b6d8;
+  color: #29b6d8;
+}
+
+/* Vertical divider */
+.pf-divider {
+  width: 1px;
+  background: #e5e5e5;
+  align-self: stretch;
+  margin: 0 28px;
+}
+
+/* Stats section */
+.pf-stats {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex: 1;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 80px;
+}
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  font-size: 22px;
+}
+.stat-blue { background: #e8f7fc; }
+.stat-blue svg { width: 22px; height: 22px; stroke: #29b6d8; }
+.stat-yellow { background: #fff8e8; }
+.stat-yellow svg { width: 22px; height: 22px; }
+.stat-orange { background: #fff3e8; font-size: 24px; }
+
+.stat-number {
+  font-size: 22px;
+  font-weight: 800;
+  color: #222;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  text-align: center;
+}
+.stat-sub {
+  font-size: 11px;
+  color: #aaa;
+  text-align: center;
+}
+
+/* ── TABS ── */
+.pf-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 18px;
+}
+.pf-tab {
+  padding: 10px 18px;
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.pf-tab.active {
+  color: #29b6d8;
+  border-bottom-color: #29b6d8;
+  font-weight: 600;
+}
+
+/* ── OVERVIEW GRID ── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.ov-box {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: #fff;
+}
+.ov-full {
+  grid-column: 1 / -1;
+}
+.ov-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 10px;
+}
+.ov-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.ov-link {
+  font-size: 13px;
+  color: #29b6d8;
+  text-decoration: none;
+}
+.ov-content {
+  font-size: 13px;
+  color: #555;
+}
+.ov-content.muted { color: #bbb; }
+
+/* Skill tags in overview */
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.skill-tag {
+  background: #e8f7fc;
+  border: 1px solid #29b6d8;
+  color: #29b6d8;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.skill-tag-growth {
+  background: #f0fff4;
+  border: 1px solid #4caf7d;
+  color: #4caf7d;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── EDIT MODE ── */
+.edit-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 28px;
+  gap: 6px;
+}
+.edit-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #d0e8f0;
+  border: 2px solid #29b6d8;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.edit-avatar:hover { opacity: 0.85; }
+.edit-avatar svg { width: 60px; height: 60px; }
+.edit-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.edit-handle {
+  font-size: 14px;
+  color: #888;
+}
+
+/* Edit form */
+.edit-form {
+  max-width: 520px;
+}
+.ef-group {
+  margin-bottom: 20px;
+}
+.ef-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #29b6d8;
+  margin-bottom: 6px;
+}
+.ef-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.ef-input:focus { border-color: #29b6d8; }
+
+/* Multi-select dropdown in edit form */
+.ef-select-wrap {
+  position: relative;
+}
+.ef-select-trigger {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #555;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.2s;
+}
+.ef-select-trigger:hover,
+.ef-select-trigger.open { border-color: #29b6d8; }
+.ef-select-trigger.open svg {
+  transform: rotate(180deg);
+}
+
+.ef-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  z-index: 200;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.ef-dropdown.open { display: block; }
+
+.ef-search {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  outline: none;
+}
+.ef-options {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.ef-option {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.15s;
+}
+.ef-option:hover { background: #f5f5f5; }
+.ef-option.selected { background: #e8f7fc; color: #29b6d8; }
+
+/* Tags below the dropdown */
+.ef-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ef-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e8f7fc;
+  border: 1px solid #29b6d8;
+  color: #29b6d8;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+.ef-tag-x {
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.ef-tag-x:hover { color: #e05555; }
+
+/* Form action buttons */
+.ef-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.ef-btn-cancel {
+  padding: 11px 24px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ef-btn-cancel:hover { background: #f5f5f5; }
+.ef-btn-save {
+  padding: 11px 28px;
+  border: none;
+  background: #29b6d8;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ef-btn-save:hover { background: #1fa0be; }

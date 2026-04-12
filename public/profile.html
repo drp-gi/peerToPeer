@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tandem - Profile</title>
+  <link rel="stylesheet" href="styles-dashboard.css" />
+  <link rel="stylesheet" href="styles-profile.css" />
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- SIDEBAR (same as dashboard) -->
+  <div class="sidebar">
+    <div class="logo">Tandem</div>
+
+    <div class="nav-item" onclick="window.location.href='dashboard.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      HOME
+    </div>
+
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="7" r="4"/>
+        <path d="M5.5 21c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/>
+        <path d="M18 7l2 2-2 2"/>
+      </svg>
+      MENTORS
+    </div>
+
+    <!-- Active: PROFILE -->
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      PROFILE
+    </div>
+
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="8" height="8" rx="1"/>
+        <rect x="13" y="3" width="8" height="8" rx="1"/>
+        <rect x="3" y="13" width="8" height="8" rx="1"/>
+        <rect x="13" y="13" width="8" height="8" rx="1"/>
+      </svg>
+      ABOUT US
+    </div>
+
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      MESSAGES
+    </div>
+
+    <div class="nav-item logout-btn" id="logoutBtn" title="Log out">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      LOGOUT
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="credits-badge">
+        <span id="topCreditsBadge">5</span>
+        <div class="coin"><span>$</span></div>
+      </div>
+      <svg class="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </div>
+
+    <!-- ========== PROFILE PAGE CONTENT ========== -->
+
+    <!-- VIEW MODE -->
+    <div id="viewMode">
+
+      <div class="pg-title">PROFILE</div>
+      <div class="pg-subtitle">Manage your information, track your progress, and showcase your expertise.</div>
+
+      <!-- Profile Card -->
+      <div class="pf-card">
+
+        <!-- Left: avatar + name + edit button -->
+        <div class="pf-left">
+          <div class="pf-avatar" id="pfAvatar">
+            <!-- filled by JS -->
+            <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="22" r="13" fill="#a0c4d8"/>
+              <ellipse cx="30" cy="52" rx="20" ry="14" fill="#a0c4d8"/>
+              <rect x="22" y="18" width="16" height="12" rx="4" fill="#666" opacity="0.5"/>
+              <rect x="24" y="20" width="4" height="7" rx="1" fill="#ccc" opacity="0.8"/>
+            </svg>
+          </div>
+          <div class="pf-name" id="pfName">GARY ALLISON</div>
+          <div class="pf-handle" id="pfHandle">@username</div>
+          <div class="pf-bio" id="pfBio">Enter Bio</div>
+          <button class="edit-btn" id="editBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit profile
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="pf-divider"></div>
+
+        <!-- Right: stats -->
+        <div class="pf-stats">
+          <div class="stat-item">
+            <div class="stat-icon stat-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="stat-number">0</div>
+            <div class="stat-label">Sessions</div>
+            <div class="stat-sub">Completed</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-icon stat-yellow">
+              <svg viewBox="0 0 24 24" fill="#f5a623" stroke="#f5a623" stroke-width="1">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+              </svg>
+            </div>
+            <div class="stat-number">0</div>
+            <div class="stat-label">Average Rating</div>
+            <div class="stat-sub">From Learners</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-icon stat-orange">
+              🔥
+            </div>
+            <div class="stat-number">0</div>
+            <div class="stat-label">Day Streak</div>
+            <div class="stat-sub">Keep it up!</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tabs -->
+      <div class="pf-tabs">
+        <div class="pf-tab active">Overview</div>
+      </div>
+
+      <!-- Overview Grid -->
+      <div class="overview-grid">
+
+        <!-- About Me -->
+        <div class="ov-box">
+          <div class="ov-title">About Me</div>
+          <div class="ov-content" id="viewBio">Edit caption.</div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="ov-box">
+          <div class="ov-title-row">
+            <div class="ov-title">Achievements</div>
+            <a class="ov-link" href="#">View All</a>
+          </div>
+          <div class="ov-content muted">No achievements yet.</div>
+        </div>
+
+        <!-- Skills -->
+        <div class="ov-box ov-full">
+          <div class="ov-title">Skills</div>
+          <div class="skill-tags" id="viewSkills">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- Learning Goals -->
+        <div class="ov-box ov-full">
+          <div class="ov-title">Learning Goals</div>
+          <div class="skill-tags" id="viewGrowth">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    <!-- END VIEW MODE -->
+
+
+    <!-- ========== EDIT MODE ========== -->
+    <div id="editMode" style="display:none;">
+
+      <div class="pg-title">PROFILE</div>
+      <div class="pg-subtitle-sm">Edit Profile</div>
+
+      <!-- Edit avatar -->
+      <div class="edit-avatar-wrap">
+        <div class="edit-avatar" id="editAvatar">
+          <!-- filled by JS -->
+        </div>
+        <input type="file" id="editPicInput" accept="image/*" style="display:none;">
+        <div class="edit-handle" id="editHandle">@username</div>
+      </div>
+
+      <!-- Edit form -->
+      <div class="edit-form">
+
+        <div class="ef-group">
+          <label class="ef-label">Name</label>
+          <input type="text" class="ef-input" id="editName" placeholder="Your name">
+        </div>
+
+        <div class="ef-group">
+          <label class="ef-label">BIO</label>
+          <input type="text" class="ef-input" id="editBio" placeholder="Enter Bio">
+        </div>
+
+        <!-- Skills multi-select -->
+        <div class="ef-group">
+          <label class="ef-label">My Skills</label>
+          <div class="ef-select-wrap" id="skillsWrap">
+            <div class="ef-select-trigger" id="editSkillsTrigger">
+              <span>Your Skills</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            <div class="ef-dropdown" id="editSkillsDropdown">
+              <input type="text" class="ef-search" id="editSkillsSearch" placeholder="Search skills...">
+              <div class="ef-options" id="editSkillsOptions"></div>
+            </div>
+            <div class="ef-tags" id="editSkillsTags"></div>
+          </div>
+        </div>
+
+        <!-- Learning Goals multi-select -->
+        <div class="ef-group">
+          <label class="ef-label">Learning Goals</label>
+          <div class="ef-select-wrap" id="growthWrap">
+            <div class="ef-select-trigger" id="editGrowthTrigger">
+              <span>Option</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            <div class="ef-dropdown" id="editGrowthDropdown">
+              <input type="text" class="ef-search" id="editGrowthSearch" placeholder="Search learning areas...">
+              <div class="ef-options" id="editGrowthOptions"></div>
+            </div>
+            <div class="ef-tags" id="editGrowthTags"></div>
+          </div>
+        </div>
+
+        <div class="ef-actions">
+          <button class="ef-btn-cancel" id="cancelEditBtn">Cancel</button>
+          <button class="ef-btn-save" id="saveEditBtn">Save Changes</button>
+        </div>
+
+      </div>
+    </div>
+    <!-- END EDIT MODE -->
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="profile.js"></script>
+</body>
+</html>
