@@ -37,15 +37,33 @@
                 <input type="text" id="usernameInput" placeholder="Enter a username" required> 
 
                 <label class="profile-label-ui">My Skills</label>
-                <div class="profile-tag-input-box-ui">
-                    <input type="text" id="skillInput" placeholder="Select Skills">
-                    <div id="skillTags" class="profile-tags-ui"></div>
+                <div class="custom-select-wrapper">
+                    <div class="custom-select-trigger" id="skillsTrigger">
+                        <span>Select Skills...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="custom-options" id="skillsOptions">
+                        <div class="search-box">
+                            <input type="text" id="skillsSearch" placeholder="Search skills...">
+                        </div>
+                        <div class="options-list" id="skillsList"></div>
+                    </div>
+                    <div id="skillTags" class="selected-tags-container"></div>
                 </div>
 
                 <label class="profile-label-ui">My Learning Areas</label>
-                <div class="profile-tag-input-box-ui">
-                    <input type="text" id="growthInput" placeholder="Select Learning Areas">
-                    <div id="growthTags" class="profile-tags-ui"></div>
+                <div class="custom-select-wrapper">
+                    <div class="custom-select-trigger" id="growthTrigger">
+                        <span>Select Learning Areas...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="custom-options" id="growthOptions">
+                        <div class="search-box">
+                            <input type="text" id="growthSearch" placeholder="Search learning areas...">
+                        </div>
+                        <div class="options-list" id="growthList"></div>
+                    </div>
+                    <div id="growthTags" class="selected-tags-container"></div>
                 </div>
 
                 <button type="submit" class="profile-action-btn-ui">
