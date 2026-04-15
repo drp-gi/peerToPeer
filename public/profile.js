@@ -21,6 +21,7 @@ const SKILL_SUGGESTIONS = [
 ];
 
 const GROWTH_SUGGESTIONS = [
+  // Academic struggles
   "Procrastination","Poor Time Management","Lack of Study Habits","Easily Distracted",
   "Short Attention Span","Overthinking","Low Confidence","Public Speaking",
   "Shyness in Class Participation","Weak Writing Skills","Poor Reading Comprehension",
@@ -28,13 +29,27 @@ const GROWTH_SUGGESTIONS = [
   "Poor Communication Skills","Difficulty in Group Work","Avoiding Leadership Roles",
   "Lack of Initiative","Peer Pressure Susceptibility","Overuse of Social Media",
   "Poor Digital Discipline","Disorganized Notes and Files","Inconsistent Academic Performance",
-  "Financial Literacy","Cooking","Fitness","Foreign Language","Music","Photography","Reading"
+  // Life skills & interests
+  "Financial Literacy","Cooking","Fitness","Foreign Language","Music","Photography","Reading",
+  // Additional subjects
+  "Mathematics","Science","History","Literature","Programming","Art","Physical Education",
+  "Critical Thinking","Research Skills","Essay Writing","Presentation Skills"
 ];
+
+const GRADE_LABELS = {
+  elementary:   { icon: "🎒", label: "Elementary",  range: "Grades 1–6" },
+  junior_high:  { icon: "📚", label: "Junior High", range: "Grades 7–10" },
+  senior_high:  { icon: "🎓", label: "Senior High", range: "Grades 11–12" },
+  college:      { icon: "🏛️", label: "College",     range: "Undergraduate" },
+  postgrad:     { icon: "🔬", label: "Post-Grad",   range: "Masters / PhD" },
+  professional: { icon: "💼", label: "Professional",range: "Working Adult" },
+};
 
 // ── State ────────────────────────────────────────────────────
 let editSkillsSelected = new Set();
 let editGrowthSelected  = new Set();
-let editPicData = null;   // base64 of newly chosen pic, or null
+let editPicData    = null;   // base64 of newly chosen pic, or null
+let editGradeLevel = '';     // selected grade level key
 
 // ── Helpers ──────────────────────────────────────────────────
 function encryptEmail(email) {
@@ -106,7 +121,21 @@ function renderView() {
   const growthEl = document.getElementById('viewGrowth');
   growthEl.innerHTML = growth.length
     ? growth.map(g => `<span class="skill-tag-growth">${g}</span>`).join('')
-    : '<span style="color:#bbb;font-size:13px;">No learning goals added yet.</span>';
+    : '<span style="color:#bbb;font-size:13px;">No growth subjects added yet.</span>';
+
+  // Grade level badge
+  const gradeKey   = localStorage.getItem('tandem_grade') || '';
+  const gradeBadge = document.getElementById('viewGradeBadge');
+  const gradeLabel = document.getElementById('viewGradeLabel');
+  if (gradeKey && GRADE_LABELS[gradeKey]) {
+    const g = GRADE_LABELS[gradeKey];
+    gradeBadge.innerHTML = `${g.icon} ${g.label} <span style="opacity:0.7;font-weight:400;">(${g.range})</span>`;
+    gradeBadge.style.display = 'inline-flex';
+    gradeLabel.textContent = '';
+  } else {
+    gradeBadge.style.display = 'none';
+    gradeLabel.textContent = 'Set your grade level to get better matches.';
+  }
 
   // Achievements Update
   const achievementsEl = document.getElementById('pfAchievements'); 
@@ -153,11 +182,14 @@ function renderEdit() {
   editSkillsSelected = new Set(skills);
   editGrowthSelected  = new Set(growth);
   editPicData = null;
+  editGradeLevel = localStorage.getItem('tandem_grade') || '';
 
   renderEditTags('skills');
   renderEditTags('growth');
   renderEditOptions('skills', '');
   renderEditOptions('growth', '');
+  renderGradeCards();
+  updateGrowthTriggerLabel();
 }
 
 // ── Multi-select dropdown helpers ────────────────────────────
@@ -183,6 +215,7 @@ function renderEditOptions(type, search) {
       else selected.add(val);
       renderEditOptions(type, search);
       renderEditTags(type);
+      if (type === 'growth') updateGrowthTriggerLabel();
     });
   });
 }
@@ -206,8 +239,34 @@ function renderEditTags(type) {
       sel.delete(val);
       renderEditOptions(t, '');
       renderEditTags(t);
+      if (t === 'growth') updateGrowthTriggerLabel();
     });
   });
+}
+
+// ── Grade Level ──────────────────────────────────────────────
+function renderGradeCards() {
+  document.querySelectorAll('.grade-card').forEach(card => {
+    const g = card.getAttribute('data-grade');
+    card.classList.toggle('selected', g === editGradeLevel);
+    card.onclick = () => {
+      editGradeLevel = (editGradeLevel === g) ? '' : g;  // toggle off if same
+      renderGradeCards();
+    };
+  });
+  document.getElementById('editGradeLevel').value = editGradeLevel;
+}
+
+// ── Growth trigger label ─────────────────────────────────────
+function updateGrowthTriggerLabel() {
+  const placeholder = document.getElementById('editGrowthPlaceholder');
+  if (!placeholder) return;
+  const count = editGrowthSelected.size;
+  if (count === 0) {
+    placeholder.innerHTML = 'Select subjects...';
+  } else {
+    placeholder.innerHTML = `<span class="ef-count-badge">${count}</span> subject${count !== 1 ? 's' : ''} selected`;
+  }
 }
 
 function setupDropdown(triggerId, dropdownId, searchId, type) {
@@ -284,6 +343,7 @@ async function saveProfile() {
   localStorage.setItem('tandem_achievements', achievements);
   localStorage.setItem('tandem_skills', JSON.stringify(skills));
   localStorage.setItem('tandem_growth', JSON.stringify(growth));
+  localStorage.setItem('tandem_grade', editGradeLevel);
   if (editPicData) localStorage.setItem('tandem_profile_pic', editPicData);
 
   // Persist to backend
@@ -299,6 +359,7 @@ async function saveProfile() {
           achievements,
           skills,
           growth,
+          grade_level: editGradeLevel,
           profile_pic: editPicData || localStorage.getItem('tandem_profile_pic') || null
         })
       });
