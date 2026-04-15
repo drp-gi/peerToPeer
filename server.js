@@ -52,6 +52,11 @@ db.serialize(() => {
 // REGISTER
 app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+    return res.json({ success: false, message: 'All fields are required' });
+}
+
+
     console.log('Registration attempt for:', email);
     
     db.get("SELECT email FROM users WHERE email = ?", [email], async (err, existingUser) => {
@@ -68,12 +73,12 @@ app.post('/register', async (req, res) => {
         try {
             const hashedPassword = await bcrypt.hash(password, 10);
             db.run(
-                "INSERT INTO users (name, email, password, credits) VALUES (?, ?, ?, 5)",
-                [name, email, hashedPassword],
+                "INSERT INTO users (name, email, username, password, credits) VALUES (?, ?, ?, ?, 5)",
+                [name, email, null, hashedPassword],
                 function(err) {
                     if (err) {
-                        console.error('Insert error:', err);
-                        return res.json({ success: false, message: 'Registration failed' });
+                        console.error('Insert error FULL:', err.message);
+                        return res.json({ success: false, message: err.message });
                     }
                     console.log('User registered successfully:', email);
                     res.json({ success: true, message: 'Registered successfully' });
