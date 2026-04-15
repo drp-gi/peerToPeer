@@ -95,6 +95,15 @@ loginForm.onsubmit = async (e) => {
             if (data.profile_pic) {
                 localStorage.setItem('tandem_profile_pic', data.profile_pic);
             }
+            if (data.skills && data.skills.length) {
+                localStorage.setItem('tandem_skills', JSON.stringify(data.skills));
+            }
+            if (data.growth && data.growth.length) {
+                localStorage.setItem('tandem_growth', JSON.stringify(data.growth));
+            }
+            if (data.grade_level) {
+                localStorage.setItem('tandem_grade', data.grade_level);
+            }
             
             alert(`Welcome back, ${data.name}! You have ${creditsFromDB} credits.`);
             authModal.style.display = 'none';
