@@ -28,6 +28,8 @@ db.serialize(() => {
         password TEXT,
         skills TEXT,
         growth TEXT,
+        bio TEXT,
+        achievements TEXT,
         profile_pic TEXT,
         credits INTEGER DEFAULT 5,
         last_login_date TEXT
@@ -115,6 +117,8 @@ app.post('/login', async (req, res) => {
                 username: user.username,
                 skills: JSON.parse(user.skills || "[]"),
                 growth: JSON.parse(user.growth || "[]"),
+                bio: user.bio || '',
+                achievements: user.achievements || '',
                 profile_pic: user.profile_pic || null,
                 credits: user.credits || 5,
                 last_login_date: user.last_login_date || null
@@ -128,7 +132,7 @@ app.post('/login', async (req, res) => {
 
 // COMPLETE PROFILE
 app.post('/complete-profile', (req, res) => {
-    const { email, username, skills, growth, profile_pic } = req.body;
+    const { email, username, skills, growth, bio, achievements, profile_pic } = req.body;
     console.log('Completing profile for:', email);
     
     db.get("SELECT * FROM users WHERE username = ? AND email != ?", [username, email], (err, existingUser) => {
@@ -143,8 +147,8 @@ app.post('/complete-profile', (req, res) => {
         }
 
         db.run(
-            "UPDATE users SET username = ?, skills = ?, growth = ?, profile_pic = ? WHERE email = ?",
-            [username, JSON.stringify(skills), JSON.stringify(growth), profile_pic || null, email],
+            "UPDATE users SET username = ?, skills = ?, growth = ?, bio = ?, achievements = ?, profile_pic = ? WHERE email = ?",
+            [username, JSON.stringify(skills), JSON.stringify(growth), bio || '', achievements || '', profile_pic || null, email],
             function(err) {
                 if (err) {
                     console.error('Update error:', err);
@@ -160,7 +164,7 @@ app.post('/complete-profile', (req, res) => {
 // GET USER DATA
 app.post('/get-user-data', (req, res) => {
     const { email } = req.body;
-    db.get("SELECT username, profile_pic, credits, last_login_date FROM users WHERE email = ?", [email], (err, user) => {
+    db.get("SELECT username, profile_pic, credits, last_login_date, bio, achievements, skills, growth FROM users WHERE email = ?", [email], (err, user) => {
         if (err || !user) {
             return res.json({ success: false, message: 'User not found' });
         }
@@ -169,7 +173,11 @@ app.post('/get-user-data', (req, res) => {
             username: user.username,
             profile_pic: user.profile_pic,
             credits: user.credits || 5,
-            last_login_date: user.last_login_date
+            last_login_date: user.last_login_date,
+            bio: user.bio || '',
+            achievements: user.achievements || '',
+            skills: user.skills || '[]',
+            growth: user.growth || '[]'
         });
     });
 });

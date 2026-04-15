@@ -85,6 +85,10 @@ loginForm.onsubmit = async (e) => {
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userName', data.name);
             localStorage.setItem('tandem_username', data.username || '');
+            localStorage.setItem('tandem_bio', data.bio || '');
+            localStorage.setItem('tandem_achievements', data.achievements || '');
+            localStorage.setItem('tandem_skills', data.skills || '[]');
+            localStorage.setItem('tandem_growth', data.growth || '[]');
             
             // IMPORTANT: Store credits from database (this is the source of truth)
             const creditsFromDB = data.credits || 5;

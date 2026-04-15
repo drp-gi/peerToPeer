@@ -63,16 +63,34 @@ function renderView() {
   const pic        = localStorage.getItem('tandem_profile_pic');
   const skillsRaw  = localStorage.getItem('tandem_skills') || '[]';
   const growthRaw  = localStorage.getItem('tandem_growth') || '[]';
+  const achievements = localStorage.getItem('tandem_achievements') || 'No achievements yet.';
   let skills = [], growth = [];
-  try { skills = JSON.parse(skillsRaw); } catch(e) {}
-  try { growth = JSON.parse(growthRaw);  } catch(e) {}
+  // Robust parsing for Skills
+      try { 
+        // Parse the string from localStorage
+        skills = typeof skillsRaw === 'string' ? JSON.parse(skillsRaw) : skillsRaw; 
+        // Handle cases where data might be double-encoded as a string
+        if (typeof skills === 'string') skills = JSON.parse(skills);
+      } catch(e) { 
+        console.error("Error parsing skills:", e);
+        skills = []; 
+      }
+
+      // Robust parsing for Growth/Learning Goals
+      try { 
+        growth = typeof growthRaw === 'string' ? JSON.parse(growthRaw) : growthRaw;
+        if (typeof growth === 'string') growth = JSON.parse(growth);
+      } catch(e) { 
+        console.error("Error parsing growth:", e);
+        growth = []; 
+      }
 
   // Avatar in profile card
   const pfAvatar = document.getElementById('pfAvatar');
   if (pic) {
     pfAvatar.innerHTML = `<img src="${pic}" alt="Profile Pic">`;
   }
-
+  
   document.getElementById('pfName').textContent   = username.toUpperCase();
   document.getElementById('pfHandle').textContent = '@' + (username.toLowerCase().replace(/\s+/g,'_'));
   document.getElementById('pfBio').textContent    = bio || 'Enter Bio';
@@ -90,6 +108,16 @@ function renderView() {
     ? growth.map(g => `<span class="skill-tag-growth">${g}</span>`).join('')
     : '<span style="color:#bbb;font-size:13px;">No learning goals added yet.</span>';
 
+  // Achievements Update
+  const achievementsEl = document.getElementById('pfAchievements'); 
+  if (achievementsEl) {
+    achievementsEl.textContent = achievements;
+    if (achievements && achievements !== 'No achievements yet.' && achievements !== '') {
+    achievementsEl.classList.remove('muted');
+  } else {
+    achievementsEl.classList.remove('muted'); // Remove gray text if data exists
+  }
+  }
   // Credits topbar
   document.getElementById('topCreditsBadge').textContent = getCredits();
 }
@@ -101,6 +129,7 @@ function renderEdit() {
   const pic       = localStorage.getItem('tandem_profile_pic');
   const skillsRaw = localStorage.getItem('tandem_skills') || '[]';
   const growthRaw = localStorage.getItem('tandem_growth') || '[]';
+  const achievements = localStorage.getItem('tandem_achievements') || '';
   let skills = [], growth = [];
   try { skills = JSON.parse(skillsRaw); } catch(e) {}
   try { growth = JSON.parse(growthRaw);  } catch(e) {}
@@ -109,6 +138,7 @@ function renderEdit() {
   document.getElementById('editName').value = username;
   document.getElementById('editBio').value  = bio;
   document.getElementById('editHandle').textContent = '@' + (username.toLowerCase().replace(/\s+/g,'_'));
+  document.getElementById('editAchievements').value = achievements;
 
   // Avatar in edit form
   const editAv = document.getElementById('editAvatar');
@@ -241,6 +271,7 @@ function setupEditPicUpload() {
 async function saveProfile() {
   const name   = document.getElementById('editName').value.trim();
   const bio    = document.getElementById('editBio').value.trim();
+  const achievements = document.getElementById('editAchievements').value.trim();
   const skills = Array.from(editSkillsSelected);
   const growth = Array.from(editGrowthSelected);
   const email  = localStorage.getItem('userEmail');
@@ -250,6 +281,7 @@ async function saveProfile() {
   // Update localStorage immediately
   localStorage.setItem('tandem_username', name);
   localStorage.setItem('tandem_bio', bio);
+  localStorage.setItem('tandem_achievements', achievements);
   localStorage.setItem('tandem_skills', JSON.stringify(skills));
   localStorage.setItem('tandem_growth', JSON.stringify(growth));
   if (editPicData) localStorage.setItem('tandem_profile_pic', editPicData);
@@ -263,6 +295,8 @@ async function saveProfile() {
         body: JSON.stringify({
           email,
           username: name,
+          bio,
+          achievements,
           skills,
           growth,
           profile_pic: editPicData || localStorage.getItem('tandem_profile_pic') || null
