@@ -28,6 +28,9 @@ db.serialize(() => {
         password TEXT,
         skills TEXT,
         growth TEXT,
+        bio TEXT,
+        achievements TEXT,
+        grade_level TEXT,
         profile_pic TEXT,
         credits INTEGER DEFAULT 5,
         last_login_date TEXT
@@ -37,6 +40,12 @@ db.serialize(() => {
             console.error('Error creating table:', err);
         } else {
             console.log('Database table ready');
+            // Add grade_level column if it doesn't exist (migration for existing DBs)
+            db.run(`ALTER TABLE users ADD COLUMN grade_level TEXT`, (err) => {
+              if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error:', err);
+              }
+            });
             // Count users to verify data exists
             db.get("SELECT COUNT(*) as count FROM users", (err, result) => {
                 if (!err && result) {
@@ -50,6 +59,11 @@ db.serialize(() => {
 // REGISTER
 app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+    return res.json({ success: false, message: 'All fields are required' });
+}
+
+
     console.log('Registration attempt for:', email);
     
     db.get("SELECT email FROM users WHERE email = ?", [email], async (err, existingUser) => {
@@ -66,12 +80,12 @@ app.post('/register', async (req, res) => {
         try {
             const hashedPassword = await bcrypt.hash(password, 10);
             db.run(
-                "INSERT INTO users (name, email, password, credits) VALUES (?, ?, ?, 5)",
-                [name, email, hashedPassword],
+                "INSERT INTO users (name, email, username, password, credits) VALUES (?, ?, ?, ?, 5)",
+                [name, email, null, hashedPassword],
                 function(err) {
                     if (err) {
-                        console.error('Insert error:', err);
-                        return res.json({ success: false, message: 'Registration failed' });
+                        console.error('Insert error FULL:', err.message);
+                        return res.json({ success: false, message: err.message });
                     }
                     console.log('User registered successfully:', email);
                     res.json({ success: true, message: 'Registered successfully' });
@@ -115,6 +129,9 @@ app.post('/login', async (req, res) => {
                 username: user.username,
                 skills: JSON.parse(user.skills || "[]"),
                 growth: JSON.parse(user.growth || "[]"),
+                bio: user.bio || '',
+                achievements: user.achievements || '',
+                grade_level: user.grade_level || '',
                 profile_pic: user.profile_pic || null,
                 credits: user.credits || 5,
                 last_login_date: user.last_login_date || null
@@ -128,7 +145,7 @@ app.post('/login', async (req, res) => {
 
 // COMPLETE PROFILE
 app.post('/complete-profile', (req, res) => {
-    const { email, username, skills, growth, profile_pic } = req.body;
+    const { email, username, skills, growth, bio, achievements, grade_level, profile_pic } = req.body;
     console.log('Completing profile for:', email);
     
     db.get("SELECT * FROM users WHERE username = ? AND email != ?", [username, email], (err, existingUser) => {
@@ -143,8 +160,8 @@ app.post('/complete-profile', (req, res) => {
         }
 
         db.run(
-            "UPDATE users SET username = ?, skills = ?, growth = ?, profile_pic = ? WHERE email = ?",
-            [username, JSON.stringify(skills), JSON.stringify(growth), profile_pic || null, email],
+            "UPDATE users SET username = ?, skills = ?, growth = ?, bio = ?, achievements = ?, grade_level = ?, profile_pic = ? WHERE email = ?",
+            [username, JSON.stringify(skills), JSON.stringify(growth), bio || '', achievements || '', grade_level || null, profile_pic || null, email],
             function(err) {
                 if (err) {
                     console.error('Update error:', err);
@@ -160,7 +177,7 @@ app.post('/complete-profile', (req, res) => {
 // GET USER DATA
 app.post('/get-user-data', (req, res) => {
     const { email } = req.body;
-    db.get("SELECT username, profile_pic, credits, last_login_date FROM users WHERE email = ?", [email], (err, user) => {
+    db.get("SELECT username, profile_pic, credits, last_login_date, bio, achievements, skills, growth FROM users WHERE email = ?", [email], (err, user) => {
         if (err || !user) {
             return res.json({ success: false, message: 'User not found' });
         }
@@ -169,7 +186,11 @@ app.post('/get-user-data', (req, res) => {
             username: user.username,
             profile_pic: user.profile_pic,
             credits: user.credits || 5,
-            last_login_date: user.last_login_date
+            last_login_date: user.last_login_date,
+            bio: user.bio || '',
+            achievements: user.achievements || '',
+            skills: user.skills || '[]',
+            growth: user.growth || '[]'
         });
     });
 });

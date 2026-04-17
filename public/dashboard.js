@@ -217,13 +217,17 @@ async function loadCreditsFromDatabase() {
       body: JSON.stringify({ email })
     });
     
-    const data = await response.json();
+    const data = await response.json(); 
     if (data.success) {
       const dbCredits = data.credits || 5;
       console.log('📥 Loading credits from database:', dbCredits);
       localStorage.setItem('tandem_credits', dbCredits);
       localStorage.setItem('tandem_last_login_date', data.last_login_date || '');
       updateCreditsDisplay(dbCredits);
+      localStorage.setItem('tandem_bio', data.bio || '');
+      localStorage.setItem('tandem_achievements', data.achievements || '');
+      localStorage.setItem('tandem_skills', data.skills || '[]');
+      localStorage.setItem('tandem_growth', data.growth || '[]');
       return true;
     }
   } catch (error) {

@@ -4,8 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tandem - Profile</title>
-  <link rel="stylesheet" href="styles-dashboard.css" />
+
+  <link rel="stylesheet" href="styles-dashboard.css"/>
   <link rel="stylesheet" href="styles-profile.css" />
+   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+Bhaina+2:wght@400..800&display=swap');
+
+</style>
 </head>
 <body>
 
@@ -13,62 +21,40 @@
 
   <!-- SIDEBAR (same as dashboard) -->
   <div class="sidebar">
-    <div class="logo">Tandem</div>
+    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
 
     <div class="nav-item" onclick="window.location.href='dashboard.html'">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7" rx="1"/>
-        <rect x="14" y="3" width="7" height="7" rx="1"/>
-        <rect x="3" y="14" width="7" height="7" rx="1"/>
-        <rect x="14" y="14" width="7" height="7" rx="1"/>
-      </svg>
-      HOME
+    <img src="/icons/home.png" alt="home" class="nav-icon">
+    HOME
     </div>
 
     <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="7" r="4"/>
-        <path d="M5.5 21c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/>
-        <path d="M18 7l2 2-2 2"/>
-      </svg>
+      <img src="/icons/help.png" alt="home" class="nav-icon">
       MENTORS
     </div>
 
-    <!-- Active: PROFILE -->
-    <div class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="8" r="4"/>
-        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-      </svg>
+    <div class="nav-item active" onclick="window.location.href='profile.html'" style="cursor:pointer;">
+      <img src="/icons/profile.png" alt="home" class="nav-icon">
       PROFILE
     </div>
 
     <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="8" height="8" rx="1"/>
-        <rect x="13" y="3" width="8" height="8" rx="1"/>
-        <rect x="3" y="13" width="8" height="8" rx="1"/>
-        <rect x="13" y="13" width="8" height="8" rx="1"/>
-      </svg>
+      <img src="/icons/other.png" alt="home" class="nav-icon">
       ABOUT US
     </div>
 
     <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
+      <img src="/icons/message.png" alt="home" class="nav-icon">
       MESSAGES
     </div>
 
     <div class="nav-item logout-btn" id="logoutBtn" title="Log out">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
+      <img src="/icons/logout.png" alt="home" class="nav-icon">
       LOGOUT
     </div>
+
   </div>
+
 
   <!-- MAIN CONTENT -->
   <div class="main">
@@ -181,7 +167,7 @@
             <div class="ov-title">Achievements</div>
             <a class="ov-link" href="#">View All</a>
           </div>
-          <div class="ov-content muted">No achievements yet.</div>
+          <div class="ov-content muted" id="pfAchievements">No achievements yet.</div>
         </div>
 
         <!-- Skills -->
@@ -192,9 +178,13 @@
           </div>
         </div>
 
-        <!-- Learning Goals -->
+        <!-- Growth Subjects -->
         <div class="ov-box ov-full">
-          <div class="ov-title">Learning Goals</div>
+          <div class="ov-title-row">
+            <div class="ov-title">Growth Subjects</div>
+            <span class="grade-badge" id="viewGradeBadge" style="display:none;"></span>
+          </div>
+          <div class="ov-subtitle" id="viewGradeLabel" style="font-size:12px;color:#aaa;margin-bottom:10px;"></div>
           <div class="skill-tags" id="viewGrowth">
             <!-- filled by JS -->
           </div>
@@ -254,22 +244,66 @@
 
         <!-- Learning Goals multi-select -->
         <div class="ef-group">
-          <label class="ef-label">Learning Goals</label>
+          <label class="ef-label">Growth Subjects <span class="ef-label-sub">— areas you want to improve</span></label>
           <div class="ef-select-wrap" id="growthWrap">
             <div class="ef-select-trigger" id="editGrowthTrigger">
-              <span>Option</span>
+              <span id="editGrowthPlaceholder">Select subjects...</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </div>
             <div class="ef-dropdown" id="editGrowthDropdown">
-              <input type="text" class="ef-search" id="editGrowthSearch" placeholder="Search learning areas...">
+              <input type="text" class="ef-search" id="editGrowthSearch" placeholder="Search growth areas...">
               <div class="ef-options" id="editGrowthOptions"></div>
             </div>
             <div class="ef-tags" id="editGrowthTags"></div>
           </div>
+          <div class="ef-hint">💡 These help us match you with the right mentors.</div>
         </div>
 
+        <!-- Grade Level -->
+        <div class="ef-group">
+          <label class="ef-label">Grade Level <span class="ef-label-sub">— helps match you correctly</span></label>
+          <div class="grade-grid" id="gradeGrid">
+            <div class="grade-card" data-grade="elementary">
+              <div class="grade-icon">🎒</div>
+              <div class="grade-name">Elementary</div>
+              <div class="grade-range">Grades 1–6</div>
+            </div>
+            <div class="grade-card" data-grade="junior_high">
+              <div class="grade-icon">📚</div>
+              <div class="grade-name">Junior High</div>
+              <div class="grade-range">Grades 7–10</div>
+            </div>
+            <div class="grade-card" data-grade="senior_high">
+              <div class="grade-icon">🎓</div>
+              <div class="grade-name">Senior High</div>
+              <div class="grade-range">Grades 11–12</div>
+            </div>
+            <div class="grade-card" data-grade="college">
+              <div class="grade-icon">🏛️</div>
+              <div class="grade-name">College</div>
+              <div class="grade-range">Undergraduate</div>
+            </div>
+            <div class="grade-card" data-grade="postgrad">
+              <div class="grade-icon">🔬</div>
+              <div class="grade-name">Post-Grad</div>
+              <div class="grade-range">Masters / PhD</div>
+            </div>
+            <div class="grade-card" data-grade="professional">
+              <div class="grade-icon">💼</div>
+              <div class="grade-name">Professional</div>
+              <div class="grade-range">Working Adult</div>
+            </div>
+          </div>
+          <input type="hidden" id="editGradeLevel" value="">
+        </div>
+
+        <div class="ef-group">
+          <label class="ef-label">Achievements</label>
+            <input type="text" class="ef-input" id="editAchievements" placeholder="e.g. Certified Web Designer">
+        </div>
+        
         <div class="ef-actions">
           <button class="ef-btn-cancel" id="cancelEditBtn">Cancel</button>
           <button class="ef-btn-save" id="saveEditBtn">Save Changes</button>
