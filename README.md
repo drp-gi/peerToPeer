@@ -40,6 +40,8 @@ peerToPeer/ \
 1. **Clone the repo**
 - After watching the tutorial GIT videos I sent on Google Chats, you may utilize text editors such as Visual Studio Code
 - Make sure you have Git installed - https://git-scm.com/install/windows
+- Also node.js - https://nodejs.org/en/download
+  <br>
 - In the terminal section of VS CODE type
    ```bash
      git --version 

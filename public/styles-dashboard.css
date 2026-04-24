@@ -2,10 +2,14 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  
 }
 
 body {
-  font-family: sans-serif;
+  font-family: 'Baloo 2', sans-serif;
+
+
+  
 }
 
 .wrap {
@@ -21,15 +25,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
   background: #fff;
+  font-family: 'Baloo 2';
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
 .sidebar .logo {
   color: #29b6d8;
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 700; 
+  font-size: 22px;
   margin-bottom: 16px;
 }
 
@@ -42,21 +50,22 @@ body {
   padding: 10px 0;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 500;
   color: #888;
 }
 
 .nav-item.active {
   background: #e8f7fc;
   color: #29b6d8;
-  font-weight: 500;
+  font-weight: 900;
 }
 
-.nav-item svg {
-  width: 20px;
-  height: 20px;
+.nav-icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
 }
-
 .logout-btn {
   margin-top: auto;
   color: #e05555;
@@ -87,25 +96,23 @@ body {
   gap: 5px;
   color: #f5a623;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 22px;
 }
 
 .coin {
   width: 22px;
   height: 22px;
-  background: #f5a623;
-  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
-.coin span {
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
+.coin img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
-
 .bell {
   width: 28px;
   height: 28px;
@@ -121,8 +128,8 @@ body {
 }
 
 .avatar {
-  width: 70px;
-  height: 70px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: #d0e8f0;
   border: 2px solid #29b6d8;
@@ -150,13 +157,14 @@ body {
 
 .profile-name {
   color: #29b6d8;
-  font-size: 22px;
+  font-size: 40px;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
 .profile-email {
-  font-size: 12px;
+  font-size: 20px;
+  font-family: 'Baloo 2', sans-serif;
   color: #aaa;
   margin-bottom: 4px;
   letter-spacing: 0.3px;
@@ -194,7 +202,7 @@ body {
 
 .section-title {
   color: #29b6d8;
-  font-size: 16px;
+  font-size: 27px;
   font-weight: 700;
   margin-bottom: 4px;
 }
@@ -204,8 +212,8 @@ body {
 }
 
 .section-sub {
-  font-size: 12px;
-  color: #888;
+  font-size: 15px;
+  color: #7D7B80;
   margin-bottom: 14px;
 }
 
@@ -228,7 +236,19 @@ body {
 
 .day-card.day-today {
   background: #fff9ec;
-  border-color: #f5a623;
+  border: 2px solid #f5a623;
+  border-radius: 10px;
+  animation: glowPulse 1.0s infinite alternate;
+}
+
+/* glowing animation */
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 5px #f5a623;
+  }
+  100% {
+    box-shadow: 0 0 20px #f5a623, 0 0 30px #f5a623;
+  }
 }
 
 .day-card.day-clickable {
@@ -259,8 +279,8 @@ body {
 }
 
 .day-label {
-  font-size: 11px;
-  color: #888;
+  font-size: 17px;
+  color: #1d1d1d;
   margin-bottom: 6px;
 }
 
@@ -272,10 +292,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 7px;
   font-weight: 600;
-  color: #444;
-  font-size: 13px;
+  color: #f5a623;
+  font-size: 19px;
 }
 
 .day-reward-highlight {
@@ -283,20 +303,29 @@ body {
 }
 
 .mini-coin {
-  width: 18px;
-  height: 18px;
-  background: #f5a623;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  overflow: hidden; /* ensures image stays inside circle */
 }
 
-.mini-coin span {
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
+.mini-coin img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* keeps it nicely fitted */
+}
+
+.term-coin {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* ensures image stays inside circle */
 }
 
 .terms-section {
@@ -304,9 +333,9 @@ body {
 }
 
 .section-heading {
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: #7D7B80;
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #eee;
@@ -320,29 +349,25 @@ body {
 }
 
 .term-icon {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.gold-coin {
-  width: 40px;
-  height: 40px;
-  background: radial-gradient(circle at 40% 35%, #ffd966, #f5a623);
-  border-radius: 50%;
-  border: 2px solid #e09010;
+.term-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  margin-top: 20px;
 }
 
-.gold-star {
-  width: 38px;
-  height: 38px;
-}
+
 
 .term-text strong {
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
   display: block;
@@ -350,9 +375,10 @@ body {
 }
 
 .term-text p {
-  font-size: 12px;
+  font-size: 17px;
   color: #777;
   line-height: 1.6;
+  
 }
 
 .find-mentors {

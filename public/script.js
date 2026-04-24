@@ -85,6 +85,10 @@ loginForm.onsubmit = async (e) => {
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userName', data.name);
             localStorage.setItem('tandem_username', data.username || '');
+            localStorage.setItem('tandem_bio', data.bio || '');
+            localStorage.setItem('tandem_achievements', data.achievements || '');
+            localStorage.setItem('tandem_skills', data.skills || '[]');
+            localStorage.setItem('tandem_growth', data.growth || '[]');
             
             // IMPORTANT: Store credits from database (this is the source of truth)
             const creditsFromDB = data.credits || 5;
@@ -94,6 +98,15 @@ loginForm.onsubmit = async (e) => {
             
             if (data.profile_pic) {
                 localStorage.setItem('tandem_profile_pic', data.profile_pic);
+            }
+            if (data.skills && data.skills.length) {
+                localStorage.setItem('tandem_skills', JSON.stringify(data.skills));
+            }
+            if (data.growth && data.growth.length) {
+                localStorage.setItem('tandem_growth', JSON.stringify(data.growth));
+            }
+            if (data.grade_level) {
+                localStorage.setItem('tandem_grade', data.grade_level);
             }
             
             alert(`Welcome back, ${data.name}! You have ${creditsFromDB} credits.`);
