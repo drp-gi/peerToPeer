@@ -67,7 +67,7 @@ async function loadSwipeMatches() {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/get-swipe-matches', {
+    const response = await fetch('https://tandem-yq99.onrender.com/get-swipe-matches', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -190,7 +190,7 @@ async function swipeRight() {
   const learnerGrade = localStorage.getItem('tandem_grade') || '';
   
   try {
-    const response = await fetch('http://localhost:3000/send-connection-request', {
+    const response = await fetch('https://tandem-yq99.onrender.com/send-connection-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -341,7 +341,7 @@ async function sendConnectionRequest(tutorEmail, tutorName, tutorGrade) {
   const learnerGrade = localStorage.getItem('tandem_grade') || '';
 
   try {
-    const response = await fetch('http://localhost:3000/send-connection-request', {
+    const response = await fetch('https://tandem-yq99.onrender.com/send-connection-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -415,7 +415,7 @@ async function setupLogout() {
 
     if (email && currentCredits) {
       try {
-        await fetch('http://localhost:3000/update-credits', {
+        await fetch('https://tandem-yq99.onrender.com/update-credits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, credits: currentCredits })
@@ -438,7 +438,7 @@ async function loadCredits() {
   if (!email) return;
   
   try {
-    const response = await fetch('http://localhost:3000/get-user-data', {
+    const response = await fetch('https://tandem-yq99.onrender.com/get-user-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })

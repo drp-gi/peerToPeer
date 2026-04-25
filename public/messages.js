@@ -10,7 +10,7 @@ function updateCreditsDisplay(amount) {
 
 async function loadCredits() {
     try {
-        const response = await fetch('http://localhost:3000/get-user-data', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-user-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: userEmail })
@@ -26,7 +26,7 @@ async function loadCredits() {
 
 async function loadConnections() {
     try {
-        const response = await fetch('http://localhost:3000/get-connections', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-connections', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: userEmail })
@@ -140,7 +140,7 @@ async function selectChat(chatEmail, chatName) {
 
 async function loadMessages(chatEmail, chatName, isPolling = false) {
     try {
-        const response = await fetch('http://localhost:3000/get-messages', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user1Email: userEmail, user2Email: chatEmail })
@@ -225,7 +225,7 @@ async function sendMessage() {
     if (!message || !currentChatEmail) return;
     
     try {
-        await fetch('http://localhost:3000/send-message', {
+        await fetch('https://tandem-yq99.onrender.com/send-message', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
