@@ -77,13 +77,7 @@ header {
 .subtitle2 {
     font-size: 12px;
     color: #919191;
-    
 }
-
-/*CSS FOR ADDING SETTING UP PROFILE */
-
-/*CSS FOR ADDING SETTING UP PROFILE */
-
 
 /* ===== HEADER ===== */
 .profile-header-ui {
@@ -108,7 +102,7 @@ header {
 }
 .profile-card-ui {
     background: #fff;
-    width: 420px;
+    width: 500px;
     padding: 30px;
     border-radius: 12px;
     text-align: left;
@@ -177,51 +171,36 @@ header {
     font-size: 14px;
 }
 
+/* ===== GRADE SELECT ===== */
+.grade-select-wrapper {
+    width: 100%;
+    margin-bottom: 20px;
+}
+.grade-select {
+    width: 100%;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    font-family: 'Baloo 2', sans-serif;
+    background: #fff;
+    cursor: pointer;
+}
+.grade-select:focus {
+    outline: none;
+    border-color: #38b6ff;
+}
+
 /* ===== LABELS LEFT-ALIGNED ===== */
 .profile-label-ui {
     text-align: left;
-    width: 85%;
+    width: 100%;
     font-weight: 900;
     color: #38b6ff; 
     font-size: 20px;
     font-family: 'Baloo 2', sans-serif;
-}
-
-/* ===== TAG INPUT BOX ===== */
-.profile-tag-input-box-ui {
-    width: 100%;
-    text-align: left;  
-    position: relative;
-}
-.profile-tag-input-box-ui input {
-    border: none;
-    outline: none;
-    width: 100%;
-    padding: 6px 0;
-}
-
-/* ===== TAGS ===== */
-.profile-tags-ui {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 2px;
-}
-.profile-tag-ui {
-    background: #f0f0f0;
-    border: 1px solid #38b6ff;
-    color: #333;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-.profile-tag-remove-ui {
-    cursor: pointer;
-    font-weight: bold;
-    color: #38b6ff;
+    display: block;
+    margin-bottom: 8px;
 }
 
 /* ===== BUTTON ===== */
@@ -242,39 +221,6 @@ header {
     font-family: 'Baloo 2', sans-serif;
 }
 .profile-action-btn-ui:hover { background: #2a96d1; }
-
-/* ===== DROPDOWN ===== */
-.profile-dropdown-ui {
-  display: none;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(100% + 4px);
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  z-index: 10;
-  max-height: 180px;
-  overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  position: absolute;
-  top: calc(100% + 4px);
-}
-.profile-dropdown-item-ui {
-  padding: 8px 12px;
-  font-size: 13px;
-  color: #4b4b4b;
-  cursor: pointer;
-  border-radius: 6px;
-  margin: 2px 4px;
-}
-.profile-dropdown-item-ui:hover,
-.profile-dropdown-item-ui.active {
-  background: #f0f0f0;
-  color: #38b6ff;
-}
-
-/* Add these styles to your existing style.css */
 
 /* ===== MULTI-SELECT DROPDOWN STYLES ===== */
 .custom-select-wrapper {

@@ -7,50 +7,43 @@
   <link rel="stylesheet" href="styles-dashboard.css" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-@import url('https://fonts.googleapis.com/css2?family=Baloo+Bhaina+2:wght@400..800&display=swap');
-
-</style>
-
 </head>
 <body>
 
 <div class="wrap">
 
   <div class="sidebar">
-    <div class="logo" onclick="window.location.href='dashboard.html'"">Tandem</div>
+    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
 
     <div class="nav-item active">
-    <img src="/icons/home.png" alt="home" class="nav-icon">
-    HOME
+      <img src="/icons/home.png" alt="home" class="nav-icon">
+      <span>HOME</span>
     </div>
 
-    <div class="nav-item">
-      <img src="/icons/help.png" alt="home" class="nav-icon">
-      MENTORS
+    <div class="nav-item" onclick="window.location.href='mentors.html'">
+      <img src="/icons/help.png" alt="mentors" class="nav-icon">
+      <span>MENTORS</span>
     </div>
 
-    <div class="nav-item" onclick="window.location.href='profile.html'" style="cursor:pointer;">
-      <img src="/icons/profile.png" alt="home" class="nav-icon">
-      PROFILE
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <img src="/icons/profile.png" alt="profile" class="nav-icon">
+      <span>PROFILE</span>
     </div>
 
-    <div class="nav-item">
-      <img src="/icons/other.png" alt="home" class="nav-icon">
-      ABOUT US
+    <div class="nav-item" onclick="window.location.href='messages.html'">
+      <img src="/icons/message.png" alt="messages" class="nav-icon">
+      <span>MESSAGES</span>
     </div>
 
-    <div class="nav-item">
-      <img src="/icons/message.png" alt="home" class="nav-icon">
-      MESSAGES
+    <div class="nav-item" onclick="window.location.href='ledger.html'">
+      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
+      <span>LEDGER</span>
     </div>
 
-    <div class="nav-item logout-btn" id="logoutBtn" title="Log out">
-      <img src="/icons/logout.png" alt="home" class="nav-icon">
-      LOGOUT
+    <div class="nav-item logout-btn" id="logoutBtn">
+      <img src="/icons/logout.png" alt="logout" class="nav-icon">
+      <span>LOGOUT</span>
     </div>
-
   </div>
 
   <div class="main">
@@ -62,8 +55,7 @@
           <img src="/icons/crypto.png" alt="crypto">
         </div>
       </div>
-      <span id="todayRewardAmount" style="display: none;">5</span>
-      <img src="/icons/bell.png" alt="crypto" class="mini-coin">
+      <img src="/icons/bell.png" alt="bell" class="mini-coin">
     </div>
 
     <div class="profile-header">
@@ -81,90 +73,40 @@
           <div class="profile-name" id="profileUsername">LOADING...</div>
           <div class="profile-rating"><span class="rating-star">★</span>0.0</div>
         </div>
-
         <div class="profile-email" id="profileEmail" style="font-size:18px; color:#aaa; margin-bottom:4px; font-family: 'Baloo 2', sans-serif;"></div>
-
-        <div class="progress-bar"><div class="progress-fill"></div></div>
-
         <div class="profile-credits"><span id="totalCredits">5</span> Credits</div>
       </div>
     </div>
 
-    <div class="section-title">Daily Log-in</div>
-    <div class="section-sub">Log-in every day to earn extra credits.</div>
-
-     
-
-    <div class="login-grid">
-
-      <div class="day-card" data-day="1" data-reward="1">
-        <div class="day-label">Mon</div>
-        <div class="day-reward">+1 
-          <div class="mini-coin">
-            <img src="/icons/crypto.png" alt="crypto">
-          </div>
-        </div>
-      </div>
-
-      <div class="day-card" data-day="2" data-reward="2">
-        <div class="day-label">Tues</div>
-        <div class="day-reward">+2 
-          <div class="mini-coin">
-            <img src="/icons/crypto.png" alt="crypto">
-          </div>
-        </div>
-      </div>
-
-      <div class="day-card" data-day="3" data-reward="1">
-        <div class="day-label">Wed</div>
-        <div class="day-reward">+1 
-          <div class="mini-coin">
-            <img src="/icons/crypto.png" alt="crypto">
-          </div>
-        </div>
-      </div>
-
-      <div class="day-card" data-day="4" data-reward="2">
-        <div class="day-label">Thurs</div>
-        <div class="day-reward">+2 
-          <div class="mini-coin">
-            <img src="/icons/crypto.png" alt="crypto">
-          </div>
-        </div>
-      </div>
-
-      <div class="day-card" data-day="5" data-reward="1">
-        <div class="day-label">Fri</div>
-        <div class="day-reward">+1 
-          <div class="mini-coin">
-            <img src="/icons/crypto.png" alt="crypto">
-          </div>
-        </div>
-      </div>
-
-      <div class="day-card" data-day="6" data-reward="2">
-        <div class="day-label">Sat</div>
-        <div class="day-reward">+2 
-          <div class="mini-coin">
-            <img src="/icons/crypto.png" alt="crypto">
-          </div>
-        </div>
-      </div>
-
-      <div class="day-card" data-day="0" data-reward="5">
-        <div class="day-label">Sun</div>
-        <div class="day-reward">+5 
-          <div class="mini-coin">
-            <img src="/icons/crypto.png" alt="crypto">
-          </div>
-        </div>
-      </div>
-
+    <div class="welcome-section">
+      <div class="section-title">Welcome to Tandem!</div>
+      <div class="section-sub">Connect with mentors, earn credits, and grow together.</div>
     </div>
 
+    <div class="quick-actions">
+      <div class="action-card" onclick="window.location.href='mentors.html'">
+        <div class="action-icon">🎯</div>
+        <div class="action-title">Find Mentors</div>
+        <div class="action-desc">Swipe right to connect with mentors who match your goals</div>
+      </div>
+      <div class="action-card" onclick="window.location.href='profile.html'">
+        <div class="action-icon">👤</div>
+        <div class="action-title">Complete Profile</div>
+        <div class="action-desc">Update your skills and learning preferences</div>
+      </div>
+      <div class="action-card" onclick="window.location.href='messages.html'">
+        <div class="action-icon">💬</div>
+        <div class="action-title">Messages</div>
+        <div class="action-desc">Chat with your connected mentors</div>
+      </div>
+    </div>
 
-
-
+    <!-- Pending Requests Section for Tutors -->
+    <div id="pendingRequestsSection" class="pending-section" style="display:none;">
+      <div class="section-title">📋 Pending Connection Requests</div>
+      <div class="section-sub">Learners want to connect with you</div>
+      <div id="pendingRequestsList" class="pending-list"></div>
+    </div>
 
     <div class="terms-section">
       <div class="section-title">Quick Guide</div>
@@ -181,23 +123,13 @@
 
       <div class="term-item">
         <div class="term-icon">
-          <img src="/icons/rating.png" alt="crypto" class="term-coin">
+          <img src="/icons/rating.png" alt="rating" class="term-coin">
         </div>
-
-
         <div class="term-text">
           <strong>Rating</strong>
           <p>At the end of each session, learners rate their mentors, showing how satisfied they were with the guidance received.</p>
         </div>
       </div>
-    </div>
-
-    <div class="find-mentors">
-      <div class="find-header">
-        <div class="section-title no-margin">FIND MENTORS</div>
-        <button class="btn-explore">Explore Mentors</button>
-      </div>
-      <div class="find-sub">Browse available mentors and book a session.</div>
     </div>
 
     <div class="upcoming-section">
@@ -219,13 +151,6 @@
       </div>
     </div>
 
-    <div class="message-section">
-      <div class="up-heading">Message</div>
-      <div class="msg-box">
-        <div class="msg-empty">Chat box is empty.</div>
-      </div>
-    </div>
-
     <div class="about">About Tandem</div>
 
   </div>
@@ -234,6 +159,5 @@
 <div id="toast" class="toast"></div>
 
 <script src="dashboard.js"></script>
-
 </body>
 </html>

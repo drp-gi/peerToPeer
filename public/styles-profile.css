@@ -20,9 +20,8 @@
   font-weight: 700; 
   font-size: 22px;
   margin-bottom: 16px;
+  cursor: pointer;
 }
-
-
 
 /* ============================================================
    styles-profile.css  — Profile page styles
@@ -59,7 +58,6 @@
   margin-bottom: 20px;
   background: #fff;
 }
-
 
 /* Left section */
 .pf-left {
@@ -435,6 +433,7 @@
   transition: background 0.2s;
 }
 .ef-btn-save:hover { background: #1fa0be; }
+
 /* ── GRADE LEVEL GRID ── */
 .ef-label-sub {
   font-size: 11px;
@@ -521,4 +520,25 @@
   font-size: 11px;
   font-weight: 700;
   margin-right: 4px;
+}
+
+.toast {
+  position: fixed;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  transition: bottom 0.4s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.toast.toast-show {
+  bottom: 30px;
 }

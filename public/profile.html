@@ -7,85 +7,68 @@
 
   <link rel="stylesheet" href="styles-dashboard.css"/>
   <link rel="stylesheet" href="styles-profile.css" />
-   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-@import url('https://fonts.googleapis.com/css2?family=Baloo+Bhaina+2:wght@400..800&display=swap');
-
-</style>
 </head>
 <body>
 
 <div class="wrap">
 
-  <!-- SIDEBAR (same as dashboard) -->
   <div class="sidebar">
     <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
 
     <div class="nav-item" onclick="window.location.href='dashboard.html'">
-    <img src="/icons/home.png" alt="home" class="nav-icon">
-    HOME
+      <img src="/icons/home.png" alt="home" class="nav-icon">
+      <span>HOME</span>
     </div>
 
-    <div class="nav-item">
-      <img src="/icons/help.png" alt="home" class="nav-icon">
-      MENTORS
+    <div class="nav-item" onclick="window.location.href='mentors.html'">
+      <img src="/icons/help.png" alt="mentors" class="nav-icon">
+      <span>MENTORS</span>
     </div>
 
-    <div class="nav-item active" onclick="window.location.href='profile.html'" style="cursor:pointer;">
-      <img src="/icons/profile.png" alt="home" class="nav-icon">
-      PROFILE
+    <div class="nav-item active" onclick="window.location.href='profile.html'">
+      <img src="/icons/profile.png" alt="profile" class="nav-icon">
+      <span>PROFILE</span>
     </div>
 
-    <div class="nav-item">
-      <img src="/icons/other.png" alt="home" class="nav-icon">
-      ABOUT US
+    <div class="nav-item" onclick="window.location.href='messages.html'">
+      <img src="/icons/message.png" alt="messages" class="nav-icon">
+      <span>MESSAGES</span>
     </div>
 
-    <div class="nav-item">
-      <img src="/icons/message.png" alt="home" class="nav-icon">
-      MESSAGES
+    <div class="nav-item" onclick="window.location.href='ledger.html'">
+      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
+      <span>LEDGER</span>
     </div>
 
-    <div class="nav-item logout-btn" id="logoutBtn" title="Log out">
-      <img src="/icons/logout.png" alt="home" class="nav-icon">
-      LOGOUT
+    <div class="nav-item logout-btn" id="logoutBtn">
+      <img src="/icons/logout.png" alt="logout" class="nav-icon">
+      <span>LOGOUT</span>
     </div>
-
   </div>
 
-
-  <!-- MAIN CONTENT -->
   <div class="main">
 
-    <!-- TOPBAR -->
     <div class="topbar">
       <div class="credits-badge">
         <span id="topCreditsBadge">5</span>
-        <div class="coin"><span>$</span></div>
+        <div class="coin">
+          <img src="/icons/crypto.png" alt="crypto">
+        </div>
       </div>
-      <svg class="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
+      <img src="/icons/bell.png" alt="bell" class="mini-coin">
     </div>
 
-    <!-- ========== PROFILE PAGE CONTENT ========== -->
-
-    <!-- VIEW MODE -->
     <div id="viewMode">
 
       <div class="pg-title">PROFILE</div>
       <div class="pg-subtitle">Manage your information, track your progress, and showcase your expertise.</div>
 
-      <!-- Profile Card -->
       <div class="pf-card">
 
-        <!-- Left: avatar + name + edit button -->
         <div class="pf-left">
           <div class="pf-avatar" id="pfAvatar">
-            <!-- filled by JS -->
             <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="30" cy="22" r="13" fill="#a0c4d8"/>
               <ellipse cx="30" cy="52" rx="20" ry="14" fill="#a0c4d8"/>
@@ -105,10 +88,8 @@
           </button>
         </div>
 
-        <!-- Divider -->
         <div class="pf-divider"></div>
 
-        <!-- Right: stats -->
         <div class="pf-stats">
           <div class="stat-item">
             <div class="stat-icon stat-blue">
@@ -136,32 +117,26 @@
           </div>
 
           <div class="stat-item">
-            <div class="stat-icon stat-orange">
-              🔥
-            </div>
+            <div class="stat-icon stat-orange">🔥</div>
             <div class="stat-number">0</div>
-            <div class="stat-label">Day Streak</div>
-            <div class="stat-sub">Keep it up!</div>
+            <div class="stat-label">Sessions</div>
+            <div class="stat-sub">Mentored</div>
           </div>
         </div>
 
       </div>
 
-      <!-- Tabs -->
       <div class="pf-tabs">
         <div class="pf-tab active">Overview</div>
       </div>
 
-      <!-- Overview Grid -->
       <div class="overview-grid">
 
-        <!-- About Me -->
         <div class="ov-box">
           <div class="ov-title">About Me</div>
           <div class="ov-content" id="viewBio">Edit caption.</div>
         </div>
 
-        <!-- Achievements -->
         <div class="ov-box">
           <div class="ov-title-row">
             <div class="ov-title">Achievements</div>
@@ -170,48 +145,35 @@
           <div class="ov-content muted" id="pfAchievements">No achievements yet.</div>
         </div>
 
-        <!-- Skills -->
         <div class="ov-box ov-full">
           <div class="ov-title">Skills</div>
-          <div class="skill-tags" id="viewSkills">
-            <!-- filled by JS -->
-          </div>
+          <div class="skill-tags" id="viewSkills"></div>
         </div>
 
-        <!-- Growth Subjects -->
         <div class="ov-box ov-full">
           <div class="ov-title-row">
             <div class="ov-title">Growth Subjects</div>
             <span class="grade-badge" id="viewGradeBadge" style="display:none;"></span>
           </div>
           <div class="ov-subtitle" id="viewGradeLabel" style="font-size:12px;color:#aaa;margin-bottom:10px;"></div>
-          <div class="skill-tags" id="viewGrowth">
-            <!-- filled by JS -->
-          </div>
+          <div class="skill-tags" id="viewGrowth"></div>
         </div>
 
       </div>
 
     </div>
-    <!-- END VIEW MODE -->
 
-
-    <!-- ========== EDIT MODE ========== -->
     <div id="editMode" style="display:none;">
 
       <div class="pg-title">PROFILE</div>
       <div class="pg-subtitle-sm">Edit Profile</div>
 
-      <!-- Edit avatar -->
       <div class="edit-avatar-wrap">
-        <div class="edit-avatar" id="editAvatar">
-          <!-- filled by JS -->
-        </div>
+        <div class="edit-avatar" id="editAvatar"></div>
         <input type="file" id="editPicInput" accept="image/*" style="display:none;">
         <div class="edit-handle" id="editHandle">@username</div>
       </div>
 
-      <!-- Edit form -->
       <div class="edit-form">
 
         <div class="ef-group">
@@ -224,46 +186,8 @@
           <input type="text" class="ef-input" id="editBio" placeholder="Enter Bio">
         </div>
 
-        <!-- Skills multi-select -->
         <div class="ef-group">
-          <label class="ef-label">My Skills</label>
-          <div class="ef-select-wrap" id="skillsWrap">
-            <div class="ef-select-trigger" id="editSkillsTrigger">
-              <span>Your Skills</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-            <div class="ef-dropdown" id="editSkillsDropdown">
-              <input type="text" class="ef-search" id="editSkillsSearch" placeholder="Search skills...">
-              <div class="ef-options" id="editSkillsOptions"></div>
-            </div>
-            <div class="ef-tags" id="editSkillsTags"></div>
-          </div>
-        </div>
-
-        <!-- Learning Goals multi-select -->
-        <div class="ef-group">
-          <label class="ef-label">Growth Subjects <span class="ef-label-sub">— areas you want to improve</span></label>
-          <div class="ef-select-wrap" id="growthWrap">
-            <div class="ef-select-trigger" id="editGrowthTrigger">
-              <span id="editGrowthPlaceholder">Select subjects...</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-            <div class="ef-dropdown" id="editGrowthDropdown">
-              <input type="text" class="ef-search" id="editGrowthSearch" placeholder="Search growth areas...">
-              <div class="ef-options" id="editGrowthOptions"></div>
-            </div>
-            <div class="ef-tags" id="editGrowthTags"></div>
-          </div>
-          <div class="ef-hint">💡 These help us match you with the right mentors.</div>
-        </div>
-
-        <!-- Grade Level -->
-        <div class="ef-group">
-          <label class="ef-label">Grade Level <span class="ef-label-sub">— helps match you correctly</span></label>
+          <label class="ef-label">Grade Level</label>
           <div class="grade-grid" id="gradeGrid">
             <div class="grade-card" data-grade="elementary">
               <div class="grade-icon">🎒</div>
@@ -300,8 +224,43 @@
         </div>
 
         <div class="ef-group">
+          <label class="ef-label">My Skills</label>
+          <div class="ef-select-wrap" id="skillsWrap">
+            <div class="ef-select-trigger" id="editSkillsTrigger">
+              <span>Your Skills</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            <div class="ef-dropdown" id="editSkillsDropdown">
+              <input type="text" class="ef-search" id="editSkillsSearch" placeholder="Search skills...">
+              <div class="ef-options" id="editSkillsOptions"></div>
+            </div>
+            <div class="ef-tags" id="editSkillsTags"></div>
+          </div>
+        </div>
+
+        <div class="ef-group">
+          <label class="ef-label">Growth Subjects <span class="ef-label-sub">— areas you want to improve</span></label>
+          <div class="ef-select-wrap" id="growthWrap">
+            <div class="ef-select-trigger" id="editGrowthTrigger">
+              <span id="editGrowthPlaceholder">Select subjects...</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            <div class="ef-dropdown" id="editGrowthDropdown">
+              <input type="text" class="ef-search" id="editGrowthSearch" placeholder="Search growth areas...">
+              <div class="ef-options" id="editGrowthOptions"></div>
+            </div>
+            <div class="ef-tags" id="editGrowthTags"></div>
+          </div>
+          <div class="ef-hint">💡 These help us match you with the right mentors.</div>
+        </div>
+
+        <div class="ef-group">
           <label class="ef-label">Achievements</label>
-            <input type="text" class="ef-input" id="editAchievements" placeholder="e.g. Certified Web Designer">
+          <input type="text" class="ef-input" id="editAchievements" placeholder="e.g. Certified Web Designer">
         </div>
         
         <div class="ef-actions">
@@ -311,7 +270,6 @@
 
       </div>
     </div>
-    <!-- END EDIT MODE -->
 
   </div>
 </div>

@@ -62,7 +62,7 @@ registerForm.onsubmit = async (e) => {
     }
 };
 
-// LOGIN - Loads credits from database
+// LOGIN
 loginForm.onsubmit = async (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
@@ -78,10 +78,8 @@ loginForm.onsubmit = async (e) => {
         const data = await res.json();
         
         if (data.success) {
-            // Clear any existing data
             localStorage.clear();
             
-            // Store user info in localStorage
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userName', data.name);
             localStorage.setItem('tandem_username', data.username || '');
@@ -90,28 +88,27 @@ loginForm.onsubmit = async (e) => {
             localStorage.setItem('tandem_skills', data.skills || '[]');
             localStorage.setItem('tandem_growth', data.growth || '[]');
             
-            // IMPORTANT: Store credits from database (this is the source of truth)
             const creditsFromDB = data.credits || 5;
-            console.log('🔐 Login - Credits from database:', creditsFromDB);
             localStorage.setItem('tandem_credits', creditsFromDB);
-            localStorage.setItem('tandem_last_login_date', data.last_login_date || '');
             
             if (data.profile_pic) {
                 localStorage.setItem('tandem_profile_pic', data.profile_pic);
-            }
-            if (data.skills && data.skills.length) {
-                localStorage.setItem('tandem_skills', JSON.stringify(data.skills));
-            }
-            if (data.growth && data.growth.length) {
-                localStorage.setItem('tandem_growth', JSON.stringify(data.growth));
             }
             if (data.grade_level) {
                 localStorage.setItem('tandem_grade', data.grade_level);
             }
             
-            alert(`Welcome back, ${data.name}! You have ${creditsFromDB} credits.`);
-            authModal.style.display = 'none';
-            window.location.href = 'dashboard.html';
+            // Check if profile is completed
+            const hasSkills = data.skills && JSON.parse(data.skills || '[]').length > 0;
+            const hasGrowth = data.growth && JSON.parse(data.growth || '[]').length > 0;
+            const hasGrade = data.grade_level;
+            
+            if (hasSkills && hasGrowth && hasGrade) {
+                localStorage.setItem('profile_completed', 'true');
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = 'complete-profile.html';
+            }
         } else {
             alert(`❌ ${data.message || 'Login failed'}`);
         }

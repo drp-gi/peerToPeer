@@ -37,31 +37,18 @@ function getCredits() {
   return parseInt(stored, 10);
 }
 
-// Update credits in localStorage AND database
 async function setCredits(amount) {
-  console.log('Setting credits to:', amount);
   localStorage.setItem('tandem_credits', String(amount));
   updateCreditsDisplay(amount);
   
-  // Save to backend immediately when credits change
   const email = localStorage.getItem('userEmail');
   if (email) {
     try {
-      const response = await fetch('http://localhost:3000/update-credits', {
+      await fetch('http://localhost:3000/update-credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
-          credits: amount, 
-          last_login_date: localStorage.getItem('tandem_last_login_date') || '' 
-        })
+        body: JSON.stringify({ email, credits: amount })
       });
-      const data = await response.json();
-      if (data.success) {
-        console.log('✅ Credits saved to database:', amount);
-      } else {
-        console.error('Failed to save credits to database');
-      }
     } catch(err) {
       console.error('Error saving credits:', err);
     }
@@ -71,97 +58,25 @@ async function setCredits(amount) {
 function updateCreditsDisplay(amount) {
   const totalEl = document.getElementById('totalCredits');
   if (totalEl) totalEl.textContent = amount;
-  
   const topBadgeEl = document.getElementById('topCreditsBadge');
   if (topBadgeEl) topBadgeEl.textContent = amount;
 }
 
-// Daily login system
-const REWARD_MAP = { 0: 5, 1: 1, 2: 2, 3: 1, 4: 2, 5: 1, 6: 2 };
-
-function getTodayPH() {
-  const now = new Date();
-  const phDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-  const phDayIndex = new Date(
-    new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' })
-  ).getDay();
-  return { dateStr: phDateStr, dayIndex: phDayIndex };
-}
-
-function setupDailyLogin() {
-  const { dateStr, dayIndex } = getTodayPH();
-  const lastClaimed = localStorage.getItem('tandem_last_login_date');
-  const alreadyClaimed = (lastClaimed === dateStr);
-
-  const todayReward = REWARD_MAP[dayIndex];
-  const todayCreditsEl = document.getElementById('todayRewardAmount');
-  if (todayCreditsEl) todayCreditsEl.textContent = todayReward;
-
-  const dayCards = document.querySelectorAll('.day-card');
-  dayCards.forEach(card => {
-    const cardDay = parseInt(card.getAttribute('data-day'), 10);
-
-    if (cardDay === dayIndex) {
-      card.classList.add('day-today');
-      if (alreadyClaimed) {
-        card.classList.add('day-claimed');
-      }
-    }
-
-    if (cardDay === dayIndex && !alreadyClaimed) {
-      card.classList.add('day-clickable');
-      card.addEventListener('click', () => claimDailyLogin(dateStr, todayReward));
-    } else if (alreadyClaimed && cardDay === dayIndex) {
-      card.title = 'Already claimed today!';
-    }
-  });
-}
-
-async function claimDailyLogin(dateStr, reward) {
-  console.log('Claiming daily login - Reward:', reward);
-  const current = getCredits();
-  const newTotal = current + reward;
-  console.log(`Current credits: ${current}, New total: ${newTotal}`);
+// Check if profile is completed
+function checkProfileCompletion() {
+  const profileCompleted = localStorage.getItem('profile_completed') === 'true';
+  const hasSkills = localStorage.getItem('tandem_skills') && JSON.parse(localStorage.getItem('tandem_skills') || '[]').length > 0;
+  const hasGrowth = localStorage.getItem('tandem_growth') && JSON.parse(localStorage.getItem('tandem_growth') || '[]').length > 0;
+  const hasGrade = localStorage.getItem('tandem_grade');
   
-  await setCredits(newTotal);
-  localStorage.setItem('tandem_last_login_date', dateStr);
-  
-  // Also save the last_login_date to database
-  const email = localStorage.getItem('userEmail');
-  if (email) {
-    try {
-      await fetch('http://localhost:3000/update-credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
-          credits: newTotal, 
-          last_login_date: dateStr 
-        })
-      });
-    } catch(err) {
-      console.error('Error saving last login date:', err);
-    }
+  if (!profileCompleted || !hasSkills || !hasGrowth || !hasGrade) {
+    window.location.href = 'complete-profile.html';
+    return false;
   }
-
-  const todayCard = document.querySelector('.day-card.day-today');
-  if (todayCard) {
-    todayCard.classList.add('day-claimed');
-    todayCard.classList.remove('day-clickable');
-  }
-
-  showToast(`+${reward} credit${reward > 1 ? 's' : ''} added! Total: ${newTotal} credits 🎉`);
+  return true;
 }
 
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add('toast-show');
-  setTimeout(() => toast.classList.remove('toast-show'), 3500);
-}
-
-// Logout - saves credits to database before clearing session
+// Logout
 async function setupLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
   if (!logoutBtn) return;
@@ -172,32 +87,19 @@ async function setupLogout() {
 
     const email = localStorage.getItem('userEmail');
     const currentCredits = getCredits();
-    const lastLoginDate = localStorage.getItem('tandem_last_login_date');
-    
-    console.log('Logging out - Final credits to save:', currentCredits);
-    
-    // Save credits to database before logout
+
     if (email && currentCredits) {
       try {
-        const response = await fetch('http://localhost:3000/update-credits', {
+        await fetch('http://localhost:3000/update-credits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            email, 
-            credits: currentCredits, 
-            last_login_date: lastLoginDate || '' 
-          })
+          body: JSON.stringify({ email, credits: currentCredits })
         });
-        const data = await response.json();
-        if (data.success) {
-          console.log('✅ Credits saved successfully before logout');
-        }
       } catch(err) {
         console.error('Error saving credits:', err);
       }
     }
-    
-    // Small delay to ensure database update completes
+
     setTimeout(() => {
       localStorage.clear();
       window.location.href = 'index.html';
@@ -205,7 +107,7 @@ async function setupLogout() {
   });
 }
 
-// Load credits from database on page load
+// Load credits from database
 async function loadCreditsFromDatabase() {
   const email = localStorage.getItem('userEmail');
   if (!email) return false;
@@ -220,14 +122,19 @@ async function loadCreditsFromDatabase() {
     const data = await response.json(); 
     if (data.success) {
       const dbCredits = data.credits || 5;
-      console.log('📥 Loading credits from database:', dbCredits);
       localStorage.setItem('tandem_credits', dbCredits);
-      localStorage.setItem('tandem_last_login_date', data.last_login_date || '');
       updateCreditsDisplay(dbCredits);
       localStorage.setItem('tandem_bio', data.bio || '');
       localStorage.setItem('tandem_achievements', data.achievements || '');
       localStorage.setItem('tandem_skills', data.skills || '[]');
       localStorage.setItem('tandem_growth', data.growth || '[]');
+      localStorage.setItem('tandem_grade', data.grade_level || '');
+      
+      if (data.skills && JSON.parse(data.skills || '[]').length > 0 &&
+          data.growth && JSON.parse(data.growth || '[]').length > 0 &&
+          data.grade_level) {
+        localStorage.setItem('profile_completed', 'true');
+      }
       return true;
     }
   } catch (error) {
@@ -235,6 +142,133 @@ async function loadCreditsFromDatabase() {
   }
   return false;
 }
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add('toast-show');
+  setTimeout(() => toast.classList.remove('toast-show'), 3500);
+}
+
+// Load pending requests for tutor view
+async function loadPendingRequests() {
+    const email = localStorage.getItem('userEmail');
+    if (!email) return;
+    
+    try {
+        const response = await fetch('http://localhost:3000/get-pending-requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        
+        const section = document.getElementById('pendingRequestsSection');
+        const container = document.getElementById('pendingRequestsList');
+        
+        if (data.requests && data.requests.length > 0) {
+            section.style.display = 'block';
+            container.innerHTML = data.requests.map(req => `
+                <div class="pending-card">
+                    <div class="pending-avatar">
+                        ${req.learner_profile_pic ? 
+                            `<img src="${req.learner_profile_pic}" alt="">` :
+                            `<div class="avatar-placeholder">${(req.learner_name || 'U').charAt(0).toUpperCase()}</div>`
+                        }
+                    </div>
+                    <div class="pending-info">
+                        <div class="pending-name">${escapeHtml(req.learner_name || req.learner_username)}</div>
+                        <div class="pending-subject">📚 Wants to learn: ${escapeHtml(req.subject || 'General')}</div>
+                        <div class="pending-message">💬 ${escapeHtml(req.message || 'No message')}</div>
+                        <div class="pending-grade">🎓 Grade: ${escapeHtml(req.learner_grade || 'Not specified')}</div>
+                    </div>
+                    <div class="pending-actions">
+                        <button class="btn-accept" data-request-id="${req.id}" data-learner-email="${req.learner_email}">✓ Accept</button>
+                        <button class="btn-reject" data-request-id="${req.id}">✗ Reject</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to buttons
+            document.querySelectorAll('.btn-accept').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const requestId = btn.getAttribute('data-request-id');
+                    const learnerEmail = btn.getAttribute('data-learner-email');
+                    acceptRequest(requestId, learnerEmail);
+                });
+            });
+            
+            document.querySelectorAll('.btn-reject').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const requestId = btn.getAttribute('data-request-id');
+                    rejectRequest(requestId);
+                });
+            });
+        } else {
+            section.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading pending requests:', error);
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+async function acceptRequest(requestId, learnerEmail) {
+    const tutorEmail = localStorage.getItem('userEmail');
+    
+    const confirmed = confirm('Accept this connection request? The learner will spend 1 credit when you complete the session.');
+    if (!confirmed) return;
+    
+    try {
+        const response = await fetch('http://localhost:3000/accept-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId, tutorEmail, learnerEmail })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('✅ Connection accepted! You can now message each other.');
+            loadPendingRequests();
+        } else {
+            showToast(data.message || 'Failed to accept request');
+        }
+    } catch (error) {
+        console.error('Error accepting request:', error);
+        showToast('Error accepting request');
+    }
+}
+
+async function rejectRequest(requestId) {
+    const confirmed = confirm('Reject this connection request?');
+    if (!confirmed) return;
+    
+    try {
+        await fetch('http://localhost:3000/reject-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId })
+        });
+        showToast('Request rejected');
+        loadPendingRequests();
+    } catch (error) {
+        console.error('Error rejecting request:', error);
+        showToast('Error rejecting request');
+    }
+}
+
+// Make functions global
+window.acceptRequest = acceptRequest;
+window.rejectRequest = rejectRequest;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -244,15 +278,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   
-  console.log('Dashboard loading for user:', userEmail);
-  
-  // Load credits from database first
   await loadCreditsFromDatabase();
   
+  if (!checkProfileCompletion()) {
+    return;
+  }
+  
   loadUserInfo();
-  const credits = getCredits();
-  console.log('Final credits displayed:', credits);
-  updateCreditsDisplay(credits);
-  setupDailyLogin();
+  updateCreditsDisplay(getCredits());
+  loadPendingRequests();  // <-- This loads pending connection requests
   setupLogout();
 });
