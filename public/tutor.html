@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="credit_sys_des.css">
+    <script src="credit_sys.js"></script>
+</head>
+<body>
+    <aside class="sidebar" style="border-right: 4px solid #27ae60;">
+        <div class="brand" style="color: #27ae60;">Tandem Tutor</div>
+        <nav class="sidebar-nav">
+            <ul><li class="active"><a href="#">Teaching Portal</a></li></ul>
+        </nav>
+    </aside>
+
+    <main class="content-area">
+        <header style="text-align: right; margin-bottom: 20px;">
+            <span class="credit-badge"><span class="credit-count">0</span> <span class="coin">$</span></span>
+        </header>
+
+        <section class="card">
+            <h2>Live Requests</h2>
+            <div id="tutor-action-area">
+                </div>
+        </section>
+    </main>
+
+    <script>
+        function renderUI() {
+            // Update Credits
+            document.querySelectorAll('.credit-count').forEach(el => el.innerText = getCredits());
+
+            const status = getStatus();
+            const area = document.getElementById('tutor-action-area');
+
+            if (status === 'inactive') {
+                area.innerHTML = '<p style="color:#7f8c8d;">Waiting for new students...</p>';
+            } 
+            else if (status === 'pending') {
+                area.innerHTML = `
+                    <div style="background:#fff3cd; padding:20px; border-radius:8px; border:1px solid #ffeeba;">
+                        <strong>New Session Available!</strong>
+                        <p>A student has requested help.</p>
+                        <button class="btn-primary" style="background:#27ae60" onclick="accept()">Accept & Start</button>
+                    </div>`;
+            } 
+            else if (status === 'active') {
+                area.innerHTML = `
+                    <div style="background:#d4edda; padding:20px; border-radius:8px;">
+                        <strong style="color:#155724;">Session Active</strong>
+                        <p>You are currently tutoring. Click below when finished.</p>
+                        <button class="btn-primary" onclick="complete()">Finish Session & Collect Credit</button>
+                    </div>`;
+            }
+        }
+
+        function accept() {
+            updateSystem(null, 'active');
+        }
+
+        function complete() {
+            // Tutor gets the credit only after finishing
+            updateSystem(getCredits() + 1, 'inactive');
+            alert("Session archived. 1 Credit added to your balance.");
+        }
+    </script>
+</body>
+</html>

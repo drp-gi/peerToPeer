@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="credit_sys_des.css">
+    <script src="credit_sys.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">Tandem Student</div>
+        <nav class="sidebar-nav">
+            <ul><li class="active"><a href="#">Dashboard</a></li></ul>
+        </nav>
+    </aside>
+
+    <main class="content-area">
+        <header style="text-align: right; margin-bottom: 20px;">
+            <span class="credit-badge"><span class="credit-count">0</span> <span class="coin">$</span></span>
+        </header>
+
+        <section class="card" id="request-section">
+            <h2>Need Help?</h2>
+            <p>1 Credit = 30 Minutes of tutoring.</p>
+            <button class="btn-primary" id="book-btn" onclick="requestTutor()">Book a Session</button>
+        </section>
+
+        <section class="card">
+            <h2>Current Status</h2>
+            <div id="status-container">
+                <span class="status-tag">Inactive</span>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function requestTutor() {
+            if (getCredits() >= 1) {
+                updateSystem(getCredits() - 1, 'pending');
+            } else {
+                alert("Out of credits!");
+            }
+        }
+
+        function renderUI() {
+            // Update Credits
+            document.querySelectorAll('.credit-count').forEach(el => el.innerText = getCredits());
+
+            const status = getStatus();
+            const container = document.getElementById('status-container');
+            const bookBtn = document.getElementById('book-btn');
+
+            if (status === 'inactive') {
+                container.innerHTML = '<span class="status-tag">No Active Session</span>';
+                bookBtn.disabled = false;
+                bookBtn.innerText = "Book a Session";
+            } else if (status === 'pending') {
+                container.innerHTML = '<span class="status-tag pending">Finding a Tutor...</span>';
+                bookBtn.disabled = true;
+                bookBtn.innerText = "Request Sent";
+            } else if (status === 'active') {
+                container.innerHTML = '<span class="status-tag" style="background:#d4edda; color:#155724;">● Active Session in Progress</span>';
+                bookBtn.disabled = true;
+            }
+        }
+    </script>
+</body>
+</html>
