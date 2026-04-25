@@ -303,7 +303,7 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/complete-profile', {
+        const res = await fetch('https://tandem-yq99.onrender.com/complete-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

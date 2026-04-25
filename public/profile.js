@@ -380,7 +380,7 @@ async function saveProfile() {
 
   if (email) {
     try {
-      const res = await fetch('http://localhost:3000/complete-profile', {
+      const res = await fetch('https://tandem-yq99.onrender.com/complete-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -427,7 +427,7 @@ function setupLogout() {
     const credits      = getCredits();
     if (email) {
       try {
-        await fetch('http://localhost:3000/update-credits', {
+        await fetch('https://tandem-yq99.onrender.com/update-credits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, credits })
