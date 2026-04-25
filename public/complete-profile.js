@@ -38,7 +38,7 @@ profileInput.addEventListener("change", () => {
     reader.readAsDataURL(file);
 });
 
-// ========== MASTER LIST OF ALL ACADEMIC SUBJECTS ==========
+// MASTER LIST OF ALL ACADEMIC SUBJECTS
 const ALL_ACADEMIC_SUBJECTS = [
     // Mathematics
     "Algebra", "Geometry", "Trigonometry", "Calculus", "Statistics", "Probability", 
