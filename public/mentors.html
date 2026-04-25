@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tandem - Find Mentors (AI Matching)</title>
+  <link rel="stylesheet" href="styles-dashboard.css" />
+  <link rel="stylesheet" href="styles-mentors.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="sidebar">
+    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
+
+    <div class="nav-item" onclick="window.location.href='dashboard.html'">
+      <img src="/icons/home.png" alt="home" class="nav-icon">
+      <span>HOME</span>
+    </div>
+
+    <div class="nav-item active" onclick="window.location.href='mentors.html'">
+      <img src="/icons/help.png" alt="mentors" class="nav-icon">
+      <span>MENTORS</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <img src="/icons/profile.png" alt="profile" class="nav-icon">
+      <span>PROFILE</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='messages.html'">
+      <img src="/icons/message.png" alt="messages" class="nav-icon">
+      <span>MESSAGES</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='ledger.html'">
+      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
+      <span>LEDGER</span>
+    </div>
+
+    <div class="nav-item logout-btn" id="logoutBtn">
+      <img src="/icons/logout.png" alt="logout" class="nav-icon">
+      <span>LOGOUT</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="credits-badge">
+        <span id="topCreditsBadge">5</span>
+        <div class="coin">
+          <img src="/icons/crypto.png" alt="crypto">
+        </div>
+      </div>
+      <img src="/icons/bell.png" alt="bell" class="mini-coin">
+    </div>
+
+    <div class="pg-title">AI Matchmaking</div>
+    <div class="pg-subtitle">Swipe right on mentors you'd like to connect with, left to pass. Our AI finds the best matches based on your skills and learning goals.</div>
+
+    <!-- Search/Filter Bar -->
+    <div class="filter-section">
+      <div class="filter-group">
+        <label>🔍 Search by name or skill</label>
+        <input type="text" id="searchInput" class="filter-input" placeholder="Search mentors...">
+      </div>
+      <div class="filter-group">
+        <label>📊 Sort by</label>
+        <select id="sortSelect" class="filter-select-custom">
+          <option value="match">Highest Match (AI)</option>
+          <option value="rating">Highest Rated</option>
+          <option value="name">Name A-Z</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button id="showListViewBtn" class="filter-toggle-btn">📋 List View</button>
+      </div>
+    </div>
+
+    <!-- Tinder-style Swipe View (Default) -->
+    <div id="swipeView" class="swipe-view">
+      <div class="swipe-loading" id="swipeLoading">
+        <div class="spinner"></div>
+        <p>Finding your best matches...</p>
+      </div>
+      <div class="swipe-card-container" id="swipeCardContainer" style="display:none;">
+        <div class="swipe-card" id="swipeCard">
+          <div class="swipe-card-content">
+            <div class="swipe-avatar" id="swipeAvatar"></div>
+            <div class="swipe-name" id="swipeName"></div>
+            <div class="swipe-bio" id="swipeBio"></div>
+            <div class="swipe-skills" id="swipeSkills"></div>
+            <div class="swipe-match-badge" id="swipeMatchBadge"></div>
+          </div>
+          <div class="swipe-actions">
+            <button class="swipe-btn swipe-left" id="swipeLeftBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              PASS
+            </button>
+            <button class="swipe-btn swipe-right" id="swipeRightBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              CONNECT
+            </button>
+          </div>
+        </div>
+        <div class="swipe-counter">
+          <span id="swipeCounter">0</span> mentors remaining
+        </div>
+      </div>
+      <div class="swipe-empty" id="swipeEmpty" style="display:none;">
+        <div class="swipe-empty-icon">🎉</div>
+        <h3>No more matches!</h3>
+        <p>You've reviewed all available mentors. Check back later for new matches.</p>
+        <button class="btn-explore" id="refreshMatchesBtn">⟳ Refresh Matches</button>
+      </div>
+    </div>
+
+    <!-- List View (Alternative) -->
+    <div id="listView" class="list-view" style="display:none;">
+      <div class="mentors-container">
+        <div class="loading-spinner" id="listLoadingSpinner">
+          <div class="spinner"></div>
+          <p>Loading mentors...</p>
+        </div>
+        <div class="mentors-grid" id="mentorsGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="mentors.js"></script>
+</body>
+</html>

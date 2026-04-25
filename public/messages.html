@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tandem - Messages</title>
+  <link rel="stylesheet" href="styles-dashboard.css" />
+  <link rel="stylesheet" href="styles-messages.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="sidebar">
+    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
+
+    <div class="nav-item" onclick="window.location.href='dashboard.html'">
+      <img src="/icons/home.png" alt="home" class="nav-icon">
+      <span>HOME</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='mentors.html'">
+      <img src="/icons/help.png" alt="mentors" class="nav-icon">
+      <span>MENTORS</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <img src="/icons/profile.png" alt="profile" class="nav-icon">
+      <span>PROFILE</span>
+    </div>
+
+    <div class="nav-item active" onclick="window.location.href='messages.html'">
+      <img src="/icons/message.png" alt="messages" class="nav-icon">
+      <span>MESSAGES</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='ledger.html'">
+      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
+      <span>LEDGER</span>
+    </div>
+
+    <div class="nav-item logout-btn" id="logoutBtn">
+      <img src="/icons/logout.png" alt="logout" class="nav-icon">
+      <span>LOGOUT</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="credits-badge">
+        <span id="topCreditsBadge">5</span>
+        <div class="coin"><img src="/icons/crypto.png" alt="crypto"></div>
+      </div>
+    </div>
+
+    <div class="pg-title">Messages</div>
+    <div class="pg-subtitle">Chat with your connected peers</div>
+
+    <div class="chat-container">
+      <div class="connections-sidebar" id="connectionsSidebar">
+        <div class="connections-header">
+          <h3>Conversations</h3>
+          <p>People you're connected with</p>
+        </div>
+        <div class="connections-list" id="connectionsList">
+          <div class="loading-spinner"><div class="spinner"></div><p>Loading conversations...</p></div>
+        </div>
+      </div>
+      
+      <div class="chat-area" id="chatArea">
+        <div class="no-connection">
+          <div class="no-connection-icon">💬</div>
+          <h4>No conversation selected</h4>
+          <p>Select a conversation from the sidebar to start messaging</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="messages.js"></script>
+</body>
+</html>

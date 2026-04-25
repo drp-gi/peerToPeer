@@ -36,6 +36,19 @@
 
                 <input type="text" id="usernameInput" placeholder="Enter a username" required> 
 
+                <label class="profile-label-ui">Grade Level</label>
+                <div class="grade-select-wrapper">
+                    <select id="gradeLevelSelect" class="grade-select" required>
+                        <option value="">Select your grade level</option>
+                        <option value="elementary">🎒 Elementary (Grades 1–6)</option>
+                        <option value="junior_high">📚 Junior High (Grades 7–10)</option>
+                        <option value="senior_high">🎓 Senior High (Grades 11–12)</option>
+                        <option value="college">🏛️ College (Undergraduate)</option>
+                        <option value="postgrad">🔬 Post-Grad (Masters / PhD)</option>
+                        <option value="professional">💼 Professional (Working Adult)</option>
+                    </select>
+                </div>
+
                 <label class="profile-label-ui">My Skills</label>
                 <div class="custom-select-wrapper">
                     <div class="custom-select-trigger" id="skillsTrigger">
@@ -67,7 +80,7 @@
                 </div>
 
                 <button type="submit" class="profile-action-btn-ui">
-                    Proceed to Dashboard
+                    Complete Profile & Continue
                 </button>
 
             </form>

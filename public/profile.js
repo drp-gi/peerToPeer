@@ -1,40 +1,58 @@
 // ============================================================
 // profile.js  — All logic for profile.html
-// Handles: view mode, edit mode, multi-select dropdowns,
-//          saving changes to backend + localStorage, logout
 // ============================================================
 
-const SKILL_SUGGESTIONS = [
-  "Public Speaking","Leadership","Time Management","Confidence Building","Networking",
-  "Creative Writing","Content Writing","Copywriting","Emotional Intelligence","Critical Thinking",
-  "Problem Solving","Decision Making","Negotiation","Active Listening","Communication Skills",
-  "Teamwork","Collaboration","Research Skills","Reading Comprehension","Note-Taking",
-  "Academic Writing","Essay Writing","Analytical Thinking","Mathematical Reasoning","Scientific Thinking",
-  "Productivity","Goal Setting","Self-Discipline","Mindfulness","Adaptability","Responsibility",
-  "Initiative Taking","Foreign Language Learning","Music","Photography","Cooking","Fitness",
-  "Creative Thinking","Design Thinking","Content Creation","JavaScript","Python","TypeScript",
-  "Node.js","React","HTML & CSS","SQL","Git","Figma","UI/UX Design","Graphic Design",
-  "Video Editing","Photo Editing","SEO","Marketing","Data Analysis","Excel","Data Visualization",
-  "Basic AI Literacy","Exam Preparation","Memorization Techniques","Speed Reading",
-  "Class Participation","Group Project Management","Homework Planning","Research Paper Writing",
-  "Thesis Writing","Laboratory Skills","Citation (APA/MLA)","Time Management in Exams"
+// ========== MASTER LIST OF ALL ACADEMIC SUBJECTS ==========
+const ALL_ACADEMIC_SUBJECTS = [
+    // Mathematics
+    "Algebra", "Geometry", "Trigonometry", "Calculus", "Statistics", "Probability", 
+    "Arithmetic", "Pre-Calculus", "Linear Algebra", "Discrete Mathematics", "Number Theory",
+    
+    // Sciences
+    "Biology", "Chemistry", "Physics", "Earth Science", "Environmental Science", 
+    "Astronomy", "Anatomy", "Physiology", "Genetics", "Organic Chemistry", 
+    "Biochemistry", "Botany", "Zoology", "Marine Biology", "Ecology",
+    
+    // Computer Science & Technology
+    "Programming", "Python", "Java", "JavaScript", "C++", "HTML/CSS", "SQL", 
+    "Data Structures", "Algorithms", "Web Development", "App Development", 
+    "Cybersecurity", "Artificial Intelligence", "Machine Learning", "Data Science",
+    
+    // Language Arts & Literature
+    "Reading Comprehension", "Creative Writing", "Essay Writing", "Grammar", 
+    "Vocabulary", "Literature Analysis", "Poetry", "Journalism", "Public Speaking",
+    "Debate", "English", "Spanish", "French", "German", "Mandarin", "Japanese",
+    
+    // History & Social Studies
+    "World History", "US History", "European History", "Ancient Civilizations",
+    "Geography", "Political Science", "Economics", "Sociology", "Psychology",
+    "Philosophy", "Anthropology", "Archaeology", "Civics", "Government",
+    
+    // Business & Finance
+    "Accounting", "Finance", "Marketing", "Management", "Entrepreneurship",
+    "Business Law", "Microeconomics", "Macroeconomics", "Business Ethics",
+    
+    // Arts & Humanities
+    "Art History", "Visual Arts", "Drawing", "Painting", "Sculpture", "Digital Art",
+    "Music Theory", "Music History", "Film Studies", "Theater", "Dance",
+    
+    // Physical Education & Health
+    "Physical Education", "Health Sciences", "Nutrition", "Sports Science",
+    "First Aid", "Human Development", "Wellness",
+    
+    // Study & Academic Skills
+    "Research Methods", "Academic Writing", "Critical Thinking", "Problem Solving",
+    "Time Management", "Note Taking", "Test Preparation", "Study Strategies",
+    "Presentation Skills", "Group Collaboration", "Scientific Writing"
 ];
 
-const GROWTH_SUGGESTIONS = [
-  // Academic struggles
-  "Procrastination","Poor Time Management","Lack of Study Habits","Easily Distracted",
-  "Short Attention Span","Overthinking","Low Confidence","Public Speaking",
-  "Shyness in Class Participation","Weak Writing Skills","Poor Reading Comprehension",
-  "Difficulty Understanding Lessons","Poor Memory Retention","Exam Anxiety","Weak Listening Skills",
-  "Poor Communication Skills","Difficulty in Group Work","Avoiding Leadership Roles",
-  "Lack of Initiative","Peer Pressure Susceptibility","Overuse of Social Media",
-  "Poor Digital Discipline","Disorganized Notes and Files","Inconsistent Academic Performance",
-  // Life skills & interests
-  "Financial Literacy","Cooking","Fitness","Foreign Language","Music","Photography","Reading",
-  // Additional subjects
-  "Mathematics","Science","History","Literature","Programming","Art","Physical Education",
-  "Critical Thinking","Research Skills","Essay Writing","Presentation Skills"
-];
+// Function to get growth subjects (excludes selected skills)
+function getGrowthSubjectsExcludingSkills(selectedSkills) {
+    const selectedSkillsLower = selectedSkills.map(s => s.toLowerCase());
+    return ALL_ACADEMIC_SUBJECTS.filter(subject => 
+        !selectedSkillsLower.includes(subject.toLowerCase())
+    );
+}
 
 const GRADE_LABELS = {
   elementary:   { icon: "🎒", label: "Elementary",  range: "Grades 1–6" },
@@ -48,8 +66,9 @@ const GRADE_LABELS = {
 // ── State ────────────────────────────────────────────────────
 let editSkillsSelected = new Set();
 let editGrowthSelected  = new Set();
-let editPicData    = null;   // base64 of newly chosen pic, or null
-let editGradeLevel = '';     // selected grade level key
+let editPicData    = null;
+let editGradeLevel = '';
+let GROWTH_SUGGESTIONS = getGrowthSubjectsExcludingSkills([]);
 
 // ── Helpers ──────────────────────────────────────────────────
 function encryptEmail(email) {
@@ -71,6 +90,26 @@ function getCredits() {
   return (v === null || v === 'undefined') ? 5 : parseInt(v, 10);
 }
 
+// ── Function to update growth dropdown when skills change ──
+function updateGrowthDropdownOptions() {
+    const selectedSkills = Array.from(editSkillsSelected);
+    const newGrowthSuggestions = getGrowthSubjectsExcludingSkills(selectedSkills);
+    
+    const currentGrowthSelections = Array.from(editGrowthSelected);
+    const validSelections = currentGrowthSelections.filter(item => 
+        newGrowthSuggestions.includes(item)
+    );
+    
+    GROWTH_SUGGESTIONS = newGrowthSuggestions;
+    
+    editGrowthSelected.clear();
+    validSelections.forEach(item => editGrowthSelected.add(item));
+    
+    renderEditOptions('growth', '');
+    renderEditTags('growth');
+    updateGrowthTriggerLabel();
+}
+
 // ── Render VIEW mode ─────────────────────────────────────────
 function renderView() {
   const username   = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'User';
@@ -80,27 +119,23 @@ function renderView() {
   const growthRaw  = localStorage.getItem('tandem_growth') || '[]';
   const achievements = localStorage.getItem('tandem_achievements') || 'No achievements yet.';
   let skills = [], growth = [];
-  // Robust parsing for Skills
-      try { 
-        // Parse the string from localStorage
-        skills = typeof skillsRaw === 'string' ? JSON.parse(skillsRaw) : skillsRaw; 
-        // Handle cases where data might be double-encoded as a string
-        if (typeof skills === 'string') skills = JSON.parse(skills);
-      } catch(e) { 
-        console.error("Error parsing skills:", e);
-        skills = []; 
-      }
+  
+  try { 
+    skills = typeof skillsRaw === 'string' ? JSON.parse(skillsRaw) : skillsRaw; 
+    if (typeof skills === 'string') skills = JSON.parse(skills);
+  } catch(e) { 
+    console.error("Error parsing skills:", e);
+    skills = []; 
+  }
 
-      // Robust parsing for Growth/Learning Goals
-      try { 
-        growth = typeof growthRaw === 'string' ? JSON.parse(growthRaw) : growthRaw;
-        if (typeof growth === 'string') growth = JSON.parse(growth);
-      } catch(e) { 
-        console.error("Error parsing growth:", e);
-        growth = []; 
-      }
+  try { 
+    growth = typeof growthRaw === 'string' ? JSON.parse(growthRaw) : growthRaw;
+    if (typeof growth === 'string') growth = JSON.parse(growth);
+  } catch(e) { 
+    console.error("Error parsing growth:", e);
+    growth = []; 
+  }
 
-  // Avatar in profile card
   const pfAvatar = document.getElementById('pfAvatar');
   if (pic) {
     pfAvatar.innerHTML = `<img src="${pic}" alt="Profile Pic">`;
@@ -111,19 +146,16 @@ function renderView() {
   document.getElementById('pfBio').textContent    = bio || 'Enter Bio';
   document.getElementById('viewBio').textContent  = bio || 'Edit caption.';
 
-  // Skills tags
   const skillsEl = document.getElementById('viewSkills');
   skillsEl.innerHTML = skills.length
     ? skills.map(s => `<span class="skill-tag">${s}</span>`).join('')
     : '<span style="color:#bbb;font-size:13px;">No skills added yet.</span>';
 
-  // Growth tags
   const growthEl = document.getElementById('viewGrowth');
   growthEl.innerHTML = growth.length
     ? growth.map(g => `<span class="skill-tag-growth">${g}</span>`).join('')
     : '<span style="color:#bbb;font-size:13px;">No growth subjects added yet.</span>';
 
-  // Grade level badge
   const gradeKey   = localStorage.getItem('tandem_grade') || '';
   const gradeBadge = document.getElementById('viewGradeBadge');
   const gradeLabel = document.getElementById('viewGradeLabel');
@@ -137,17 +169,11 @@ function renderView() {
     gradeLabel.textContent = 'Set your grade level to get better matches.';
   }
 
-  // Achievements Update
   const achievementsEl = document.getElementById('pfAchievements'); 
   if (achievementsEl) {
     achievementsEl.textContent = achievements;
-    if (achievements && achievements !== 'No achievements yet.' && achievements !== '') {
-    achievementsEl.classList.remove('muted');
-  } else {
-    achievementsEl.classList.remove('muted'); // Remove gray text if data exists
   }
-  }
-  // Credits topbar
+  
   document.getElementById('topCreditsBadge').textContent = getCredits();
 }
 
@@ -163,13 +189,11 @@ function renderEdit() {
   try { skills = JSON.parse(skillsRaw); } catch(e) {}
   try { growth = JSON.parse(growthRaw);  } catch(e) {}
 
-  // Pre-fill form fields
   document.getElementById('editName').value = username;
   document.getElementById('editBio').value  = bio;
   document.getElementById('editHandle').textContent = '@' + (username.toLowerCase().replace(/\s+/g,'_'));
   document.getElementById('editAchievements').value = achievements;
 
-  // Avatar in edit form
   const editAv = document.getElementById('editAvatar');
   editAv.innerHTML = pic
     ? `<img src="${pic}" alt="Profile Pic">`
@@ -178,7 +202,8 @@ function renderEdit() {
          <ellipse cx="30" cy="52" rx="20" ry="14" fill="#a0c4d8"/>
        </svg>`;
 
-  // Pre-load selected sets
+  GROWTH_SUGGESTIONS = getGrowthSubjectsExcludingSkills(skills);
+  
   editSkillsSelected = new Set(skills);
   editGrowthSelected  = new Set(growth);
   editPicData = null;
@@ -192,9 +217,8 @@ function renderEdit() {
   updateGrowthTriggerLabel();
 }
 
-// ── Multi-select dropdown helpers ────────────────────────────
 function renderEditOptions(type, search) {
-  const suggestions = type === 'skills' ? SKILL_SUGGESTIONS : GROWTH_SUGGESTIONS;
+  const suggestions = type === 'skills' ? ALL_ACADEMIC_SUBJECTS : GROWTH_SUGGESTIONS;
   const selected    = type === 'skills' ? editSkillsSelected : editGrowthSelected;
   const listEl      = document.getElementById(type === 'skills' ? 'editSkillsOptions' : 'editGrowthOptions');
 
@@ -213,6 +237,11 @@ function renderEditOptions(type, search) {
       const val = el.getAttribute('data-value');
       if (selected.has(val)) selected.delete(val);
       else selected.add(val);
+      
+      if (type === 'skills') {
+        updateGrowthDropdownOptions();
+      }
+      
       renderEditOptions(type, search);
       renderEditTags(type);
       if (type === 'growth') updateGrowthTriggerLabel();
@@ -237,6 +266,14 @@ function renderEditTags(type) {
       const t    = btn.getAttribute('data-type');
       const sel  = t === 'skills' ? editSkillsSelected : editGrowthSelected;
       sel.delete(val);
+      
+      if (t === 'skills') {
+        updateGrowthDropdownOptions();
+      } else {
+        renderEditOptions(t, '');
+        renderEditTags(t);
+      }
+      
       renderEditOptions(t, '');
       renderEditTags(t);
       if (t === 'growth') updateGrowthTriggerLabel();
@@ -244,20 +281,18 @@ function renderEditTags(type) {
   });
 }
 
-// ── Grade Level ──────────────────────────────────────────────
 function renderGradeCards() {
   document.querySelectorAll('.grade-card').forEach(card => {
     const g = card.getAttribute('data-grade');
     card.classList.toggle('selected', g === editGradeLevel);
     card.onclick = () => {
-      editGradeLevel = (editGradeLevel === g) ? '' : g;  // toggle off if same
+      editGradeLevel = (editGradeLevel === g) ? '' : g;
       renderGradeCards();
     };
   });
   document.getElementById('editGradeLevel').value = editGradeLevel;
 }
 
-// ── Growth trigger label ─────────────────────────────────────
 function updateGrowthTriggerLabel() {
   const placeholder = document.getElementById('editGrowthPlaceholder');
   if (!placeholder) return;
@@ -277,7 +312,6 @@ function setupDropdown(triggerId, dropdownId, searchId, type) {
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
     const isOpen = dropdown.classList.contains('open');
-    // Close all other dropdowns
     document.querySelectorAll('.ef-dropdown.open').forEach(d => d.classList.remove('open'));
     document.querySelectorAll('.ef-select-trigger.open').forEach(t => t.classList.remove('open'));
     if (!isOpen) {
@@ -296,7 +330,6 @@ function setupDropdown(triggerId, dropdownId, searchId, type) {
   dropdown.addEventListener('click', e => e.stopPropagation());
 }
 
-// ── Profile picture upload in edit mode ─────────────────────
 function setupEditPicUpload() {
   const editAv    = document.getElementById('editAvatar');
   const picInput  = document.getElementById('editPicInput');
@@ -326,7 +359,6 @@ function setupEditPicUpload() {
   });
 }
 
-// ── Save changes ─────────────────────────────────────────────
 async function saveProfile() {
   const name   = document.getElementById('editName').value.trim();
   const bio    = document.getElementById('editBio').value.trim();
@@ -337,7 +369,6 @@ async function saveProfile() {
 
   if (!name) { showToast('Please enter your name.'); return; }
 
-  // Update localStorage immediately
   localStorage.setItem('tandem_username', name);
   localStorage.setItem('tandem_bio', bio);
   localStorage.setItem('tandem_achievements', achievements);
@@ -345,8 +376,12 @@ async function saveProfile() {
   localStorage.setItem('tandem_growth', JSON.stringify(growth));
   localStorage.setItem('tandem_grade', editGradeLevel);
   if (editPicData) localStorage.setItem('tandem_profile_pic', editPicData);
+  
+  // Mark profile as completed
+  if (skills.length > 0 && growth.length > 0 && editGradeLevel) {
+    localStorage.setItem('profile_completed', 'true');
+  }
 
-  // Persist to backend
   if (email) {
     try {
       const res = await fetch('http://localhost:3000/complete-profile', {
@@ -369,7 +404,6 @@ async function saveProfile() {
         return;
       }
     } catch (err) {
-      // Backend offline — still saved locally
       console.warn('Backend unreachable, saved locally only:', err);
     }
   }
@@ -378,31 +412,29 @@ async function saveProfile() {
   switchToView();
 }
 
-// ── Toggle view / edit ───────────────────────────────────────
 function switchToEdit() {
   document.getElementById('viewMode').style.display = 'none';
   document.getElementById('editMode').style.display = 'block';
   renderEdit();
 }
+
 function switchToView() {
   document.getElementById('editMode').style.display = 'none';
   document.getElementById('viewMode').style.display = 'block';
   renderView();
 }
 
-// ── Logout ───────────────────────────────────────────────────
 function setupLogout() {
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     if (!confirm('Are you sure you want to log out?')) return;
     const email        = localStorage.getItem('userEmail');
     const credits      = getCredits();
-    const lastLogin    = localStorage.getItem('tandem_last_login_date') || '';
     if (email) {
       try {
         await fetch('http://localhost:3000/update-credits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, credits, last_login_date: lastLogin })
+          body: JSON.stringify({ email, credits })
         });
       } catch(e) { /* ignore */ }
     }
@@ -413,9 +445,7 @@ function setupLogout() {
   });
 }
 
-// ── Init ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Guard: redirect if not logged in
   if (!localStorage.getItem('userEmail')) {
     window.location.href = 'index.html';
     return;
@@ -430,7 +460,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('cancelEditBtn').addEventListener('click', switchToView);
   document.getElementById('saveEditBtn').addEventListener('click', saveProfile);
 
-  // Close dropdowns when clicking outside
   document.addEventListener('click', () => {
     document.querySelectorAll('.ef-dropdown.open').forEach(d => d.classList.remove('open'));
     document.querySelectorAll('.ef-select-trigger.open').forEach(t => t.classList.remove('open'));

@@ -38,77 +38,94 @@ profileInput.addEventListener("change", () => {
     reader.readAsDataURL(file);
 });
 
-// ========== NEW: Multi-select dropdown functionality ==========
-
-// Skills Data
-const SKILL_SUGGESTIONS = [
-    "Public Speaking", "Leadership", "Time Management", "Confidence Building", "Networking", 
-    "Creative Writing", "Content Writing", "Copywriting", "Emotional Intelligence", 
-    "Critical Thinking", "Problem Solving", "Decision Making", "Negotiation", "Active Listening", 
-    "Communication Skills", "Teamwork", "Collaboration", "Research Skills", "Reading Comprehension", 
-    "Note-Taking", "Academic Writing", "Essay Writing", "Analytical Thinking", "Mathematical Reasoning", 
-    "Scientific Thinking", "Productivity", "Goal Setting", "Self-Discipline", "Mindfulness", 
-    "Adaptability", "Responsibility", "Initiative Taking", "Foreign Language Learning", "Music", 
-    "Photography", "Cooking", "Fitness", "Creative Thinking", "Design Thinking", "Content Creation", 
-    "JavaScript", "Python", "TypeScript", "Node.js", "React", "HTML & CSS", "SQL", "Git", "Figma", 
-    "UI/UX Design", "Graphic Design", "Video Editing", "Photo Editing", "SEO", "Marketing", 
-    "Data Analysis", "Excel", "Data Visualization", "Basic AI Literacy", "Exam Preparation", 
-    "Memorization Techniques", "Speed Reading", "Class Participation", "Group Project Management", 
-    "Homework Planning", "Research Paper Writing", "Thesis Writing", "Laboratory Skills", 
-    "Citation (APA/MLA)", "Time Management in Exams"
+// ========== MASTER LIST OF ALL ACADEMIC SUBJECTS ==========
+const ALL_ACADEMIC_SUBJECTS = [
+    // Mathematics
+    "Algebra", "Geometry", "Trigonometry", "Calculus", "Statistics", "Probability", 
+    "Arithmetic", "Pre-Calculus", "Linear Algebra", "Discrete Mathematics", "Number Theory",
+    
+    // Sciences
+    "Biology", "Chemistry", "Physics", "Earth Science", "Environmental Science", 
+    "Astronomy", "Anatomy", "Physiology", "Genetics", "Organic Chemistry", 
+    "Biochemistry", "Botany", "Zoology", "Marine Biology", "Ecology",
+    
+    // Computer Science & Technology
+    "Programming", "Python", "Java", "JavaScript", "C++", "HTML/CSS", "SQL", 
+    "Data Structures", "Algorithms", "Web Development", "App Development", 
+    "Cybersecurity", "Artificial Intelligence", "Machine Learning", "Data Science",
+    
+    // Language Arts & Literature
+    "Reading Comprehension", "Creative Writing", "Essay Writing", "Grammar", 
+    "Vocabulary", "Literature Analysis", "Poetry", "Journalism", "Public Speaking",
+    "Debate", "English", "Spanish", "French", "German", "Mandarin", "Japanese",
+    
+    // History & Social Studies
+    "World History", "US History", "European History", "Ancient Civilizations",
+    "Geography", "Political Science", "Economics", "Sociology", "Psychology",
+    "Philosophy", "Anthropology", "Archaeology", "Civics", "Government",
+    
+    // Business & Finance
+    "Accounting", "Finance", "Marketing", "Management", "Entrepreneurship",
+    "Business Law", "Microeconomics", "Macroeconomics", "Business Ethics",
+    
+    // Arts & Humanities
+    "Art History", "Visual Arts", "Drawing", "Painting", "Sculpture", "Digital Art",
+    "Music Theory", "Music History", "Film Studies", "Theater", "Dance",
+    
+    // Physical Education & Health
+    "Physical Education", "Health Sciences", "Nutrition", "Sports Science",
+    "First Aid", "Human Development", "Wellness",
+    
+    // Study & Academic Skills
+    "Research Methods", "Academic Writing", "Critical Thinking", "Problem Solving",
+    "Time Management", "Note Taking", "Test Preparation", "Study Strategies",
+    "Presentation Skills", "Group Collaboration", "Scientific Writing"
 ];
 
-// Growth Areas Data
-const GROWTH_SUGGESTIONS = [
-    "Procrastination", "Poor Time Management", "Lack of Study Habits", "Easily Distracted", 
-    "Short Attention Span", "Overthinking", "Low Confidence", "Public Speaking", 
-    "Shyness in Class Participation", "Weak Writing Skills", "Poor Reading Comprehension", 
-    "Difficulty Understanding Lessons", "Poor Memory Retention", "Exam Anxiety", 
-    "Weak Listening Skills", "Poor Communication Skills", "Difficulty in Group Work", 
-    "Avoiding Leadership Roles", "Lack of Initiative", "Peer Pressure Susceptibility", 
-    "Overuse of Social Media", "Poor Digital Discipline", "Disorganized Notes and Files", 
-    "Inconsistent Academic Performance", "Financial Literacy", "Cooking", "Fitness", 
-    "Foreign Language", "Music", "Photography", "Reading"
-];
+// Function to get growth subjects (excludes selected skills)
+function getGrowthSubjects(selectedSkills) {
+    const selectedSkillsLower = selectedSkills.map(s => s.toLowerCase());
+    return ALL_ACADEMIC_SUBJECTS.filter(subject => 
+        !selectedSkillsLower.includes(subject.toLowerCase())
+    );
+}
 
 // Class to handle multi-select dropdown
 class MultiSelectDropdown {
-    constructor(triggerId, optionsId, searchId, listId, containerId, suggestions) {
+    constructor(triggerId, optionsId, searchId, listId, containerId, suggestions, isGrowth = false, onSkillsChange = null) {
         this.trigger = document.getElementById(triggerId);
         this.optionsContainer = document.getElementById(optionsId);
         this.searchInput = document.getElementById(searchId);
         this.optionsList = document.getElementById(listId);
         this.tagsContainer = document.getElementById(containerId);
-        this.suggestions = suggestions;
+        this.allSuggestions = [...suggestions];
+        this.suggestions = [...suggestions];
+        this.isGrowth = isGrowth;
+        this.onSkillsChange = onSkillsChange;
         this.selectedItems = new Set();
-        this.filteredItems = [...suggestions];
+        this.filteredItems = [...this.suggestions];
         
         this.init();
     }
     
     init() {
-        // Toggle dropdown on trigger click
         this.trigger.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleDropdown();
         });
         
-        // Close dropdown when clicking outside
         document.addEventListener('click', () => {
             this.closeDropdown();
         });
         
-        // Prevent closing when clicking inside dropdown
         this.optionsContainer.addEventListener('click', (e) => {
             e.stopPropagation();
         });
         
-        // Search functionality
         this.searchInput.addEventListener('input', (e) => {
             this.filterOptions(e.target.value);
         });
         
-        // Render initial options
         this.renderOptions();
     }
     
@@ -122,7 +139,6 @@ class MultiSelectDropdown {
     }
     
     openDropdown() {
-        // Close all other dropdowns first
         document.querySelectorAll('.custom-options.open').forEach(dropdown => {
             dropdown.classList.remove('open');
         });
@@ -159,7 +175,6 @@ class MultiSelectDropdown {
             </div>
         `).join('');
         
-        // Add click handlers to options
         this.optionsList.querySelectorAll('.option-item').forEach(option => {
             option.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -177,6 +192,10 @@ class MultiSelectDropdown {
         }
         this.renderOptions();
         this.renderTags();
+        
+        if (!this.isGrowth && this.onSkillsChange) {
+            this.onSkillsChange(Array.from(this.selectedItems));
+        }
     }
     
     renderTags() {
@@ -184,7 +203,7 @@ class MultiSelectDropdown {
         
         if (selectedArray.length === 0) {
             this.tagsContainer.innerHTML = '<div class="empty-tags-message">No items selected</div>';
-            this.trigger.querySelector('span').textContent = 'Select options...';
+            this.trigger.querySelector('span').textContent = this.isGrowth ? 'Select Learning Areas...' : 'Select Skills...';
             return;
         }
         
@@ -197,7 +216,6 @@ class MultiSelectDropdown {
             </div>
         `).join('');
         
-        // Add remove functionality to tags
         this.tagsContainer.querySelectorAll('.remove-tag').forEach(removeBtn => {
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -205,6 +223,10 @@ class MultiSelectDropdown {
                 this.selectedItems.delete(value);
                 this.renderOptions();
                 this.renderTags();
+                
+                if (!this.isGrowth && this.onSkillsChange) {
+                    this.onSkillsChange(Array.from(this.selectedItems));
+                }
             });
         });
     }
@@ -212,33 +234,61 @@ class MultiSelectDropdown {
     getSelectedItems() {
         return Array.from(this.selectedItems);
     }
+    
+    updateSuggestions(newSuggestions) {
+        this.suggestions = [...newSuggestions];
+        this.filteredItems = [...newSuggestions];
+        const validSelected = Array.from(this.selectedItems).filter(item => 
+            newSuggestions.includes(item)
+        );
+        this.selectedItems.clear();
+        validSelected.forEach(item => this.selectedItems.add(item));
+        this.renderOptions();
+        this.renderTags();
+    }
 }
 
 // Initialize dropdowns
-const skillsDropdown = new MultiSelectDropdown(
-    'skillsTrigger', 'skillsOptions', 'skillsSearch', 'skillsList', 'skillTags', SKILL_SUGGESTIONS
-);
+let skillsDropdown, growthDropdown;
 
-const growthDropdown = new MultiSelectDropdown(
-    'growthTrigger', 'growthOptions', 'growthSearch', 'growthList', 'growthTags', GROWTH_SUGGESTIONS
-);
+function updateGrowthSuggestions(selectedSkills) {
+    const newGrowthSuggestions = getGrowthSubjects(selectedSkills);
+    if (growthDropdown) {
+        growthDropdown.updateSuggestions(newGrowthSuggestions);
+    }
+}
 
-// Display name
+document.addEventListener('DOMContentLoaded', () => {
+    skillsDropdown = new MultiSelectDropdown(
+        'skillsTrigger', 'skillsOptions', 'skillsSearch', 'skillsList', 'skillTags', 
+        ALL_ACADEMIC_SUBJECTS, false, updateGrowthSuggestions
+    );
+    
+    growthDropdown = new MultiSelectDropdown(
+        'growthTrigger', 'growthOptions', 'growthSearch', 'growthList', 'growthTags', 
+        ALL_ACADEMIC_SUBJECTS, true, null
+    );
+});
+
 const userName = localStorage.getItem('userName');
 document.getElementById('displayNameText').textContent = userName || 'New User';
 
-// Form submit
 document.getElementById('profileForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = localStorage.getItem('userEmail');
     const username = document.getElementById('usernameInput').value.trim();
+    const gradeLevel = document.getElementById('gradeLevelSelect').value;
 
-    // Get selected skills and growth areas from dropdowns
     const skills = skillsDropdown.getSelectedItems();
     const growth = growthDropdown.getSelectedItems();
 
     if (!username) {
         alert('Please enter a username');
+        return;
+    }
+
+    if (!gradeLevel) {
+        alert('Please select your grade level');
         return;
     }
 
@@ -256,19 +306,32 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
         const res = await fetch('http://localhost:3000/complete-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, username, skills, growth, profile_pic: profilePicData })
+            body: JSON.stringify({ 
+                email, 
+                username, 
+                skills, 
+                growth, 
+                grade_level: gradeLevel,
+                profile_pic: profilePicData 
+            })
         });
         const data = await res.json();
         if (data.success) {
             localStorage.setItem('tandem_username', username);
+            localStorage.setItem('tandem_grade', gradeLevel);
+            localStorage.setItem('tandem_skills', JSON.stringify(skills));
+            localStorage.setItem('tandem_growth', JSON.stringify(growth));
             if (profilePicData) {
                 localStorage.setItem('tandem_profile_pic', profilePicData);
             }
             if (localStorage.getItem('tandem_credits') === null) {
                 localStorage.setItem('tandem_credits', '5');
             }
+            
+            // Mark profile as completed
+            localStorage.setItem('profile_completed', 'true');
 
-            alert('Profile saved! Redirecting to dashboard...');
+            alert('Profile completed! Redirecting to dashboard...');
             window.location.href = 'dashboard.html';
         } else {
             alert(data.message || 'Error saving profile');
@@ -279,15 +342,12 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
     }
 });
 
-// Add this after initializing the dropdowns
-// Handle chevron rotation
 document.querySelectorAll('.custom-select-trigger').forEach(trigger => {
     trigger.addEventListener('click', function() {
         this.classList.toggle('open');
     });
 });
 
-// Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.custom-select-wrapper')) {
         document.querySelectorAll('.custom-options.open').forEach(dropdown => {
