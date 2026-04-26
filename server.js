@@ -33,12 +33,13 @@ function query(sql, params = []) {
 // Function to log database stats
 function logDatabaseStats() {
     try {
-        const tables = query("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'connection_requests', 'connections')");
+        const tables = query("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'connection_requests', 'connections', 'sessions')");
         const tableNames = tables.map(t => t.name);
         
         let userCount = 0;
         let pendingRequests = 0;
         let activeConnections = 0;
+        let pendingSessions = 0;
         
         if (tableNames.includes('users')) {
             const result = query('SELECT COUNT(*) as count FROM users');
@@ -55,9 +56,15 @@ function logDatabaseStats() {
             activeConnections = result[0]?.count || 0;
         }
         
+        if (tableNames.includes('sessions')) {
+            const result = query("SELECT COUNT(*) as count FROM sessions WHERE status = 'pending'");
+            pendingSessions = result[0]?.count || 0;
+        }
+        
         console.log(`\n📊 ===== DATABASE STATS =====`);
         console.log(`👥 Users: ${userCount}`);
-        console.log(`⏳ Pending requests: ${pendingRequests}`);
+        console.log(`⏳ Pending connection requests: ${pendingRequests}`);
+        console.log(`⏳ Pending session requests: ${pendingSessions}`);
         console.log(`🔗 Active connections: ${activeConnections}`);
         console.log(`===========================\n`);
     } catch (error) {
@@ -562,6 +569,222 @@ app.post('/get-ledger', (req, res) => {
     }
 });
 
+// ============ SEND SESSION REQUEST ============
+app.post('/send-session-request', (req, res) => {
+    const { learnerEmail, tutorEmail, subject, sessionNotes } = req.body;
+
+    try {
+        // Check if there's already an active or pending session
+        const existingSession = query(
+            `SELECT * FROM sessions 
+             WHERE (learner_email = ? AND tutor_email = ?) 
+                OR (learner_email = ? AND tutor_email = ?)
+             AND status IN ('pending', 'active')`,
+            [learnerEmail, tutorEmail, tutorEmail, learnerEmail]
+        );
+
+        if (existingSession.length > 0) {
+            return res.json({ success: false, message: 'You already have a pending or active session with this user.' });
+        }
+
+        // Check if learner has enough credits
+        const learnerResult = query('SELECT credits FROM users WHERE email = ?', [learnerEmail]);
+        if (learnerResult.length === 0 || learnerResult[0].credits < 1) {
+            return res.json({ success: false, message: 'You need at least 1 credit to request a session.' });
+        }
+
+        query(
+            `INSERT INTO sessions (learner_email, tutor_email, subject, session_notes, status, created_at) 
+             VALUES (?, ?, ?, ?, 'pending', datetime('now', 'localtime'))`,
+            [learnerEmail, tutorEmail, subject, sessionNotes || '']
+        );
+
+        console.log(`📅 Session request sent from ${learnerEmail} to ${tutorEmail}`);
+        logDatabaseStats();
+        
+        res.json({ success: true, message: 'Session request sent to tutor!' });
+    } catch (error) {
+        console.error('Error sending session request:', error);
+        res.json({ success: false, message: 'Error sending session request' });
+    }
+});
+
+// ============ GET PENDING SESSION REQUESTS FOR TUTOR ============
+app.post('/get-pending-session-requests', (req, res) => {
+    const { tutorEmail } = req.body;
+
+    try {
+        const sessions = query(
+            `SELECT s.*, 
+                    u.name as learner_name, 
+                    u.username as learner_username, 
+                    u.profile_pic as learner_profile_pic,
+                    u.grade_level as learner_grade
+             FROM sessions s
+             JOIN users u ON s.learner_email = u.email
+             WHERE s.tutor_email = ? AND s.status = 'pending'
+             ORDER BY s.created_at DESC`,
+            [tutorEmail]
+        );
+
+        res.json({ success: true, sessions });
+    } catch (error) {
+        console.error('Error getting pending session requests:', error);
+        res.json({ success: false, message: 'Error getting requests', sessions: [] });
+    }
+});
+
+// ============ GET ACTIVE SESSION FOR USER ============
+app.post('/get-active-session', (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const session = query(
+            `SELECT s.*, 
+                    CASE 
+                        WHEN s.learner_email = ? THEN 'learner'
+                        ELSE 'tutor'
+                    END as user_role,
+                    u1.name as learner_name, u1.username as learner_username, u1.profile_pic as learner_profile_pic,
+                    u2.name as tutor_name, u2.username as tutor_username, u2.profile_pic as tutor_profile_pic
+             FROM sessions s
+             JOIN users u1 ON s.learner_email = u1.email
+             JOIN users u2 ON s.tutor_email = u2.email
+             WHERE (s.learner_email = ? OR s.tutor_email = ?) 
+             AND s.status IN ('pending', 'active')
+             ORDER BY s.created_at DESC
+             LIMIT 1`,
+            [email, email, email]
+        );
+
+        if (session.length > 0) {
+            res.json({ success: true, session: session[0] });
+        } else {
+            res.json({ success: true, session: null });
+        }
+    } catch (error) {
+        console.error('Error getting active session:', error);
+        res.json({ success: false, message: 'Error getting session', session: null });
+    }
+});
+
+// ============ ACCEPT SESSION REQUEST ============
+app.post('/accept-session-request', (req, res) => {
+    const { sessionId, tutorEmail, learnerEmail } = req.body;
+
+    try {
+        // Verify learner still has credits
+        const learnerResult = query('SELECT credits FROM users WHERE email = ?', [learnerEmail]);
+        if (learnerResult.length === 0 || learnerResult[0].credits < 1) {
+            return res.json({ success: false, message: 'Learner does not have enough credits for this session.' });
+        }
+
+        // Get tutor's current credits
+        const tutorResult = query('SELECT credits FROM users WHERE email = ?', [tutorEmail]);
+        const tutorCredits = tutorResult[0]?.credits || 0;
+        const learnerCredits = learnerResult[0].credits;
+
+        // Start transaction - deduct 1 credit from learner, add 1 to tutor
+        query('UPDATE users SET credits = ? WHERE email = ?', [learnerCredits - 1, learnerEmail]);
+        query('UPDATE users SET credits = ? WHERE email = ?', [tutorCredits + 1, tutorEmail]);
+
+        // Update session status to active and set start time
+        query(
+            `UPDATE sessions SET status = 'active', session_start = datetime('now', 'localtime') WHERE id = ?`,
+            [sessionId]
+        );
+
+        // Record transaction in ledger
+        query(
+            `INSERT INTO transactions (from_email, to_email, amount, type, session_id, created_at) 
+             VALUES (?, ?, 1, 'session_payment', ?, datetime('now', 'localtime'))`,
+            [learnerEmail, tutorEmail, sessionId]
+        );
+
+        console.log(`✅ Session accepted: ${sessionId} - Credit transferred from ${learnerEmail} to ${tutorEmail}`);
+        logDatabaseStats();
+
+        res.json({ success: true, message: 'Session accepted! Timer started.' });
+    } catch (error) {
+        console.error('Error accepting session:', error);
+        res.json({ success: false, message: 'Error accepting session' });
+    }
+});
+
+// ============ REJECT SESSION REQUEST ============
+app.post('/reject-session-request', (req, res) => {
+    const { sessionId } = req.body;
+
+    try {
+        query("UPDATE sessions SET status = 'rejected', updated_at = datetime('now', 'localtime') WHERE id = ?", [sessionId]);
+        console.log(`❌ Session request rejected: ${sessionId}`);
+        res.json({ success: true, message: 'Session request rejected' });
+    } catch (error) {
+        console.error('Error rejecting session:', error);
+        res.json({ success: false, message: 'Error rejecting session' });
+    }
+});
+
+// ============ COMPLETE SESSION ============
+app.post('/complete-session', (req, res) => {
+    const { sessionId, rating, feedback } = req.body;
+
+    try {
+        query(
+            `UPDATE sessions SET status = 'completed', rating = ?, feedback = ?, session_end = datetime('now', 'localtime') WHERE id = ?`,
+            [rating || null, feedback || null, sessionId]
+        );
+        
+        // Update tutor's rating average if rating provided
+        if (rating) {
+            const sessionResult = query('SELECT tutor_email FROM sessions WHERE id = ?', [sessionId]);
+            if (sessionResult.length > 0) {
+                const tutorEmail = sessionResult[0].tutor_email;
+                const allRatings = query('SELECT AVG(rating) as avg_rating FROM sessions WHERE tutor_email = ? AND rating IS NOT NULL', [tutorEmail]);
+                if (allRatings.length > 0 && allRatings[0].avg_rating) {
+                    query('UPDATE users SET rating = ? WHERE email = ?', [allRatings[0].avg_rating, tutorEmail]);
+                }
+            }
+        }
+
+        console.log(`✅ Session completed: ${sessionId}`);
+        res.json({ success: true, message: 'Session completed!' });
+    } catch (error) {
+        console.error('Error completing session:', error);
+        res.json({ success: false, message: 'Error completing session' });
+    }
+});
+
+// ============ GET SESSION HISTORY ============
+app.post('/get-session-history', (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const sessions = query(
+            `SELECT s.*, 
+                    CASE 
+                        WHEN s.learner_email = ? THEN 'learner'
+                        ELSE 'tutor'
+                    END as user_role,
+                    u1.name as learner_name,
+                    u2.name as tutor_name
+             FROM sessions s
+             JOIN users u1 ON s.learner_email = u1.email
+             JOIN users u2 ON s.tutor_email = u2.email
+             WHERE (s.learner_email = ? OR s.tutor_email = ?) 
+             AND s.status != 'pending'
+             ORDER BY s.created_at DESC
+             LIMIT 20`,
+            [email, email, email]
+        );
+
+        res.json({ success: true, sessions });
+    } catch (error) {
+        console.error('Error getting session history:', error);
+        res.json({ success: false, message: 'Error getting history', sessions: [] });
+    }
+});
+
 // ============ CREATE TABLES ============
 function initDatabase() {
     db.pragma('foreign_keys = ON');
@@ -641,12 +864,32 @@ function initDatabase() {
         )
     `;
 
+    const createSessionsTable = `
+        CREATE TABLE IF NOT EXISTS sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            learner_email TEXT NOT NULL,
+            tutor_email TEXT NOT NULL,
+            subject TEXT,
+            session_notes TEXT,
+            status TEXT DEFAULT 'pending',
+            rating INTEGER,
+            feedback TEXT,
+            session_start DATETIME,
+            session_end DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME,
+            FOREIGN KEY (learner_email) REFERENCES users(email),
+            FOREIGN KEY (tutor_email) REFERENCES users(email)
+        )
+    `;
+
     try {
         query(createUsersTable);
         query(createConnectionRequestsTable);
         query(createConnectionsTable);
         query(createMessagesTable);
         query(createTransactionsTable);
+        query(createSessionsTable);
         console.log('✅ Database tables ready');
         logDatabaseStats();
         console.log('🚀 Server ready for connections\n');

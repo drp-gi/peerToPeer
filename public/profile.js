@@ -1,8 +1,4 @@
-// ============================================================
-// profile.js  — All logic for profile.html
-// ============================================================
-
-// ========== MASTER LIST OF ALL ACADEMIC SUBJECTS ==========
+// MASTER LIST OF ALL ACADEMIC SUBJECTS
 const ALL_ACADEMIC_SUBJECTS = [
     // Mathematics
     "Algebra", "Geometry", "Trigonometry", "Calculus", "Statistics", "Probability", 
@@ -63,14 +59,14 @@ const GRADE_LABELS = {
   professional: { icon: "💼", label: "Professional",range: "Working Adult" },
 };
 
-// ── State ────────────────────────────────────────────────────
+// State
 let editSkillsSelected = new Set();
 let editGrowthSelected  = new Set();
 let editPicData    = null;
 let editGradeLevel = '';
 let GROWTH_SUGGESTIONS = getGrowthSubjectsExcludingSkills([]);
 
-// ── Helpers ──────────────────────────────────────────────────
+// Helpers
 function encryptEmail(email) {
   if (!email || !email.includes('@')) return email;
   const [local, domain] = email.split('@');
@@ -90,7 +86,7 @@ function getCredits() {
   return (v === null || v === 'undefined') ? 5 : parseInt(v, 10);
 }
 
-// ── Function to update growth dropdown when skills change ──
+// Function to update growth dropdown when skills change
 function updateGrowthDropdownOptions() {
     const selectedSkills = Array.from(editSkillsSelected);
     const newGrowthSuggestions = getGrowthSubjectsExcludingSkills(selectedSkills);
@@ -110,7 +106,7 @@ function updateGrowthDropdownOptions() {
     updateGrowthTriggerLabel();
 }
 
-// ── Render VIEW mode ─────────────────────────────────────────
+// Render VIEW mode
 function renderView() {
   const username   = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'User';
   const bio        = localStorage.getItem('tandem_bio') || '';
@@ -177,7 +173,7 @@ function renderView() {
   document.getElementById('topCreditsBadge').textContent = getCredits();
 }
 
-// ── Render EDIT mode ─────────────────────────────────────────
+// Render EDIT mode
 function renderEdit() {
   const username  = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || '';
   const bio       = localStorage.getItem('tandem_bio') || '';

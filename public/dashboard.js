@@ -76,6 +76,23 @@ function checkProfileCompletion() {
   return true;
 }
 
+// Escape HTML for safety
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Show toast notification
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add('toast-show');
+  setTimeout(() => toast.classList.remove('toast-show'), 3500);
+}
+
 // Logout
 async function setupLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
@@ -143,15 +160,7 @@ async function loadCreditsFromDatabase() {
   return false;
 }
 
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add('toast-show');
-  setTimeout(() => toast.classList.remove('toast-show'), 3500);
-}
-
-// Load pending requests for tutor view
+// Load pending connection requests (connection requests, NOT session requests)
 async function loadPendingRequests() {
     const email = localStorage.getItem('userEmail');
     if (!email) return;
@@ -184,7 +193,7 @@ async function loadPendingRequests() {
                         <div class="pending-grade">🎓 Grade: ${escapeHtml(req.learner_grade || 'Not specified')}</div>
                     </div>
                     <div class="pending-actions">
-                        <button class="btn-accept" data-request-id="${req.id}" data-learner-email="${req.learner_email}">✓ Accept</button>
+                        <button class="btn-accept" data-request-id="${req.id}" data-learner-email="${req.learner_email}">✓ Accept Connection</button>
                         <button class="btn-reject" data-request-id="${req.id}">✗ Reject</button>
                     </div>
                 </div>
@@ -196,7 +205,7 @@ async function loadPendingRequests() {
                     e.stopPropagation();
                     const requestId = btn.getAttribute('data-request-id');
                     const learnerEmail = btn.getAttribute('data-learner-email');
-                    acceptRequest(requestId, learnerEmail);
+                    acceptConnectionRequest(requestId, learnerEmail);
                 });
             });
             
@@ -204,28 +213,147 @@ async function loadPendingRequests() {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const requestId = btn.getAttribute('data-request-id');
-                    rejectRequest(requestId);
+                    rejectConnectionRequest(requestId);
                 });
             });
-        } else {
-            section.style.display = 'none';
         }
     } catch (error) {
         console.error('Error loading pending requests:', error);
     }
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+// Load pending SESSION requests (for tutoring sessions)
+async function loadPendingSessionRequests() {
+    const email = localStorage.getItem('userEmail');
+    if (!email) return;
+    
+    try {
+        const response = await fetch('http://localhost:3000/get-pending-session-requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tutorEmail: email })
+        });
+        const data = await response.json();
+        
+        const section = document.getElementById('pendingRequestsSection');
+        const container = document.getElementById('pendingRequestsList');
+        
+        if (data.sessions && data.sessions.length > 0) {
+            section.style.display = 'block';
+            
+            // Get existing HTML or create empty
+            let existingHTML = container.innerHTML;
+            if (existingHTML.includes('No pending requests') || existingHTML === '') {
+                existingHTML = '';
+            }
+            
+            const sessionHTML = data.sessions.map(session => `
+                <div class="pending-card session-request-card" style="border-left: 3px solid #f5a623;">
+                    <div class="pending-avatar">
+                        ${session.learner_profile_pic ? 
+                            `<img src="${session.learner_profile_pic}" alt="">` :
+                            `<div class="avatar-placeholder">${(session.learner_name || 'U').charAt(0).toUpperCase()}</div>`
+                        }
+                    </div>
+                    <div class="pending-info">
+                        <div class="pending-name">${escapeHtml(session.learner_name || session.learner_username)}</div>
+                        <div class="pending-subject">🎓 SESSION REQUEST: ${escapeHtml(session.subject || 'General')}</div>
+                        <div class="pending-message">💬 ${escapeHtml(session.session_notes || 'No additional notes')}</div>
+                        <div class="pending-grade">💰 This will earn you 1 credit when completed</div>
+                    </div>
+                    <div class="pending-actions">
+                        <button class="btn-accept-session" data-session-id="${session.id}" data-learner-email="${session.learner_email}">✓ Accept Session</button>
+                        <button class="btn-reject-session" data-session-id="${session.id}">✗ Reject</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = existingHTML + sessionHTML;
+            
+            // Add event listeners for session buttons
+            document.querySelectorAll('.btn-accept-session').forEach(btn => {
+                btn.removeEventListener('click', handleAcceptSession);
+                btn.addEventListener('click', handleAcceptSession);
+            });
+            
+            document.querySelectorAll('.btn-reject-session').forEach(btn => {
+                btn.removeEventListener('click', handleRejectSession);
+                btn.addEventListener('click', handleRejectSession);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading session requests:', error);
+    }
 }
 
-async function acceptRequest(requestId, learnerEmail) {
+// Handler functions for session requests
+async function handleAcceptSession(e) {
+    e.stopPropagation();
+    const sessionId = e.currentTarget.getAttribute('data-session-id');
+    const learnerEmail = e.currentTarget.getAttribute('data-learner-email');
+    const tutorEmail = localStorage.getItem('userEmail');
+    await acceptSessionRequest(sessionId, tutorEmail, learnerEmail);
+}
+
+async function handleRejectSession(e) {
+    e.stopPropagation();
+    const sessionId = e.currentTarget.getAttribute('data-session-id');
+    await rejectSessionRequest(sessionId);
+}
+
+async function acceptSessionRequest(sessionId, tutorEmail, learnerEmail) {
+    const confirmed = confirm('Accept this session request?\n\n- The learner will spend 1 credit\n- You will earn 1 credit when you complete the session\n- A 30-minute timer will start\n\nDo you want to accept?');
+    if (!confirmed) return;
+    
+    try {
+        const response = await fetch('http://localhost:3000/accept-session-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, tutorEmail, learnerEmail })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('✅ Session accepted! Timer started. Go to Messages to chat with the learner.');
+            // Redirect to messages page
+            setTimeout(() => {
+                window.location.href = 'messages.html';
+            }, 1500);
+        } else {
+            showToast(data.message || 'Failed to accept session');
+        }
+    } catch (error) {
+        console.error('Error accepting session:', error);
+        showToast('Error accepting session');
+    }
+}
+
+async function rejectSessionRequest(sessionId) {
+    const confirmed = confirm('Reject this session request?');
+    if (!confirmed) return;
+    
+    try {
+        await fetch('http://localhost:3000/reject-session-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        });
+        showToast('Session request rejected');
+        // Refresh the page to remove the request
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    } catch (error) {
+        console.error('Error rejecting session:', error);
+        showToast('Error rejecting session');
+    }
+}
+
+// Accept connection request (not session request)
+async function acceptConnectionRequest(requestId, learnerEmail) {
     const tutorEmail = localStorage.getItem('userEmail');
     
-    const confirmed = confirm('Accept this connection request? The learner will spend 1 credit when you complete the session.');
+    const confirmed = confirm('Accept this connection request? The learner will be able to message you and request sessions.');
     if (!confirmed) return;
     
     try {
@@ -239,6 +367,7 @@ async function acceptRequest(requestId, learnerEmail) {
         if (data.success) {
             showToast('✅ Connection accepted! You can now message each other.');
             loadPendingRequests();
+            loadPendingSessionRequests();
         } else {
             showToast(data.message || 'Failed to accept request');
         }
@@ -248,7 +377,7 @@ async function acceptRequest(requestId, learnerEmail) {
     }
 }
 
-async function rejectRequest(requestId) {
+async function rejectConnectionRequest(requestId) {
     const confirmed = confirm('Reject this connection request?');
     if (!confirmed) return;
     
@@ -260,17 +389,53 @@ async function rejectRequest(requestId) {
         });
         showToast('Request rejected');
         loadPendingRequests();
+        loadPendingSessionRequests();
     } catch (error) {
         console.error('Error rejecting request:', error);
         showToast('Error rejecting request');
     }
 }
 
-// Make functions global
-window.acceptRequest = acceptRequest;
-window.rejectRequest = rejectRequest;
+// Check if user has an active session
+async function checkActiveSession() {
+    const email = localStorage.getItem('userEmail');
+    if (!email) return false;
+    
+    try {
+        const response = await fetch('http://localhost:3000/get-active-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        
+        if (data.success && data.session && data.session.status === 'active') {
+            // Show active session indicator in sidebar or topbar
+            const activeSessionIndicator = document.getElementById('activeSessionIndicator');
+            if (activeSessionIndicator) {
+                activeSessionIndicator.style.display = 'flex';
+            }
+            return true;
+        } else {
+            const activeSessionIndicator = document.getElementById('activeSessionIndicator');
+            if (activeSessionIndicator) {
+                activeSessionIndicator.style.display = 'none';
+            }
+            return false;
+        }
+    } catch (error) {
+        console.error('Error checking active session:', error);
+        return false;
+    }
+}
 
-// Initialize
+// Make functions global
+window.acceptConnectionRequest = acceptConnectionRequest;
+window.rejectConnectionRequest = rejectConnectionRequest;
+window.acceptSessionRequest = acceptSessionRequest;
+window.rejectSessionRequest = rejectSessionRequest;
+
+// Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
   const userEmail = localStorage.getItem('userEmail');
   if (!userEmail) {
@@ -286,6 +451,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   loadUserInfo();
   updateCreditsDisplay(getCredits());
-  loadPendingRequests();  // <-- This loads pending connection requests
+  loadPendingRequests();
+  loadPendingSessionRequests();
+  checkActiveSession();
   setupLogout();
+  
+  // Refresh pending requests every 30 seconds
+  setInterval(() => {
+    loadPendingRequests();
+    loadPendingSessionRequests();
+    checkActiveSession();
+  }, 30000);
 });

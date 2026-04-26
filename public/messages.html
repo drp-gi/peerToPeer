@@ -69,11 +69,75 @@
       </div>
       
       <div class="chat-area" id="chatArea">
-        <div class="no-connection">
-          <div class="no-connection-icon">💬</div>
-          <h4>No conversation selected</h4>
-          <p>Select a conversation from the sidebar to start messaging</p>
-        </div>
+          <div class="no-connection">
+              <div class="no-connection-icon">💬</div>
+              <h4>No conversation selected</h4>
+              <p>Select a conversation from the sidebar to start messaging</p>
+          </div>
+      </div>
+
+      <!-- Session Status Modal -->
+      <div id="sessionModal" class="session-modal" style="display:none;">
+          <div class="session-modal-content">
+              <div class="session-modal-header">
+                  <h3 id="sessionModalTitle">Active Session</h3>
+                  <button class="session-modal-close" onclick="closeSessionModal()">&times;</button>
+              </div>
+              <div class="session-modal-body" id="sessionModalBody">
+                  <div class="session-timer" id="sessionTimerDisplay">30:00</div>
+                  <div class="session-info" id="sessionInfo"></div>
+                  <div class="session-actions" id="sessionActions">
+                      <button class="session-btn-complete" id="completeSessionBtn">Complete Session</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Rating Modal -->
+      <div id="ratingModal" class="rating-modal" style="display:none;">
+          <div class="rating-modal-content">
+              <h3>Rate Your Session</h3>
+              <div class="rating-stars" id="ratingStars">
+                  <span data-rating="1">★</span>
+                  <span data-rating="2">★</span>
+                  <span data-rating="3">★</span>
+                  <span data-rating="4">★</span>
+                  <span data-rating="5">★</span>
+              </div>
+              <textarea id="ratingFeedback" placeholder="Share your feedback about the session..." rows="3"></textarea>
+              <div class="rating-actions">
+                  <button class="rating-btn-submit" id="submitRatingBtn">Submit Rating</button>
+                  <button class="rating-btn-skip" id="skipRatingBtn">Skip</button>
+              </div>
+          </div>
+      </div>
+
+      <!-- Session Request Modal -->
+      <div id="sessionRequestModal" class="session-modal" style="display:none;">
+          <div class="session-modal-content">
+              <div class="session-modal-header">
+                  <h3>Request a Session</h3>
+                  <button class="session-modal-close" onclick="closeSessionRequestModal()">&times;</button>
+              </div>
+              <div class="session-modal-body">
+                  <div class="session-request-info" id="sessionRequestTutorInfo"></div>
+                  <div class="form-group">
+                      <label>Subject/Topic</label>
+                      <input type="text" id="sessionSubject" placeholder="What subject do you need help with?" class="session-input">
+                  </div>
+                  <div class="form-group">
+                      <label>Additional Notes (optional)</label>
+                      <textarea id="sessionNotes" placeholder="Any specific topics or questions you'd like to cover?" rows="3" class="session-textarea"></textarea>
+                  </div>
+                  <div class="session-request-info">
+                      <span class="credit-warning">⚠️ This will cost 1 credit (30 minutes of tutoring)</span>
+                  </div>
+                  <div class="session-actions">
+                      <button class="session-btn-send" id="sendSessionRequestBtn">Send Request</button>
+                      <button class="session-btn-cancel" onclick="closeSessionRequestModal()">Cancel</button>
+                  </div>
+              </div>
+          </div>
       </div>
     </div>
   </div>

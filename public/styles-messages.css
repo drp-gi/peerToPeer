@@ -1,5 +1,3 @@
-/* Messages Page Styles */
-
 /* Page Header */
 .pg-title {
   font-size: 26px;
@@ -364,4 +362,361 @@
 
 .toast.toast-show {
   bottom: 30px;
+}
+
+/* Session Request Button */
+.chat-header-actions {
+    margin-left: auto;
+}
+
+.session-request-btn {
+    background: linear-gradient(135deg, #f5a623 0%, #e0951a 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.session-request-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.session-request-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Session Modal */
+.session-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.session-modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 450px;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.session-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #29b6d8 0%, #1fa0be 100%);
+    color: white;
+}
+
+.session-modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.session-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.session-modal-body {
+    padding: 24px;
+}
+
+.session-timer {
+    font-size: 48px;
+    font-weight: 800;
+    text-align: center;
+    color: #f5a623;
+    margin-bottom: 20px;
+    font-family: monospace;
+}
+
+.session-info {
+    margin-bottom: 20px;
+}
+
+.session-info p {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.session-subject {
+    font-weight: 600;
+    color: #333;
+    background: #f5f5f5;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.session-notes {
+    color: #666;
+    font-style: italic;
+    background: #f9f9f9;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.session-status-active {
+    color: #4caf7d;
+    font-weight: 600;
+}
+
+.session-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.session-btn-accept {
+    background: #4caf7d;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.session-btn-accept:hover {
+    background: #3e9a6b;
+}
+
+.session-btn-reject {
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.session-btn-reject:hover {
+    background: #e03e4c;
+}
+
+.session-btn-complete {
+    background: #f5a623;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.session-btn-complete:hover {
+    background: #e0951a;
+}
+
+.session-btn-send {
+    background: #29b6d8;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex: 1;
+}
+
+.session-btn-send:hover {
+    background: #1fa0be;
+}
+
+.session-btn-cancel {
+    background: #e5e5e5;
+    color: #666;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.session-btn-cancel:hover {
+    background: #d5d5d5;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.session-input, .session-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.session-input:focus, .session-textarea:focus {
+    border-color: #29b6d8;
+}
+
+.session-textarea {
+    resize: vertical;
+}
+
+.credit-warning {
+    display: block;
+    font-size: 12px;
+    color: #e05555;
+    background: #ffeaea;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.session-request-info {
+    margin-bottom: 12px;
+}
+
+/* Rating Modal */
+.rating-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+}
+
+.rating-modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    animation: modalSlideIn 0.3s ease;
+}
+
+.rating-modal-content h3 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.rating-stars span {
+    font-size: 40px;
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.2s;
+}
+
+.rating-stars span:hover,
+.rating-stars span.active {
+    color: #f5a623;
+}
+
+.rating-modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 20px;
+    outline: none;
+}
+
+.rating-modal-content textarea:focus {
+    border-color: #29b6d8;
+}
+
+.rating-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.rating-btn-submit {
+    background: #29b6d8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rating-btn-skip {
+    background: #e5e5e5;
+    color: #666;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
 }
