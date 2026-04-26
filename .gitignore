@@ -2,3 +2,6 @@ node_modules/
 users.db
 .DS_Store
 .env
+tandem.db
+tandem.db-shm
+tandem.db-wal
