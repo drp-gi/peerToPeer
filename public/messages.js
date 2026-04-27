@@ -72,7 +72,7 @@ async function loadConnections() {
 
 async function checkUserSessionStatus(email) {
     try {
-        const response = await fetch('http://localhost:3000/get-active-session', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-active-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email })
@@ -175,7 +175,7 @@ async function selectChat(chatEmail, chatName) {
 
 async function loadActiveSession() {
     try {
-        const response = await fetch('http://localhost:3000/get-active-session', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-active-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: userEmail })
@@ -314,7 +314,7 @@ function updateChatHeaderSessionStatus(inSession) {
 
 async function acceptSessionRequest(sessionId, tutorEmail, learnerEmail) {
     try {
-        const response = await fetch('http://localhost:3000/accept-session-request', {
+        const response = await fetch('https://tandem-yq99.onrender.com/accept-session-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId, tutorEmail, learnerEmail })
@@ -337,7 +337,7 @@ async function acceptSessionRequest(sessionId, tutorEmail, learnerEmail) {
 
 async function rejectSessionRequest(sessionId) {
     try {
-        const response = await fetch('http://localhost:3000/reject-session-request', {
+        const response = await fetch('https://tandem-yq99.onrender.com/reject-session-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId })
@@ -443,7 +443,7 @@ async function completeSessionWithoutRating() {
     if (!currentSession || !currentSession.id) return;
     
     try {
-        const response = await fetch('http://localhost:3000/complete-session', {
+        const response = await fetch('https://tandem-yq99.onrender.com/complete-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -480,7 +480,7 @@ async function submitSessionCompletion(rating, feedback) {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/complete-session', {
+        const response = await fetch('https://tandem-yq99.onrender.com/complete-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -556,7 +556,7 @@ async function sendSessionRequest(tutorEmail) {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/send-session-request', {
+        const response = await fetch('https://tandem-yq99.onrender.com/send-session-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

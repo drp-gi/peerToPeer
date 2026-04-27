@@ -44,7 +44,7 @@ async function setCredits(amount) {
   const email = localStorage.getItem('userEmail');
   if (email) {
     try {
-      await fetch('http://localhost:3000/update-credits', {
+      await fetch('https://tandem-yq99.onrender.com/update-credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, credits: amount })
@@ -107,7 +107,7 @@ async function setupLogout() {
 
     if (email && currentCredits) {
       try {
-        await fetch('http://localhost:3000/update-credits', {
+        await fetch('https://tandem-yq99.onrender.com/update-credits ', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, credits: currentCredits })
@@ -130,7 +130,7 @@ async function loadCreditsFromDatabase() {
   if (!email) return false;
   
   try {
-    const response = await fetch('http://localhost:3000/get-user-data', {
+    const response = await fetch('https://tandem-yq99.onrender.com/get-user-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -166,7 +166,7 @@ async function loadPendingRequests() {
     if (!email) return;
     
     try {
-        const response = await fetch('http://localhost:3000/get-pending-requests', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-pending-requests', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -228,7 +228,7 @@ async function loadPendingSessionRequests() {
     if (!email) return;
     
     try {
-        const response = await fetch('http://localhost:3000/get-pending-session-requests', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-pending-session-requests', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tutorEmail: email })
@@ -306,7 +306,7 @@ async function acceptSessionRequest(sessionId, tutorEmail, learnerEmail) {
     if (!confirmed) return;
     
     try {
-        const response = await fetch('http://localhost:3000/accept-session-request', {
+        const response = await fetch('https://tandem-yq99.onrender.com/accept-session-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId, tutorEmail, learnerEmail })
@@ -333,7 +333,7 @@ async function rejectSessionRequest(sessionId) {
     if (!confirmed) return;
     
     try {
-        await fetch('http://localhost:3000/reject-session-request', {
+        await fetch('https://tandem-yq99.onrender.com/reject-session-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId })
@@ -357,7 +357,7 @@ async function acceptConnectionRequest(requestId, learnerEmail) {
     if (!confirmed) return;
     
     try {
-        const response = await fetch('http://localhost:3000/accept-request', {
+        const response = await fetch('https://tandem-yq99.onrender.com/accept-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ requestId, tutorEmail, learnerEmail })
@@ -382,7 +382,7 @@ async function rejectConnectionRequest(requestId) {
     if (!confirmed) return;
     
     try {
-        await fetch('http://localhost:3000/reject-request', {
+        await fetch('https://tandem-yq99.onrender.com/reject-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ requestId })
@@ -402,7 +402,7 @@ async function checkActiveSession() {
     if (!email) return false;
     
     try {
-        const response = await fetch('http://localhost:3000/get-active-session', {
+        const response = await fetch('https://tandem-yq99.onrender.com/get-active-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
