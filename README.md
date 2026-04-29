@@ -8,20 +8,38 @@ READ THIS PLS TO GET THE GIST OF HOW OUR WEBSITE WORKS (FLOW OF THE SITE)->
 
 https://docs.google.com/document/d/17OiwG9rmDQaGLFygZHHXRR4K_HmHCd7sJZskdv8B3j0/edit?usp=sharing<br>
 
-Folder directory as of April 10, 2026 \
-peerToPeer/ \
-│ server.js \
-│ package.json \
-│ package-lock.json \
-│ .gitignore \
-│ README.md \
-└───public/ \
-       &emsp;│ index.html \
-       &emsp;│ style.css \
-       &emsp;│ script.js \
-       &emsp;| complete-profile.html \
-       &emsp;|complete-profile.js
-
+LANDING PAGE
+   ↓
+LOGIN / SIGNUP
+   ↓
+USER DASHBOARD (Student + Mentor role possible)
+   ↓
+────────────────────────
+MATCHING SYSTEM (AI)
+   ↓
+CONNECT → MENTOR PROFILE MODAL
+   ↓
+SESSION REQUEST
+   ↓
+MENTOR ACCEPTS / REJECTS / RESCHEDULES
+   ↓
+SCHEDULING AGREEMENT
+   ↓
+SESSION CREATED (DATABASE)
+   ↓
+CALENDAR UPDATED (VIEW ONLY)
+   ↓
+NOTIFICATIONS SENT
+   ↓
+SESSION HAPPENS (Zoom/Meet)
+   ↓
+FEEDBACK SUBMITTED
+   ↓
+CREDITS + LEDGER UPDATED
+   ↓
+BADGES UPDATED
+   ↓
+MATCHING IMPROVES OVER TIME
 
 
 
