@@ -8,120 +8,190 @@ READ THIS PLS TO GET THE GIST OF HOW OUR WEBSITE WORKS (FLOW OF THE SITE)->
 
 https://docs.google.com/document/d/17OiwG9rmDQaGLFygZHHXRR4K_HmHCd7sJZskdv8B3j0/edit?usp=sharing<br>
 
-# 📌 Session Flow (Core Module)
+# 📌 Peer Learning System – Session Flow (Post‑Matching)
 
-🔘 **START POINT: User clicks “CONNECT”**
+This document describes the full system flow starting from when a student clicks **Connect** on a mentor.
 
-1. **Mentor Profile Modal Opens (Student Side)**  
-   User sees:  
-   - Name + profile  
-   - Overall rating  
-   - Subject ratings (e.g., Math ⭐4.8, English ⭐4.2)  
-   - Skills + interests  
-   - Badge (Foundational / Average / Expert)  
-   - Feedback highlights  
-   - Buttons: ✅ Request Session / ❌ Not a good match  
+---
 
-2. **If User Clicks “Request Session” (Student Side)**  
-   Popup appears:  
-   - 📚 Subject (dropdown from mentor’s subjects + ratings)  
-   - 👥 Session type: One‑on‑one / Group  
-   - 🕒 Preferred date & time  
-   - 👉 Send Request  
+## 🔘 1. Connect (Student Side)
+- Student clicks **Connect** → Mentor Profile Modal opens
+- Displays:
+  - Name & Profile
+  - Overall Rating
+  - Subject Ratings (e.g., Math ⭐4.8)
+  - Skills & Interests
+  - Badge (Foundational / Average / Expert)
+  - Feedback Highlights
+- Actions:
+  - ✅ Request Session
+  - ❌ Not a Good Match
 
-3. **Backend Action (System)**  
-   Creates a **SESSION REQUEST RECORD**:  
-   - status: "pending"  
-   - student_id  
-   - mentor_id  
-   - subject  
-   - preferred_time  
-   - session_type  
+---
 
-4. **Notification Triggered (System → Mentor Side)**  
-   Mentor receives: *“New session request from [Student]”*  
+## ❌ 2. Not a Good Match (Student Side)
+- If selected:
+  - User selects reason:
+    - Learning style mismatch
+    - Too advanced / too basic
+    - Communication issues
+    - Other
+- System actions:
+  - Store feedback
+  - Adjust future matching results
+  - Remove mentor from current suggestions
+  - Show new recommended mentors
 
-5. **Mentor Opens Request (Mentor Side)**  
-   Mentor sees:  
-   - student profile  
-   - subject requested  
-   - preferred time  
-   - session type  
+---
 
-6. **Mentor Decision (Mentor Side)**  
-   - ✅ ACCEPT → confirm time OR propose new time  
-   - ❌ REJECT  
+## ✅ 3. Request Session (Student Side)
+- Modal appears
+- User selects:
+  - Subject (from mentor’s subjects + ratings)
+  - Preferred Date & Time
+- Clicks **Send Request**
 
-7. **If Mentor Proposes New Time (Mentor Side)**  
-   - System sends notification to student  
-   - Student: Accepts new time OR rejects/suggests again  
-   - 👉 Loop continues until both agree  
+---
 
-8. **When Both Agree (Critical Point)**  
-   💥 Session is confirmed  
+## ⚙️ 4. Create Session Request (Backend)
+- New session request created:
+  - status: `pending`
+  - student_id
+  - mentor_id
+  - subject_id
+  - preferred_time
 
-9. **Backend Creates Final Session (System)**  
-   - status: "confirmed"  
-   - final_date  
-   - final_time  
-   - student_id  
-   - mentor_id  
-   - subject  
-   - session_type  
+---
 
-10. **Meeting Link Generation (System)**  
-    - Node.js calls Zoom API or Google Calendar API  
-    - Generates meeting link (e.g., `https://meet.google.com/xyz-abc`)  
+## 🔔 5. Notify Mentor (System → Mentor Side)
+- Mentor receives notification:  
+  *“New session request from [Student Name]”*
 
-11. **Save Link to Session (System)**  
-    - meeting_link: "https://..."  
+---
 
-12. **Calendar Update (Student + Mentor Side)**  
-    Both users see:  
-    - 📅 Example: May 3 – Math – 3:00 PM  
-    - Status: Confirmed  
-    - Button: “Join Session”  
+## 🧑‍🏫 6. Mentor Reviews Request (Mentor Side)
+- Mentor sees:
+  - Student profile
+  - Subject requested
+  - Preferred time
+- Actions:
+  - ✅ Accept (confirm or modify time)
+  - ❌ Reject
 
-13. **Notifications Sent (System)**  
-    - “Session confirmed”  
-    - “Click here to join”  
+---
 
-14. **Before Session (Optional)**  
-    - Reminder notifications (30 mins before)  
+## 🔁 7. Rescheduling Loop
+- If mentor proposes new time:
+  - Student notified
+  - Student can accept or suggest another time
+- Loop continues until both agree
 
-15. **Session Time (Student + Mentor Side)**  
-    - User clicks 👉 Join Session  
-    - Opens Zoom / Google Meet  
+---
 
-16. **After Session Ends (System)**  
-    - Trigger feedback prompt  
+## 💥 8. Session Confirmed
+- Once both agree → session confirmed
 
-17. **Feedback System (Student Side)**  
-    Student rates mentor:  
-    - clarity  
-    - helpfulness  
-    - teaching quality  
-    - Optional: written feedback  
+---
 
-18. **Backend Updates (System)**  
-    - 🧠 Matching system adjusts compatibility scores  
-    - ⭐ Mentor ratings updated (overall + subject)  
-    - 🏅 Badge system checks for upgrade/downgrade  
+## 🗂️ 9. Create Final Session (Backend)
+- Session record created:
+  - status: `confirmed`
+  - student_id
+  - mentor_id
+  - subject_id
+  - start_time
+  - end_time
+  - meeting_link (initially empty)
 
-19. **Credit System Trigger (System)**  
-    - Student credits (if applicable)  
-    - Mentor credits  
+---
 
-20. **Ledger Record Created (System)**  
-    - +0.5 credit → attended group session  
-    - +3 credits → weekly streak  
-    - Nothing deleted; full history kept  
+## 🔗 10. Generate Meeting Link (Backend)
+- Node.js calls:
+  - Google Calendar API OR Zoom API
+- Meeting link generated (e.g., `https://meet.google.com/xyz-abc`)
 
-21. **Quest System Update (System)**  
-    - Checks streaks, participation, rewards  
+---
 
-22. **Matching System Improves (System)**  
-    - Next time student searches: bad matches removed, better mentors ranked higher  
+## 💾 11. Save Meeting Link
+- Meeting link saved in session record
+
+---
+
+## 📅 12. Calendar Update
+- Both users see session in calendar:
+  - Example: *May 3 – Math – 3:00 PM*
+  - Status: Confirmed
+  - Button: **Join Session**
+
+---
+
+## 🔔 13. Notifications
+- Users receive:
+  - “Session confirmed”
+  - “Join link”
+
+---
+
+## ⏰ 14. Reminder (Optional)
+- System sends reminder ~30 minutes before session
+
+---
+
+## 🎥 15. Session Execution
+- At scheduled time:
+  - User clicks **Join Session**
+  - Opens Zoom / Google Meet
+
+---
+
+## 📝 16. After Session
+- System prompts student for feedback
+
+---
+
+## ⭐ 17. Feedback (Student Side)
+- Student rates mentor:
+  - Clarity
+  - Helpfulness
+  - Teaching Quality
+  - Optional comment
+
+---
+
+## ⚙️ 18. Backend Updates
+- System updates:
+  - Mentor ratings (overall + per subject)
+  - Matching system compatibility
+  - Badge status (upgrade, maintain, downgrade)
+
+---
+
+## 💰 19. Credit System
+- After completion:
+  - +0.5 credit awarded (attendance‑based)
+
+---
+
+## 📒 20. Ledger Entry
+- Record created:
+  - Example: `+0.5 → Completed tutoring session (Math, May 3)`
+- Ledger history is permanent
+
+---
+
+## 🎯 21. Quest System
+- System checks:
+  - Streaks
+  - Participation milestones
+
+---
+
+## 🔁 22. Matching Improves
+- Future mentor recommendations improve based on:
+  - Feedback
+  - User preferences
+  - Mentor performance
+
 
 
 <br><br><br>
