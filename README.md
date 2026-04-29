@@ -8,38 +8,30 @@ READ THIS PLS TO GET THE GIST OF HOW OUR WEBSITE WORKS (FLOW OF THE SITE)->
 
 https://docs.google.com/document/d/17OiwG9rmDQaGLFygZHHXRR4K_HmHCd7sJZskdv8B3j0/edit?usp=sharing<br>
 
-LANDING PAGE
-   ↓
-LOGIN / SIGNUP
-   ↓
-USER DASHBOARD (Student + Mentor role possible)
-   ↓
-────────────────────────
-MATCHING SYSTEM (AI)
-   ↓
-CONNECT → MENTOR PROFILE MODAL
-   ↓
-SESSION REQUEST
-   ↓
-MENTOR ACCEPTS / REJECTS / RESCHEDULES
-   ↓
-SCHEDULING AGREEMENT
-   ↓
-SESSION CREATED (DATABASE)
-   ↓
-CALENDAR UPDATED (VIEW ONLY)
-   ↓
-NOTIFICATIONS SENT
-   ↓
-SESSION HAPPENS (Zoom/Meet)
-   ↓
-FEEDBACK SUBMITTED
-   ↓
-CREDITS + LEDGER UPDATED
-   ↓
-BADGES UPDATED
-   ↓
-MATCHING IMPROVES OVER TIME
+# 📌 System Flow Overview
+
+## Landing → Dashboard → Matching → Session → Calendar → Feedback → Ledger → Badges
+
+- [ ] **Landing Page**
+- [ ] **Login / Signup**
+- [ ] **User Dashboard** (Student + Mentor role possible)
+
+---
+
+- [ ] **Matching System (AI)**
+- [ ] **Connect → Mentor Profile Modal**
+- [ ] **Session Request**
+- [ ] **Mentor Side:** Accepts / Rejects / Reschedules
+- [ ] **Scheduling Agreement**
+- [ ] **Session Created (Database)**
+- [ ] **Calendar Updated (View Only)**
+- [ ] **Notifications Sent**
+- [ ] **Session Happens (Zoom/Meet)**
+- [ ] **Feedback Submitted**
+- [ ] **Credits + Ledger Updated**
+- [ ] **Badges Updated**
+- [ ] **Matching Improves Over Time**
+
 
 
 
