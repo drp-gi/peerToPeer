@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles-mentors.css" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-notifications.css">
 </head>
 <body>
 
@@ -55,7 +56,17 @@
           <img src="/icons/crypto.png" alt="crypto">
         </div>
       </div>
-      <img src="/icons/bell.png" alt="bell" class="mini-coin">
+      <div class="notif-bell-wrap" id="notifBellWrap">
+        <img src="/icons/bell.png" alt="bell" class="mini-coin">
+        <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-dropdown-header">
+            <h4>🔔 Notifications</h4>
+            <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
+          </div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+      </div>
     </div>
 
     <div class="pg-title">AI Matchmaking</div>
@@ -139,6 +150,7 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="notifications.js"></script>
 <script src="mentors.js"></script>
 </body>
 </html>

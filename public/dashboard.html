@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles-dashboard.css" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-notifications.css">
 </head>
 <body>
 
@@ -49,14 +50,24 @@
   <div class="main">
 
     <div class="topbar">
-      <div class="credits-badge">
-        <span id="topCreditsBadge">5</span>
-        <div class="coin">
-          <img src="/icons/crypto.png" alt="crypto">
-        </div>
-      </div>
-      <img src="/icons/bell.png" alt="bell" class="mini-coin">
+  <div class="credits-badge">
+    <span id="topCreditsBadge">5</span>
+    <div class="coin">
+      <img src="/icons/crypto.png" alt="crypto">
     </div>
+  </div>
+  <div class="notif-bell-wrap" id="notifBellWrap">
+    <img src="/icons/bell.png" alt="bell" class="mini-coin">
+    <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+    <div class="notif-dropdown" id="notifDropdown">
+      <div class="notif-dropdown-header">
+        <h4>🔔 Notifications</h4>
+        <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
+      </div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+  </div>
+</div>
 
     <div class="profile-header">
       <div class="avatar" id="avatarContainer">
@@ -158,6 +169,7 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="notifications.js"></script>
 <script src="dashboard.js"></script>
 </body>
 </html>
