@@ -451,6 +451,14 @@ app.post('/accept-request', (req, res) => {
         console.log(`✅ Connection accepted: ${learnerEmail} <-> ${tutorEmail}`);
         logDatabaseStats();
 
+        createNotification(
+            learnerEmail,
+            'connection_accepted',
+            '🎉 Connection accepted!',
+            `Your connection request was accepted. You can now message each other and request sessions.`,
+            {}
+        );
+
         res.json({ success: true, message: 'Connection accepted!' });
     } catch (error) {
         console.error('Error accepting request:', error);
@@ -538,6 +546,27 @@ app.post('/send-message', (req, res) => {
             [senderEmail, receiverEmail, message]
         );
 
+        const senderUser = query('SELECT name, username FROM users WHERE email = ?', [senderEmail]);
+        const senderDisplayName = senderUser[0]?.username || senderUser[0]?.name || 'Someone';
+
+        const recentMsgNotif = query(
+            `SELECT id FROM notifications
+             WHERE recipient_email = ? AND type = 'new_message'
+             AND json_extract(data, '$.sender_email') = ?
+             AND created_at > datetime('now', '-5 minutes', 'localtime')`,
+            [receiverEmail, senderEmail]
+        );
+
+        if (recentMsgNotif.length === 0) {
+            createNotification(
+                receiverEmail,
+                'new_message',
+                `💬 New message from ${senderDisplayName}`,
+                message.length > 60 ? message.slice(0, 57) + '…' : message,
+                { sender_email: senderEmail }
+            );
+        }
+
         res.json({ success: true, message: 'Message sent' });
     } catch (error) {
         console.error('Error sending message:', error);
@@ -594,15 +623,29 @@ app.post('/send-session-request', (req, res) => {
         }
 
         query(
-            `INSERT INTO sessions (learner_email, tutor_email, subject, session_notes, status, created_at) 
-             VALUES (?, ?, ?, ?, 'pending', datetime('now', 'localtime'))`,
-            [learnerEmail, tutorEmail, subject, sessionNotes || '']
+        `INSERT INTO sessions (learner_email, tutor_email, subject, session_notes, status, created_at) 
+        VALUES (?, ?, ?, ?, 'pending', datetime('now', 'localtime'))`,
+        [learnerEmail, tutorEmail, subject, sessionNotes || '']
+        );
+
+        // Notify the mentor
+        const newSession = query('SELECT id FROM sessions WHERE learner_email = ? AND tutor_email = ? ORDER BY id DESC LIMIT 1', [learnerEmail, tutorEmail]);
+        const newSessionId = newSession[0]?.id;
+        const learnerUser = query('SELECT name, username FROM users WHERE email = ?', [learnerEmail]);
+        const learnerDisplayName = learnerUser[0]?.username || learnerUser[0]?.name || 'A learner';
+
+        createNotification(
+            tutorEmail,
+            'session_request',
+            `📅 New session request from ${learnerDisplayName}`,
+            `Wants help with: "${subject || 'General'}". Propose a schedule below.`,
+            { session_id: newSessionId, learner_email: learnerEmail, subject }
         );
 
         console.log(`📅 Session request sent from ${learnerEmail} to ${tutorEmail}`);
         logDatabaseStats();
-        
-        res.json({ success: true, message: 'Session request sent to tutor!' });
+
+    res.json({ success: true, message: 'Session request sent to tutor!' });
     } catch (error) {
         console.error('Error sending session request:', error);
         res.json({ success: false, message: 'Error sending session request' });
@@ -785,6 +828,242 @@ app.post('/get-session-history', (req, res) => {
     }
 });
 
+// ============ HELPER: CREATE A NOTIFICATION ============
+// Internal helper — call this from any route to notify a user
+function createNotification(recipientEmail, type, title, body, extraData = {}) {
+    try {
+        query(
+            `INSERT INTO notifications (recipient_email, type, title, body, data, is_read, created_at)
+             VALUES (?, ?, ?, ?, ?, 0, datetime('now', 'localtime'))`,
+            [recipientEmail, type, title, body, JSON.stringify(extraData)]
+        );
+    } catch (err) {
+        console.error('Error creating notification:', err);
+    }
+}
+
+
+// ============ GET NOTIFICATIONS ============
+app.post('/get-notifications', (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.json({ success: false, message: 'Email required' });
+
+    try {
+        const notifications = query(
+            `SELECT * FROM notifications
+             WHERE recipient_email = ?
+             ORDER BY created_at DESC
+             LIMIT 50`,
+            [email]
+        );
+        res.json({ success: true, notifications });
+    } catch (err) {
+        console.error('Error getting notifications:', err);
+        res.json({ success: false, notifications: [] });
+    }
+});
+
+
+// ============ MARK ALL NOTIFICATIONS READ ============
+app.post('/mark-notifications-read', (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.json({ success: false });
+
+    try {
+        query(
+            `UPDATE notifications SET is_read = 1 WHERE recipient_email = ?`,
+            [email]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error marking notifications read:', err);
+        res.json({ success: false });
+    }
+});
+
+
+// ============ MARK ONE NOTIFICATION READ ============
+app.post('/mark-notification-read', (req, res) => {
+    const { email, notifId } = req.body;
+    if (!email || !notifId) return res.json({ success: false });
+
+    try {
+        query(
+            `UPDATE notifications SET is_read = 1
+             WHERE id = ? AND recipient_email = ?`,
+            [notifId, email]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error marking notification read:', err);
+        res.json({ success: false });
+    }
+});
+
+
+// ============ PROPOSE SCHEDULE (Mentor → Learner) ============
+// Mentor sees a session_request notification, picks a time, and sends it.
+// This sets the session status to 'scheduled', stores the proposed time,
+// and sends a 'session_scheduled' notification to the learner.
+app.post('/propose-schedule', (req, res) => {
+    const { sessionId, tutorEmail, learnerEmail, scheduledTime, tutorName } = req.body;
+
+    if (!sessionId || !tutorEmail || !learnerEmail || !scheduledTime) {
+        return res.json({ success: false, message: 'Missing required fields' });
+    }
+
+    try {
+        // Verify session exists and belongs to this tutor
+        const sessions = query(
+            `SELECT * FROM sessions WHERE id = ? AND tutor_email = ? AND status = 'pending'`,
+            [sessionId, tutorEmail]
+        );
+
+        if (sessions.length === 0) {
+            return res.json({ success: false, message: 'Session not found or already handled' });
+        }
+
+        const session = sessions[0];
+
+        // Update session with proposed schedule
+        query(
+            `UPDATE sessions
+             SET status = 'scheduled', scheduled_time = ?, updated_at = datetime('now','localtime')
+             WHERE id = ?`,
+            [scheduledTime, sessionId]
+        );
+
+        // Notify the learner
+        const prettyTime = new Date(scheduledTime).toLocaleString([], {
+            weekday: 'short', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true
+        });
+
+        createNotification(
+            learnerEmail,
+            'session_scheduled',
+            `📅 Session scheduled by ${tutorName || 'your mentor'}`,
+            `Proposed time: ${prettyTime} — for "${session.subject || 'your session'}". Accept or decline below.`,
+            { session_id: sessionId, scheduled_time: scheduledTime, tutor_email: tutorEmail }
+        );
+
+        console.log(`📅 Schedule proposed for session ${sessionId}: ${scheduledTime}`);
+        res.json({ success: true, message: 'Schedule proposal sent to learner!' });
+    } catch (err) {
+        console.error('Error proposing schedule:', err);
+        res.json({ success: false, message: 'Server error' });
+    }
+});
+
+
+// ============ RESPOND TO SCHEDULE (Learner accepts/declines) ============
+app.post('/respond-schedule', (req, res) => {
+    const { sessionId, learnerEmail, learnerName, accepted } = req.body;
+
+    if (!sessionId || !learnerEmail) {
+        return res.json({ success: false, message: 'Missing required fields' });
+    }
+
+    try {
+        // Fetch session
+        const sessions = query(
+            `SELECT * FROM sessions WHERE id = ? AND learner_email = ? AND status = 'scheduled'`,
+            [sessionId, learnerEmail]
+        );
+
+        if (sessions.length === 0) {
+            return res.json({ success: false, message: 'Session not found or already responded to' });
+        }
+
+        const session = sessions[0];
+        const tutorEmail = session.tutor_email;
+
+        if (accepted) {
+            // ── ACCEPT ────────────────────────────────────────────
+            // Verify learner has credits
+            const learnerResult = query('SELECT credits FROM users WHERE email = ?', [learnerEmail]);
+            if (!learnerResult.length || learnerResult[0].credits < 1) {
+                return res.json({ success: false, message: 'Not enough credits to accept session.' });
+            }
+
+            const tutorResult = query('SELECT credits FROM users WHERE email = ?', [tutorEmail]);
+            const learnerCredits = learnerResult[0].credits;
+            const tutorCredits   = tutorResult[0]?.credits || 0;
+
+            // Deduct from learner, add to tutor
+            query('UPDATE users SET credits = ? WHERE email = ?', [learnerCredits - 1, learnerEmail]);
+            query('UPDATE users SET credits = ? WHERE email = ?', [tutorCredits + 1, tutorEmail]);
+
+            // Activate the session
+            query(
+                `UPDATE sessions
+                 SET status = 'active', session_start = datetime('now','localtime'), updated_at = datetime('now','localtime')
+                 WHERE id = ?`,
+                [sessionId]
+            );
+
+            // Record transaction
+            query(
+                `INSERT INTO transactions (from_email, to_email, amount, type, session_id, created_at)
+                 VALUES (?, ?, 1, 'session_payment', ?, datetime('now','localtime'))`,
+                [learnerEmail, tutorEmail, sessionId]
+            );
+
+            // Notify tutor
+            createNotification(
+                tutorEmail,
+                'schedule_accepted',
+                `✅ ${learnerName || 'Learner'} accepted the schedule`,
+                `Session for "${session.subject || 'your topic'}" is now active! Go to Messages to begin.`,
+                { session_id: sessionId, learner_email: learnerEmail }
+            );
+
+            // Notify learner (credit loss)
+            createNotification(
+                learnerEmail,
+                'credit_loss',
+                '💸 1 credit spent',
+                `1 credit was deducted for your session on "${session.subject || 'your topic'}".`,
+                { session_id: sessionId, amount: -1 }
+            );
+
+            // Notify tutor (credit gain)
+            createNotification(
+                tutorEmail,
+                'credit_gain',
+                '💰 1 credit earned',
+                `You earned 1 credit for accepting the session on "${session.subject || 'your topic'}".`,
+                { session_id: sessionId, amount: 1 }
+            );
+
+            console.log(`✅ Schedule accepted: session ${sessionId} is now active`);
+            res.json({ success: true, message: 'Session accepted and is now active!' });
+
+        } else {
+            // ── DECLINE ───────────────────────────────────────────
+            query(
+                `UPDATE sessions SET status = 'rejected', updated_at = datetime('now','localtime') WHERE id = ?`,
+                [sessionId]
+            );
+
+            // Notify tutor
+            createNotification(
+                tutorEmail,
+                'schedule_declined',
+                `❌ ${learnerName || 'Learner'} declined the schedule`,
+                `The proposed time for "${session.subject || 'your session'}" was declined. You may propose a new time.`,
+                { session_id: sessionId, learner_email: learnerEmail }
+            );
+
+            console.log(`❌ Schedule declined: session ${sessionId}`);
+            res.json({ success: true, message: 'Schedule declined.' });
+        }
+    } catch (err) {
+        console.error('Error responding to schedule:', err);
+        res.json({ success: false, message: 'Server error' });
+    }
+});
+
 // ============ CREATE TABLES ============
 function initDatabase() {
     db.pragma('foreign_keys = ON');
@@ -882,14 +1161,30 @@ function initDatabase() {
             FOREIGN KEY (tutor_email) REFERENCES users(email)
         )
     `;
+     const createNotificationsTable = `
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            recipient_email TEXT NOT NULL,
+            type TEXT NOT NULL,
+            title TEXT,
+            body TEXT,
+            data TEXT,
+            is_read INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (recipient_email) REFERENCES users(email)
+        )
+    `;
 
-    try {
+
+     try {
         query(createUsersTable);
         query(createConnectionRequestsTable);
         query(createConnectionsTable);
         query(createMessagesTable);
         query(createTransactionsTable);
         query(createSessionsTable);
+        query(createNotificationsTable);
+        try { query('ALTER TABLE sessions ADD COLUMN scheduled_time DATETIME'); } catch(e) {}
         console.log('✅ Database tables ready');
         logDatabaseStats();
         console.log('🚀 Server ready for connections\n');
