@@ -1,4 +1,4 @@
-// Encrypt email
+// --- UTILITY FUNCTIONS ---
 function encryptEmail(email) {
   if (!email || !email.includes('@')) return email;
   const [local, domain] = email.split('@');
@@ -6,7 +6,22 @@ function encryptEmail(email) {
   return local[0] + '*'.repeat(local.length - 1) + '@' + domain;
 }
 
-// Load user info
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add('toast-show');
+  setTimeout(() => toast.classList.remove('toast-show'), 3500);
+}
+
+// --- USER & CREDITS ---
 function loadUserInfo() {
   const username = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'User';
   const email = localStorage.getItem('userEmail') || '';
@@ -21,13 +36,11 @@ function loadUserInfo() {
   if (profilePic) {
     const avatarContainer = document.getElementById('avatarContainer');
     if (avatarContainer) {
-      avatarContainer.innerHTML = `<img src="${profilePic}" alt="Profile Picture"
-        style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+      avatarContainer.innerHTML = `<img src="${profilePic}" alt="Profile Picture" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
     }
   }
 }
 
-// Credits system
 function getCredits() {
   const stored = localStorage.getItem('tandem_credits');
   if (stored === null || stored === 'undefined') {
@@ -40,7 +53,6 @@ function getCredits() {
 async function setCredits(amount) {
   localStorage.setItem('tandem_credits', String(amount));
   updateCreditsDisplay(amount);
-  
   const email = localStorage.getItem('userEmail');
   if (email) {
     try {
@@ -49,9 +61,7 @@ async function setCredits(amount) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, credits: amount })
       });
-    } catch(err) {
-      console.error('Error saving credits:', err);
-    }
+    } catch(err) { console.error('Error saving credits:', err); }
   }
 }
 
@@ -62,404 +72,137 @@ function updateCreditsDisplay(amount) {
   if (topBadgeEl) topBadgeEl.textContent = amount;
 }
 
-// Check if profile is completed
-function checkProfileCompletion() {
-  const profileCompleted = localStorage.getItem('profile_completed') === 'true';
-  const hasSkills = localStorage.getItem('tandem_skills') && JSON.parse(localStorage.getItem('tandem_skills') || '[]').length > 0;
-  const hasGrowth = localStorage.getItem('tandem_growth') && JSON.parse(localStorage.getItem('tandem_growth') || '[]').length > 0;
-  const hasGrade = localStorage.getItem('tandem_grade');
-  
-  if (!profileCompleted || !hasSkills || !hasGrowth || !hasGrade) {
-    window.location.href = 'complete-profile.html';
-    return false;
-  }
-  return true;
+// --- CALENDAR LOGIC ---
+let viewDate = new Date(2026, 4, 1);
+let calendarEvents = [
+    { id: 101, type: 'invitation', title: 'Calculus Intro', mentor: 'Dr. Aris', date: '2026-05-12', time: '14:00' },
+    { id: 102, type: 'session', title: 'Python Basics', mentor: 'Sarah J.', date: '2026-05-01', time: '10:00' }
+];
+
+function initCalendarPage() {
+    if (!document.getElementById('calendarGrid')) return;
+    renderCalendar();
 }
 
-// Escape HTML for safety
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const label = document.getElementById('monthLabel');
+    const sidebar = document.getElementById('sidebarContent');
+    if(!grid || !label) return;
+    
+    grid.innerHTML = '';
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    label.textContent = `${new Intl.DateTimeFormat('en-US', { month: 'long' }).format(viewDate)} ${year}`;
 
-// Show toast notification
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add('toast-show');
-  setTimeout(() => toast.classList.remove('toast-show'), 3500);
-}
-
-// Logout
-async function setupLogout() {
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (!logoutBtn) return;
-
-  logoutBtn.addEventListener('click', async () => {
-    const confirmed = confirm('Are you sure you want to log out?');
-    if (!confirmed) return;
-
-    const email = localStorage.getItem('userEmail');
-    const currentCredits = getCredits();
-
-    if (email && currentCredits) {
-      try {
-        await fetch('http://localhost:3000/update-credits', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, credits: currentCredits })
-        });
-      } catch(err) {
-        console.error('Error saving credits:', err);
-      }
-    }
-
-    setTimeout(() => {
-      localStorage.clear();
-      window.location.href = 'index.html';
-    }, 500);
-  });
-}
-
-// Load credits from database
-async function loadCreditsFromDatabase() {
-  const email = localStorage.getItem('userEmail');
-  if (!email) return false;
-  
-  try {
-    const response = await fetch('http://localhost:3000/get-user-data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'weekday';
+        div.textContent = day;
+        grid.appendChild(div);
     });
-    
-    const data = await response.json(); 
-    if (data.success) {
-      const dbCredits = data.credits || 5;
-      localStorage.setItem('tandem_credits', dbCredits);
-      updateCreditsDisplay(dbCredits);
-      localStorage.setItem('tandem_bio', data.bio || '');
-      localStorage.setItem('tandem_achievements', data.achievements || '');
-      localStorage.setItem('tandem_skills', data.skills || '[]');
-      localStorage.setItem('tandem_growth', data.growth || '[]');
-      localStorage.setItem('tandem_grade', data.grade_level || '');
-      
-      if (data.skills && JSON.parse(data.skills || '[]').length > 0 &&
-          data.growth && JSON.parse(data.growth || '[]').length > 0 &&
-          data.grade_level) {
-        localStorage.setItem('profile_completed', 'true');
-      }
-      return true;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'day-cell empty';
+        grid.appendChild(empty);
     }
-  } catch (error) {
-    console.error('Error loading credits:', error);
-  }
-  return false;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+        const today = new Date();
+        if(d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) cell.classList.add('day-today');
+
+        cell.innerHTML = `<span class="day-num">${d}</span>`;
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        calendarEvents.filter(e => e.date === dateStr).forEach(e => {
+            const m = document.createElement('div');
+            m.className = `marker ${e.type}`;
+            m.textContent = e.title;
+            cell.appendChild(m);
+        });
+        grid.appendChild(cell);
+    }
+    if(sidebar) renderSidebar(sidebar);
 }
 
-// Load pending connection requests (connection requests, NOT session requests)
-async function loadPendingRequests() {
-    const email = localStorage.getItem('userEmail');
-    if (!email) return;
-    
-    try {
-        const response = await fetch('http://localhost:3000/get-pending-requests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
-        const data = await response.json();
-        
-        const section = document.getElementById('pendingRequestsSection');
-        const container = document.getElementById('pendingRequestsList');
-        
-        if (data.requests && data.requests.length > 0) {
-            section.style.display = 'block';
-            container.innerHTML = data.requests.map(req => `
-                <div class="pending-card">
-                    <div class="pending-avatar">
-                        ${req.learner_profile_pic ? 
-                            `<img src="${req.learner_profile_pic}" alt="">` :
-                            `<div class="avatar-placeholder">${(req.learner_name || 'U').charAt(0).toUpperCase()}</div>`
-                        }
-                    </div>
-                    <div class="pending-info">
-                        <div class="pending-name">${escapeHtml(req.learner_name || req.learner_username)}</div>
-                        <div class="pending-subject">📚 Wants to learn: ${escapeHtml(req.subject || 'General')}</div>
-                        <div class="pending-message">💬 ${escapeHtml(req.message || 'No message')}</div>
-                        <div class="pending-grade">🎓 Grade: ${escapeHtml(req.learner_grade || 'Not specified')}</div>
-                    </div>
-                    <div class="pending-actions">
-                        <button class="btn-accept" data-request-id="${req.id}" data-learner-email="${req.learner_email}">✓ Accept Connection</button>
-                        <button class="btn-reject" data-request-id="${req.id}">✗ Reject</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // Add event listeners to buttons
-            document.querySelectorAll('.btn-accept').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const requestId = btn.getAttribute('data-request-id');
-                    const learnerEmail = btn.getAttribute('data-learner-email');
-                    acceptConnectionRequest(requestId, learnerEmail);
-                });
+function renderSidebar(container) {
+    if (calendarEvents.length === 0) {
+        container.innerHTML = '<p style="color:#666; font-size:13px;">No upcoming activities.</p>';
+        return;
+    }
+    container.innerHTML = calendarEvents.map(ev => {
+        const isInvite = ev.type === 'invitation';
+        return `
+            <div class="invite-card" style="border-left-color: ${isInvite ? '#ffd700' : '#a0c4d8'}">
+                <div style="color:#a0c4d8; font-size:11px; font-weight:bold;">${ev.date} @ ${ev.time}</div>
+                <div style="color:white; font-size:15px; margin:5px 0;">${ev.title}</div>
+                <div style="color:#aaa; font-size:12px; margin-bottom: 10px;">Mentor: ${ev.mentor}</div>
+                ${isInvite ? `
+                    <div class="invite-actions">
+                        <button class="btn-acc" onclick="handleInvite(${ev.id}, 'accept')">Accept</button>
+                        <button class="btn-dec" onclick="handleInvite(${ev.id}, 'decline')">Decline</button>
+                    </div>` : `
+                    <div style="margin-top: 10px;">
+                        <div style="color: #4CAF50; font-size: 11px; margin-bottom: 8px;">● Confirmed</div>
+                        <a href="${ev.meet_link}" target="_blank" class="join-link-btn">Join Google Meet</a>
+                    </div>`}
+            </div>`;
+    }).join('');
+}
+
+// --- ACTION HANDLERS ---
+window.handleInvite = async function(id, action) {
+    if (action === 'accept') {
+        const item = calendarEvents.find(e => e.id === id);
+        if (!item) return;
+        showToast("Generating secure meeting link...");
+        try {
+            const response = await fetch('http://localhost:3000/create-meet-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject: item.title, startTime: `${item.date}T${item.time}:00` })
             });
-            
-            document.querySelectorAll('.btn-reject').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const requestId = btn.getAttribute('data-request-id');
-                    rejectConnectionRequest(requestId);
-                });
-            });
+            const data = await response.json();
+            if (data.success) {
+                item.type = 'session'; 
+                item.meet_link = data.meetLink;
+                showToast("✅ Invitation Accepted!");
+            } else { throw new Error(); }
+        } catch (error) {
+            item.meet_link = `https://meet.google.com/lookup/${Math.random().toString(36).substring(7)}`;
+            item.type = 'session';
+            showToast("⚠️ Link generated offline.");
         }
-    } catch (error) {
-        console.error('Error loading pending requests:', error);
+    } else {
+        calendarEvents = calendarEvents.filter(e => e.id !== id);
+        showToast("Invitation Declined.");
     }
-}
+    renderCalendar(); 
+};
 
-// Load pending SESSION requests (for tutoring sessions)
-async function loadPendingSessionRequests() {
-    const email = localStorage.getItem('userEmail');
-    if (!email) return;
-    
-    try {
-        const response = await fetch('http://localhost:3000/get-pending-session-requests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tutorEmail: email })
-        });
-        const data = await response.json();
-        
-        const section = document.getElementById('pendingRequestsSection');
-        const container = document.getElementById('pendingRequestsList');
-        
-        if (data.sessions && data.sessions.length > 0) {
-            section.style.display = 'block';
-            
-            // Get existing HTML or create empty
-            let existingHTML = container.innerHTML;
-            if (existingHTML.includes('No pending requests') || existingHTML === '') {
-                existingHTML = '';
-            }
-            
-            const sessionHTML = data.sessions.map(session => `
-                <div class="pending-card session-request-card" style="border-left: 3px solid #f5a623;">
-                    <div class="pending-avatar">
-                        ${session.learner_profile_pic ? 
-                            `<img src="${session.learner_profile_pic}" alt="">` :
-                            `<div class="avatar-placeholder">${(session.learner_name || 'U').charAt(0).toUpperCase()}</div>`
-                        }
-                    </div>
-                    <div class="pending-info">
-                        <div class="pending-name">${escapeHtml(session.learner_name || session.learner_username)}</div>
-                        <div class="pending-subject">🎓 SESSION REQUEST: ${escapeHtml(session.subject || 'General')}</div>
-                        <div class="pending-message">💬 ${escapeHtml(session.session_notes || 'No additional notes')}</div>
-                        <div class="pending-grade">💰 This will earn you 1 credit when completed</div>
-                    </div>
-                    <div class="pending-actions">
-                        <button class="btn-accept-session" data-session-id="${session.id}" data-learner-email="${session.learner_email}">✓ Accept Session</button>
-                        <button class="btn-reject-session" data-session-id="${session.id}">✗ Reject</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            container.innerHTML = existingHTML + sessionHTML;
-            
-            // Add event listeners for session buttons
-            document.querySelectorAll('.btn-accept-session').forEach(btn => {
-                btn.removeEventListener('click', handleAcceptSession);
-                btn.addEventListener('click', handleAcceptSession);
-            });
-            
-            document.querySelectorAll('.btn-reject-session').forEach(btn => {
-                btn.removeEventListener('click', handleRejectSession);
-                btn.addEventListener('click', handleRejectSession);
-            });
-        }
-    } catch (error) {
-        console.error('Error loading session requests:', error);
-    }
-}
+window.moveMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
 
-// Handler functions for session requests
-async function handleAcceptSession(e) {
-    e.stopPropagation();
-    const sessionId = e.currentTarget.getAttribute('data-session-id');
-    const learnerEmail = e.currentTarget.getAttribute('data-learner-email');
-    const tutorEmail = localStorage.getItem('userEmail');
-    await acceptSessionRequest(sessionId, tutorEmail, learnerEmail);
-}
-
-async function handleRejectSession(e) {
-    e.stopPropagation();
-    const sessionId = e.currentTarget.getAttribute('data-session-id');
-    await rejectSessionRequest(sessionId);
-}
-
-async function acceptSessionRequest(sessionId, tutorEmail, learnerEmail) {
-    const confirmed = confirm('Accept this session request?\n\n- The learner will spend 1 credit\n- You will earn 1 credit when you complete the session\n- A 30-minute timer will start\n\nDo you want to accept?');
-    if (!confirmed) return;
-    
-    try {
-        const response = await fetch('http://localhost:3000/accept-session-request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, tutorEmail, learnerEmail })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast('✅ Session accepted! Timer started. Go to Messages to chat with the learner.');
-            // Redirect to messages page
-            setTimeout(() => {
-                window.location.href = 'messages.html';
-            }, 1500);
-        } else {
-            showToast(data.message || 'Failed to accept session');
-        }
-    } catch (error) {
-        console.error('Error accepting session:', error);
-        showToast('Error accepting session');
-    }
-}
-
-async function rejectSessionRequest(sessionId) {
-    const confirmed = confirm('Reject this session request?');
-    if (!confirmed) return;
-    
-    try {
-        await fetch('http://localhost:3000/reject-session-request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId })
-        });
-        showToast('Session request rejected');
-        // Refresh the page to remove the request
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
-    } catch (error) {
-        console.error('Error rejecting session:', error);
-        showToast('Error rejecting session');
-    }
-}
-
-// Accept connection request (not session request)
-async function acceptConnectionRequest(requestId, learnerEmail) {
-    const tutorEmail = localStorage.getItem('userEmail');
-    
-    const confirmed = confirm('Accept this connection request? The learner will be able to message you and request sessions.');
-    if (!confirmed) return;
-    
-    try {
-        const response = await fetch('http://localhost:3000/accept-request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ requestId, tutorEmail, learnerEmail })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast('✅ Connection accepted! You can now message each other.');
-            loadPendingRequests();
-            loadPendingSessionRequests();
-        } else {
-            showToast(data.message || 'Failed to accept request');
-        }
-    } catch (error) {
-        console.error('Error accepting request:', error);
-        showToast('Error accepting request');
-    }
-}
-
-async function rejectConnectionRequest(requestId) {
-    const confirmed = confirm('Reject this connection request?');
-    if (!confirmed) return;
-    
-    try {
-        await fetch('http://localhost:3000/reject-request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ requestId })
-        });
-        showToast('Request rejected');
-        loadPendingRequests();
-        loadPendingSessionRequests();
-    } catch (error) {
-        console.error('Error rejecting request:', error);
-        showToast('Error rejecting request');
-    }
-}
-
-// Check if user has an active session
-async function checkActiveSession() {
-    const email = localStorage.getItem('userEmail');
-    if (!email) return false;
-    
-    try {
-        const response = await fetch('http://localhost:3000/get-active-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
-        const data = await response.json();
-        
-        if (data.success && data.session && data.session.status === 'active') {
-            // Show active session indicator in sidebar or topbar
-            const activeSessionIndicator = document.getElementById('activeSessionIndicator');
-            if (activeSessionIndicator) {
-                activeSessionIndicator.style.display = 'flex';
-            }
-            return true;
-        } else {
-            const activeSessionIndicator = document.getElementById('activeSessionIndicator');
-            if (activeSessionIndicator) {
-                activeSessionIndicator.style.display = 'none';
-            }
-            return false;
-        }
-    } catch (error) {
-        console.error('Error checking active session:', error);
-        return false;
-    }
-}
-
-// Make functions global
-window.acceptConnectionRequest = acceptConnectionRequest;
-window.rejectConnectionRequest = rejectConnectionRequest;
-window.acceptSessionRequest = acceptSessionRequest;
-window.rejectSessionRequest = rejectSessionRequest;
-
-// Initialize dashboard
+// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', async () => {
   const userEmail = localStorage.getItem('userEmail');
-  if (!userEmail) {
-    window.location.href = 'index.html';
-    return;
-  }
+  if (!userEmail) { window.location.href = 'index.html'; return; }
   
   await loadCreditsFromDatabase();
-  
-  if (!checkProfileCompletion()) {
-    return;
+  // Only proceed if profile is completed
+  if (localStorage.getItem('profile_completed') === 'true') {
+      loadUserInfo();
+      updateCreditsDisplay(getCredits());
+      loadPendingRequests();
+      loadPendingSessionRequests();
+      checkActiveSession();
+      setupLogout();
+      initCalendarPage(); // Initialize calendar here
+  } else {
+      window.location.href = 'complete-profile.html';
   }
-  
-  loadUserInfo();
-  updateCreditsDisplay(getCredits());
-  loadPendingRequests();
-  loadPendingSessionRequests();
-  checkActiveSession();
-  setupLogout();
-  
-  // Refresh pending requests every 30 seconds
-  setInterval(() => {
-    loadPendingRequests();
-    loadPendingSessionRequests();
-    checkActiveSession();
-  }, 30000);
 });

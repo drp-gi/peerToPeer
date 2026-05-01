@@ -1199,3 +1199,50 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     initDatabase();
 });
+
+const { google } = require('googleapis');
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+// Load your credentials file
+const KEYFILE = 'path-to-your-service-account-key.json';
+const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
+
+const auth = new google.auth.GoogleAuth({
+  keyFile: KEYFILE,
+  scopes: SCOPES,
+});
+
+const calendar = google.calendar({ version: 'v3', auth });
+
+app.post('/create-meet-link', async (req, res) => {
+  try {
+    const { subject, startTime } = req.body;
+    const event = {
+      summary: `Tandem Session: ${subject}`,
+      description: 'Session created via Tandem App',
+      start: { dateTime: new Date(startTime).toISOString() },
+      end: { dateTime: new Date(new Date(startTime).getTime() + 3600000).toISOString() },
+      conferenceData: {
+        createRequest: {
+          requestId: `tandem-${Date.now()}`,
+          conferenceSolutionKey: { type: 'hangoutsMeet' },
+        },
+      },
+    };
+
+    const response = await calendar.events.insert({
+      calendarId: 'primary',
+      resource: event,
+      conferenceDataVersion: 1,
+    });
+
+    res.json({ success: true, meetLink: response.data.hangoutLink });
+  } catch (error) {
+    console.error('Google API Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to create meeting' });
+  }
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
