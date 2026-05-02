@@ -765,6 +765,29 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLogout();
     loadActiveSession();
     
+            // Auto-open chat if redirected from a notification
+        const autoOpenEmail = sessionStorage.getItem('openChatWith');
+        if (autoOpenEmail) {
+        sessionStorage.removeItem('openChatWith');
+        // Wait for connections to load, then find and open the right chat
+        setTimeout(async () => {
+            try {
+            const response = await fetch('http://localhost:3000/get-connections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userEmail })
+            });
+            const data = await response.json();
+            const conn = (data.connections || []).find(c => c.connected_email === autoOpenEmail);
+            if (conn) {
+                selectChat(conn.connected_email, conn.connected_username || conn.connected_name);
+            }
+            } catch (e) {
+            console.error('Error auto-opening chat:', e);
+            }
+        }, 800);
+        }
+    
     setInterval(() => {
         loadConnections();
         updateConnectionStatuses();
