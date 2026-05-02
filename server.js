@@ -192,7 +192,7 @@ app.post('/get-user-data', (req, res) => {
 
     try {
         const result = query(
-            'SELECT name, username, bio, achievements, skills, growth, credits, grade_level, profile_pic FROM users WHERE email = ?',
+           'SELECT name, username, bio, achievements, skills, growth, credits, grade_level, profile_pic, rating FROM users WHERE email = ?',
             [email]
         );
 
@@ -206,8 +206,9 @@ app.post('/get-user-data', (req, res) => {
                 skills: user.skills || '[]',
                 growth: user.growth || '[]',
                 grade_level: user.grade_level || '',
-                profile_pic: user.profile_pic || ''
-            });
+                profile_pic: user.profile_pic || '',
+                rating: user.rating || 0   // ← added this line
+                });
         } else {
             res.json({ success: false, message: 'User not found' });
         }
@@ -1231,9 +1232,22 @@ function initDatabase() {
     }
 }
 
+
+app.get('/debug-notifications', (req, res) => {
+  try {
+    const all = query('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 20');
+    const tables = query("SELECT name FROM sqlite_master WHERE type='table'");
+    res.json({ tables: tables.map(t => t.name), notifications: all });
+  } catch(err) {
+    res.json({ error: err.message });
+  }
+});
+
+
 // ============ START SERVER ============
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     initDatabase();
 });
+

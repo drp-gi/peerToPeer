@@ -64,53 +64,57 @@
     let actionsHTML = '';
  
     // --- Mentor receives a connection request ---
-    if (n.type === 'connection_request' && !n.is_read) {
-      // Build subject pills
+        if (n.type === 'connection_request' && !n.is_read && data.learner_email) {
       const subjects = (data.subject || '').split(',').map(s => s.trim()).filter(Boolean);
       const subjectPills = subjects.length
         ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;">
             ${subjects.map(s => `<span style="background:#2d3a6b;color:#a0b4f0;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">${esc(s)}</span>`).join('')}
-           </div>`
+          </div>`
         : '';
- 
+
       const msgLine = data.message
         ? `<div style="font-size:11.5px;color:#888;font-style:italic;margin-top:4px;">"${esc(data.message)}"</div>`
         : '';
- 
+
+      const safeEmail = esc(data.learner_email);
       actionsHTML = `
         ${subjectPills}
         ${msgLine}
         <div class="notif-actions">
           <button class="notif-btn notif-btn-accept"
-                  onclick="notifAcceptConnection('${esc(data.learner_email)}', ${n.id})">
+                  data-learner="${safeEmail}" data-notif="${n.id}"
+                  onclick="notifAcceptConnection(this.dataset.learner, ${n.id})">
             ✓ Accept
           </button>
           <button class="notif-btn notif-btn-decline"
-                  onclick="notifRejectConnection('${esc(data.learner_email)}', ${n.id})">
+                  data-learner="${safeEmail}" data-notif="${n.id}"
+                  onclick="notifRejectConnection(this.dataset.learner, ${n.id})">
             ✗ Reject
           </button>
         </div>`;
     }
  
     // --- Mentor sees a session request → they propose a schedule ---
-    if (n.type === 'session_request' && !n.is_read) {
-      actionsHTML = `
-        <div class="notif-schedule-form" id="schedForm_${n.id}">
-          <label>📅 Propose a date &amp; time for the session</label>
-          <input type="datetime-local" id="schedTime_${n.id}"
-                 min="${new Date().toISOString().slice(0,16)}">
-          <div class="notif-actions">
-            <button class="notif-btn notif-btn-accept"
-                    onclick="notifProposeSchedule(${n.id}, '${esc(data.session_id)}', '${esc(data.learner_email)}')">
-              Send Schedule
-            </button>
-            <button class="notif-btn notif-btn-decline"
-                    onclick="notifRejectSession('${esc(data.session_id)}', ${n.id})">
-              Reject
-            </button>
-          </div>
-        </div>`;
-    }
+    if (n.type === 'session_request' && !n.is_read && data.session_id && data.learner_email) {
+  const safeSessionId = esc(String(data.session_id));
+  const safeLearnerEmail = esc(data.learner_email);
+  actionsHTML = `
+    <div class="notif-schedule-form" id="schedForm_${n.id}">
+      <label>📅 Propose a date &amp; time for the session</label>
+      <input type="datetime-local" id="schedTime_${n.id}"
+             min="${new Date().toISOString().slice(0,16)}">
+      <div class="notif-actions">
+        <button class="notif-btn notif-btn-accept"
+                onclick="notifProposeSchedule(${n.id}, '${safeSessionId}', '${safeLearnerEmail}')">
+          Send Schedule
+        </button>
+        <button class="notif-btn notif-btn-decline"
+                onclick="notifRejectSession('${safeSessionId}', ${n.id})">
+          Reject
+        </button>
+      </div>
+    </div>`;
+}
  
     // --- Learner sees a proposed schedule → accept or decline ---
     if (n.type === 'session_scheduled' && !n.is_read) {
