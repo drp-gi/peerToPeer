@@ -463,3 +463,103 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkActiveSession();
   }, 30000);
 });
+// ===== BADGE DISPLAY =====
+async function loadUserBadge() {
+  const email = localStorage.getItem('userEmail');
+  if (!email) return;
+  try {
+    const res = await fetch('http://localhost:3000/get-badge', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!data.success) return;
+    const badge = data.badge || 'newcomer';
+    localStorage.setItem('tandem_badge', badge);
+    // Inject badge chip next to username
+    const nameEl = document.getElementById('profileUsername');
+    if (nameEl) {
+      const existing = nameEl.querySelector('.badge-chip');
+      if (existing) existing.remove();
+      const chip = document.createElement('span');
+      chip.className = `badge-chip badge-${badge}`;
+      const labels = { newcomer:'🌱 Newcomer', active:'✅ Active', rising:'⭐ Rising', expert:'🏆 Expert' };
+      chip.textContent = labels[badge] || badge;
+      nameEl.appendChild(chip);
+    }
+    // Grace warning
+    if (data.badge_grace_until) {
+      const graceDate = new Date(data.badge_grace_until).toLocaleDateString();
+      showToast(`⚠️ Badge at risk! Maintain your rating before ${graceDate}`);
+    }
+  } catch(e) { console.error('Badge load error:', e); }
+}
+
+// ===== QUESTS =====
+async function loadQuests() {
+  const email = localStorage.getItem('userEmail');
+  if (!email) return;
+  const container = document.getElementById('questsList');
+  if (!container) return;
+  container.innerHTML = '<div style="color:#666;font-size:13px;">Loading quests…</div>';
+  try {
+    const res = await fetch('http://localhost:3000/get-quests', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!data.success || !data.quests) { container.innerHTML = '<div style="color:#666;">Could not load quests.</div>'; return; }
+
+    container.innerHTML = '';
+    data.quests.forEach(q => {
+      const pct = Math.min(100, Math.round((q.progress / q.goal) * 100));
+      const done = q.progress >= q.goal;
+      const card = document.createElement('div');
+      card.className = `quest-card${done?' quest-done':''}${q.claimed?' quest-claimed':''}`;
+      card.innerHTML = `
+        <div class="quest-info">
+          <div class="quest-title">${q.title}</div>
+          <div class="quest-desc">${q.desc}</div>
+          <div class="quest-bar-wrap"><div class="quest-bar" style="width:${pct}%"></div></div>
+          <div class="quest-prog-lbl">${q.progress}/${q.goal} ${q.claimed ? '— Claimed ✅' : ''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div class="quest-reward">+${q.reward} 🪙</div>
+          ${done && !q.claimed
+            ? `<button class="quest-claim-btn" onclick="claimQuest('${q.id}', this)">Claim</button>`
+            : ''}
+        </div>`;
+      container.appendChild(card);
+    });
+  } catch(e) {
+    container.innerHTML = '<div style="color:#666;">Error loading quests.</div>';
+    console.error('Quest load error:', e);
+  }
+}
+
+async function claimQuest(questId, btn) {
+  const email = localStorage.getItem('userEmail');
+  if (!email) return;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const res = await fetch('http://localhost:3000/claim-quest', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, questId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`🎉 Quest reward: +${data.reward} credits!`);
+      await setCredits(data.newCredits);
+      loadQuests();
+    } else {
+      showToast(`❌ ${data.message || 'Could not claim'}`);
+      btn.disabled = false; btn.textContent = 'Claim';
+    }
+  } catch(e) { btn.disabled=false; btn.textContent='Claim'; }
+}
+
+// Attach to page init — call these after existing init
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadUserBadge, 600);
+  setTimeout(loadQuests, 800);
+});

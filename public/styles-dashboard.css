@@ -572,3 +572,43 @@ body {
   }
 }
 
+
+/* ===== QUESTS ===== */
+.quest-card {
+  background: #1c1c2e;
+  border: 1px solid #2e2e48;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.quest-card.quest-done { border-color: #4caf50; background: #1a2a1a; }
+.quest-card.quest-claimed { opacity: 0.55; }
+.quest-info { flex: 1; }
+.quest-title { font-weight: 700; font-size: 15px; color: #e0e0ff; }
+.quest-desc  { font-size: 12px; color: #888; margin-top: 2px; }
+.quest-bar-wrap { height: 6px; background: #2e2e48; border-radius: 4px; margin-top: 8px; }
+.quest-bar { height: 6px; border-radius: 4px; background: linear-gradient(90deg,#7c5cbf,#5e9bff); transition: width .5s; }
+.quest-prog-lbl { font-size: 11px; color: #666; margin-top: 3px; }
+.quest-reward { font-size: 13px; font-weight: 700; color: #ffd700; white-space: nowrap; }
+.quest-claim-btn {
+  background: linear-gradient(135deg,#7c5cbf,#5e9bff);
+  border: none; border-radius: 20px; color: #fff;
+  padding: 7px 16px; font-size: 13px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; margin-left: 8px;
+}
+.quest-claim-btn:hover { opacity: 0.85; }
+.badge-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.badge-newcomer  { background:#444; color:#ccc; }
+.badge-active    { background:#1565c0; color:#fff; }
+.badge-rising    { background:#6a1a9a; color:#fff; }
+.badge-expert    { background:linear-gradient(135deg,#f9a825,#e65100); color:#fff; }

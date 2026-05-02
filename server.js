@@ -269,13 +269,13 @@ app.post('/get-swipe-matches', (req, res) => {
         if (allExcludes.length > 0) {
             const placeholders = allExcludes.map(() => '?').join(',');
             otherUsers = query(
-                `SELECT email, name, username, bio, skills, growth, rating, profile_pic, credits, grade_level 
+                `SELECT email, name, username, bio, skills, growth, rating, teaching_quality, profile_pic, credits, grade_level 
                  FROM users WHERE email != ? AND email NOT IN (${placeholders})`,
                 [email, ...allExcludes]
             );
         } else {
             otherUsers = query(
-                'SELECT email, name, username, bio, skills, growth, rating, profile_pic, credits, grade_level FROM users WHERE email != ?',
+                'SELECT email, name, username, bio, skills, growth, rating, teaching_quality, profile_pic, credits, grade_level FROM users WHERE email != ?',
                 [email]
             );
         }
@@ -325,7 +325,10 @@ app.post('/get-swipe-matches', (req, res) => {
 
             let matchScore = normalizedLearnScore * gradeMultiplier;
             const skillBonus = Math.min(otherSkills.length, 10);
-            matchScore = Math.min(matchScore + skillBonus, 100);
+            // Factor in rating (0-5) and teaching quality (0-5) — up to 20 bonus pts
+            const ratingBonus = Math.round(((otherUser.rating || 0) / 5) * 10);
+            const teachingBonus = Math.round(((otherUser.teaching_quality || 0) / 5) * 10);
+            matchScore = Math.min(matchScore + skillBonus + ratingBonus + teachingBonus, 100);
 
             return {
                 ...otherUser,
@@ -770,12 +773,12 @@ app.post('/reject-session-request', (req, res) => {
 
 // ============ COMPLETE SESSION ============
 app.post('/complete-session', (req, res) => {
-    const { sessionId, rating, feedback } = req.body;
+    const { sessionId, rating, feedback, teachingQuality } = req.body;
 
     try {
         query(
-            `UPDATE sessions SET status = 'completed', rating = ?, feedback = ?, session_end = datetime('now', 'localtime') WHERE id = ?`,
-            [rating || null, feedback || null, sessionId]
+            `UPDATE sessions SET status = 'completed', rating = ?, teaching_quality = ?, feedback = ?, session_end = datetime('now', 'localtime') WHERE id = ?`,
+            [rating || null, teachingQuality || null, feedback || null, sessionId]
         );
         
         // Update tutor's rating average if rating provided
@@ -787,6 +790,7 @@ app.post('/complete-session', (req, res) => {
                 if (allRatings.length > 0 && allRatings[0].avg_rating) {
                     query('UPDATE users SET rating = ? WHERE email = ?', [allRatings[0].avg_rating, tutorEmail]);
                 }
+                refreshUserBadge(tutorEmail);
             }
         }
 
@@ -1185,6 +1189,23 @@ function initDatabase() {
         query(createSessionsTable);
         query(createNotificationsTable);
         try { query('ALTER TABLE sessions ADD COLUMN scheduled_time DATETIME'); } catch(e) {}
+        // Badge & teaching quality columns
+        try { query('ALTER TABLE users ADD COLUMN badge TEXT DEFAULT "newcomer"'); } catch(e) {}
+        try { query('ALTER TABLE users ADD COLUMN badge_at DATETIME'); } catch(e) {}
+        try { query('ALTER TABLE users ADD COLUMN badge_grace_until DATETIME'); } catch(e) {}
+        try { query('ALTER TABLE users ADD COLUMN teaching_quality REAL DEFAULT 0'); } catch(e) {}
+        // Teaching quality on sessions
+        try { query('ALTER TABLE sessions ADD COLUMN teaching_quality INTEGER'); } catch(e) {}
+        // Quest progress table
+        query(`CREATE TABLE IF NOT EXISTS quest_progress (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT UNIQUE NOT NULL,
+          daily_session_claimed_date TEXT,
+          week_streak_claimed INTEGER DEFAULT 0,
+          monthly_5_claimed_month TEXT,
+          consecutive_weeks_claimed INTEGER DEFAULT 0,
+          FOREIGN KEY (email) REFERENCES users(email)
+        )`);
         console.log('✅ Database tables ready');
         logDatabaseStats();
         console.log('🚀 Server ready for connections\n');
@@ -1198,4 +1219,267 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     initDatabase();
+});
+// ============ BADGE SYSTEM HELPERS ============
+function computeBadge(rating, sessionCount) {
+  if (sessionCount >= 10 && rating >= 4.5) return 'expert';
+  if (sessionCount >= 5  && rating >= 3.5) return 'rising';
+  if (sessionCount >= 1)                   return 'active';
+  return 'newcomer';
+}
+
+function refreshUserBadge(email) {
+  try {
+    const rows = query(
+      `SELECT u.rating,
+              (SELECT COUNT(*) FROM sessions WHERE tutor_email = ? AND status = 'completed') AS session_count,
+              u.badge, u.badge_at, u.badge_grace_until
+       FROM users u WHERE u.email = ?`, [email, email]);
+    if (!rows.length) return;
+    const { rating, session_count, badge: curBadge, badge_at, badge_grace_until } = rows[0];
+    const earned = computeBadge(rating || 0, session_count || 0);
+
+    // If they currently hold a higher badge but earned a lower one — give 30-day grace
+    const rank = { newcomer:0, active:1, rising:2, expert:3 };
+    if (rank[earned] < rank[curBadge || 'newcomer']) {
+      const gracePast = badge_grace_until && new Date(badge_grace_until) < new Date();
+      if (!badge_grace_until) {
+        // Set grace period
+        query(`UPDATE users SET badge_grace_until = datetime('now','+30 days','localtime') WHERE email = ?`, [email]);
+        createNotification(email, 'badge_warning',
+          `⚠️ Badge at risk`,
+          `Your ${curBadge} badge is at risk. Maintain your rating within 30 days to keep it!`, {});
+        return;
+      }
+      if (gracePast) {
+        // Grace expired — downgrade
+        query(`UPDATE users SET badge = ?, badge_at = datetime('now','localtime'), badge_grace_until = NULL WHERE email = ?`, [earned, email]);
+        createNotification(email, 'badge_downgraded',
+          `📉 Badge updated to ${earned}`,
+          `Your grace period ended. Keep improving to level up again!`, {});
+      }
+      // else still in grace — do nothing
+    } else {
+      // Upgrade or same level — clear grace and update if changed
+      if (earned !== curBadge) {
+        query(`UPDATE users SET badge = ?, badge_at = datetime('now','localtime'), badge_grace_until = NULL WHERE email = ?`, [earned, email]);
+        createNotification(email, 'badge_upgraded', `🏅 New badge: ${earned}!`,
+          `Congratulations! You've earned the ${earned} badge.`, {});
+      } else {
+        // Clear any lingering grace if they've recovered
+        query(`UPDATE users SET badge_grace_until = NULL WHERE email = ? AND badge_grace_until IS NOT NULL`, [email]);
+      }
+    }
+  } catch(e) { console.error('Badge refresh error:', e); }
+}
+
+// ============ GET USER BADGE ============
+app.post('/get-badge', (req, res) => {
+  const { email } = req.body;
+  try {
+    const rows = query('SELECT badge, badge_at, badge_grace_until FROM users WHERE email = ?', [email]);
+    if (!rows.length) return res.json({ success: false });
+    refreshUserBadge(email);
+    const updated = query('SELECT badge, badge_at, badge_grace_until FROM users WHERE email = ?', [email]);
+    res.json({ success: true, ...updated[0] });
+  } catch(e) { res.json({ success: false }); }
+});
+
+// ============ QUESTS ============
+app.post('/get-quests', (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.json({ success: false });
+  try {
+    const rows = query('SELECT * FROM quest_progress WHERE email = ?', [email]);
+    const prog = rows[0] || {};
+    const now = new Date();
+
+    // Streak: consecutive-day sessions as learner
+    const sessionDays = query(
+      `SELECT DISTINCT date(session_start,'localtime') as d
+       FROM sessions WHERE learner_email = ? AND status='completed'
+       ORDER BY d DESC`, [email]);
+
+    let streak = 0;
+    let prevDate = null;
+    for (const row of sessionDays) {
+      const d = new Date(row.d);
+      if (!prevDate) { streak = 1; prevDate = d; continue; }
+      const diff = (prevDate - d) / 86400000;
+      if (diff === 1) { streak++; prevDate = d; }
+      else break;
+    }
+
+    // Group sessions as learner this month
+    const monthSessions = query(
+      `SELECT COUNT(*) as cnt FROM sessions
+       WHERE learner_email = ? AND status='completed'
+       AND strftime('%Y-%m', session_start,'localtime') = strftime('%Y-%m','now','localtime')`, [email]);
+    const monthCount = monthSessions[0]?.cnt || 0;
+
+    // Consecutive weeks: learner had ≥1 session in each of last N calendar weeks
+    const weekRows = query(
+      `SELECT DISTINCT strftime('%Y-%W', session_start,'localtime') as wk
+       FROM sessions WHERE learner_email = ? AND status='completed'
+       ORDER BY wk DESC`, [email]);
+    let weekStreak = 0;
+    let prevWk = null;
+    for (const row of weekRows) {
+      const parts = row.wk.split('-');
+      const yr = parseInt(parts[0]), wk = parseInt(parts[1]);
+      if (!prevWk) { weekStreak = 1; prevWk = {yr,wk}; continue; }
+      const diff = (prevWk.yr * 53 + prevWk.wk) - (yr * 53 + wk);
+      if (diff === 1) { weekStreak++; prevWk = {yr,wk}; }
+      else break;
+    }
+
+    const quests = [
+      {
+        id: 'daily_session',
+        title: '📅 Daily Learner',
+        desc: 'Complete a session today',
+        reward: 0.5,
+        progress: streak > 0 ? 1 : 0,
+        goal: 1,
+        claimed: prog.daily_session_claimed_date === new Date().toISOString().slice(0,10)
+      },
+      {
+        id: 'week_streak',
+        title: '🔥 Week Streak',
+        desc: 'Join sessions for 7 days in a row',
+        reward: 3,
+        progress: Math.min(streak, 7),
+        goal: 7,
+        claimed: prog.week_streak_claimed && streak >= 7
+      },
+      {
+        id: 'monthly_5',
+        title: '🌟 Monthly Active',
+        desc: 'Complete 5 sessions this month',
+        reward: 2,
+        progress: Math.min(monthCount, 5),
+        goal: 5,
+        claimed: prog.monthly_5_claimed_month === new Date().toISOString().slice(0,7)
+      },
+      {
+        id: 'consecutive_weeks',
+        title: '📆 Consistent Learner',
+        desc: 'Join at least one session per week for 4 consecutive weeks',
+        reward: 5,
+        progress: Math.min(weekStreak, 4),
+        goal: 4,
+        claimed: prog.consecutive_weeks_claimed && weekStreak >= 4
+      }
+    ];
+
+    res.json({ success: true, quests, streak, weekStreak });
+  } catch(e) {
+    console.error('Quest error:', e);
+    res.json({ success: false, quests: [] });
+  }
+});
+
+app.post('/claim-quest', (req, res) => {
+  const { email, questId } = req.body;
+  if (!email || !questId) return res.json({ success: false });
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const month = new Date().toISOString().slice(0,7);
+
+    // Re-check eligibility
+    const sessionDays = query(
+      `SELECT DISTINCT date(session_start,'localtime') as d FROM sessions
+       WHERE learner_email = ? AND status='completed' ORDER BY d DESC`, [email]);
+    let streak = 0, prevDate = null;
+    for (const row of sessionDays) {
+      const d = new Date(row.d);
+      if (!prevDate) { streak = 1; prevDate = d; continue; }
+      if ((prevDate - d)/86400000 === 1) { streak++; prevDate = d; } else break;
+    }
+
+    const weekRows = query(
+      `SELECT DISTINCT strftime('%Y-%W', session_start,'localtime') as wk
+       FROM sessions WHERE learner_email = ? AND status='completed' ORDER BY wk DESC`, [email]);
+    let weekStreak = 0, prevWk = null;
+    for (const row of weekRows) {
+      const [yr,wk] = row.wk.split('-').map(Number);
+      if (!prevWk) { weekStreak = 1; prevWk = {yr,wk}; continue; }
+      if ((prevWk.yr*53+prevWk.wk)-(yr*53+wk)===1){ weekStreak++; prevWk={yr,wk};} else break;
+    }
+
+    const monthCount = query(
+      `SELECT COUNT(*) as cnt FROM sessions WHERE learner_email=? AND status='completed'
+       AND strftime('%Y-%m',session_start,'localtime')=strftime('%Y-%m','now','localtime')`, [email])[0]?.cnt||0;
+
+    const rewards = { daily_session:0.5, week_streak:3, monthly_5:2, consecutive_weeks:5 };
+    const reward = rewards[questId];
+    if (!reward) return res.json({ success:false, message:'Unknown quest' });
+
+    // Ensure progress table exists
+    const prog = query('SELECT * FROM quest_progress WHERE email=?',[email]);
+    if (!prog.length) query('INSERT INTO quest_progress (email) VALUES (?)',[email]);
+
+    let eligible = false;
+    let updateField = '';
+
+    if (questId==='daily_session') {
+      eligible = streak > 0;
+      const alreadyClaimed = query('SELECT daily_session_claimed_date FROM quest_progress WHERE email=?',[email])[0]?.daily_session_claimed_date === today;
+      if (alreadyClaimed) return res.json({success:false, message:'Already claimed today'});
+      updateField = `daily_session_claimed_date='${today}'`;
+    } else if (questId==='week_streak') {
+      eligible = streak >= 7;
+      const already = query('SELECT week_streak_claimed FROM quest_progress WHERE email=?',[email])[0]?.week_streak_claimed;
+      if (already && streak >= 7) return res.json({success:false, message:'Already claimed'});
+      updateField = `week_streak_claimed=1`;
+    } else if (questId==='monthly_5') {
+      eligible = monthCount >= 5;
+      const already = query('SELECT monthly_5_claimed_month FROM quest_progress WHERE email=?',[email])[0]?.monthly_5_claimed_month === month;
+      if (already) return res.json({success:false, message:'Already claimed this month'});
+      updateField = `monthly_5_claimed_month='${month}'`;
+    } else if (questId==='consecutive_weeks') {
+      eligible = weekStreak >= 4;
+      const already = query('SELECT consecutive_weeks_claimed FROM quest_progress WHERE email=?',[email])[0]?.consecutive_weeks_claimed;
+      if (already && weekStreak >= 4) return res.json({success:false, message:'Already claimed'});
+      updateField = `consecutive_weeks_claimed=1`;
+    }
+
+    if (!eligible) return res.json({ success:false, message:'Quest not yet complete' });
+
+    // Add credits
+    const userRow = query('SELECT credits FROM users WHERE email=?',[email]);
+    const currentCredits = userRow[0]?.credits || 0;
+    const newCredits = Math.round((currentCredits + reward) * 10) / 10;
+    query('UPDATE users SET credits=? WHERE email=?',[newCredits, email]);
+    query(`UPDATE quest_progress SET ${updateField} WHERE email=?`,[email]);
+
+    // Record in ledger
+    query(`INSERT INTO transactions (from_email,to_email,amount,type,created_at) VALUES (?,?,?,'quest_reward',datetime('now','localtime'))`,[email,email,reward]);
+
+    createNotification(email,'quest_reward',`🎉 Quest reward: +${reward} credits`,
+      `You completed a quest and earned ${reward} credits!`,{questId,reward});
+
+    res.json({ success:true, newCredits, reward });
+  } catch(e) {
+    console.error('Claim quest error:',e);
+    res.json({ success:false, message:'Server error' });
+  }
+});
+
+// ============ SUBMIT MENTOR FEEDBACK (teaching quality) ============
+app.post('/submit-feedback', (req, res) => {
+  const { sessionId, learnerEmail, tutorEmail, rating, teachingQuality, feedbackText } = req.body;
+  if (!sessionId || !learnerEmail || !tutorEmail) return res.json({ success:false });
+  try {
+    query(
+      `UPDATE sessions SET rating=?, teaching_quality=?, feedback=?, session_end=COALESCE(session_end,datetime('now','localtime')) WHERE id=?`,
+      [rating||null, teachingQuality||null, feedbackText||'', sessionId]
+    );
+    // Recompute tutor's avg rating and teaching quality
+    const avgRating = query('SELECT AVG(rating) as r FROM sessions WHERE tutor_email=? AND rating IS NOT NULL',[tutorEmail])[0]?.r || 0;
+    const avgTeaching = query('SELECT AVG(teaching_quality) as t FROM sessions WHERE tutor_email=? AND teaching_quality IS NOT NULL',[tutorEmail])[0]?.t || 0;
+    query('UPDATE users SET rating=?, teaching_quality=? WHERE email=?',[avgRating, avgTeaching, tutorEmail]);
+    refreshUserBadge(tutorEmail);
+    res.json({ success:true });
+  } catch(e) { res.json({ success:false }); }
 });

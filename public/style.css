@@ -382,3 +382,23 @@ header {
 .custom-select-trigger.open i {
     transform: rotate(180deg);
 }
+/* ===== PASSWORD TOGGLE ===== */
+.password-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-field-wrap input {
+  flex: 1;
+  padding-right: 40px !important;
+}
+.eye-toggle {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+.eye-toggle:hover { opacity: 1; }

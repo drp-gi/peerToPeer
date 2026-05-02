@@ -391,6 +391,7 @@ function showRatingModal() {
     modal.style.display = 'flex';
     
     let selectedRating = 0;
+    let selectedTeachingQuality = 0;
     const stars = document.querySelectorAll('#ratingStars span');
     stars.forEach(star => {
         star.onclick = () => {
@@ -405,6 +406,17 @@ function showRatingModal() {
             });
         };
     });
+
+    const tqStars = document.querySelectorAll('#teachingStars span');
+    tqStars.forEach(star => {
+        star.onclick = () => {
+            selectedTeachingQuality = parseInt(star.getAttribute('data-tq'));
+            tqStars.forEach(s => {
+                if (parseInt(s.getAttribute('data-tq')) <= selectedTeachingQuality) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+        };
+    });
     
     const submitBtn = document.getElementById('submitRatingBtn');
     if (submitBtn) {
@@ -413,7 +425,7 @@ function showRatingModal() {
         submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
         newSubmitBtn.onclick = async () => {
             const feedback = document.getElementById('ratingFeedback').value;
-            await submitSessionCompletion(selectedRating || 5, feedback);
+            await submitSessionCompletion(selectedRating || 5, feedback, selectedTeachingQuality || null);
             closeRatingModal();
         };
     }
@@ -423,7 +435,7 @@ function showRatingModal() {
         const newSkipBtn = skipBtn.cloneNode(true);
         skipBtn.parentNode.replaceChild(newSkipBtn, skipBtn);
         newSkipBtn.onclick = async () => {
-            await submitSessionCompletion(null, null);
+            await submitSessionCompletion(null, null, null);
             closeRatingModal();
         };
     }
@@ -436,6 +448,7 @@ function closeRatingModal() {
     if (feedback) feedback.value = '';
     const stars = document.querySelectorAll('#ratingStars span');
     stars.forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('#teachingStars span').forEach(s => s.classList.remove('active'));
 }
 
 async function completeSessionWithoutRating() {
@@ -468,7 +481,7 @@ async function completeSessionWithoutRating() {
     }
 }
 
-async function submitSessionCompletion(rating, feedback) {
+async function submitSessionCompletion(rating, feedback, teachingQuality) {
     console.log('submitSessionCompletion called');
     console.log('Session ID:', currentSession?.id);
     console.log('Rating:', rating);
@@ -486,7 +499,8 @@ async function submitSessionCompletion(rating, feedback) {
             body: JSON.stringify({ 
                 sessionId: currentSession.id, 
                 rating: rating, 
-                feedback: feedback 
+                feedback: feedback,
+                teachingQuality: teachingQuality
             })
         });
         const data = await response.json();

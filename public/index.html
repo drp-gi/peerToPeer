@@ -35,7 +35,10 @@
            <h2>Login</h2>
             <p class="subtitle">Welcome back you've been missed!</p>
             <input type="email" id="loginEmail" placeholder="Email" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
+            <div class="password-field-wrap">
+              <input type="password" id="loginPassword" placeholder="Password" required>
+              <span class="eye-toggle" onclick="togglePassword('loginPassword', this)" title="Show/hide password">👁️</span>
+            </div>
             <button type="submit" class="btn btn-primary">Login</button>
              <a href="#"> <p class="subtitle2">Forgot your password?</p> </a>
         </form>
@@ -44,7 +47,10 @@
             <h2>Register</h2>
             <input type="text" id="registerName" placeholder="Full Name" required>
             <input type="email" id="registerEmail" placeholder="Email" required>
-            <input type="password" id="registerPassword" placeholder="Password" required>
+            <div class="password-field-wrap">
+              <input type="password" id="registerPassword" placeholder="Password" required>
+              <span class="eye-toggle" onclick="togglePassword('registerPassword', this)" title="Show/hide password">👁️</span>
+            </div>
             <button type="submit" class="btn btn-primary">Register</button>
         </form>
     </div>
