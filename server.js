@@ -192,7 +192,7 @@ app.post('/get-user-data', (req, res) => {
 
     try {
         const result = query(
-            'SELECT name, username, bio, achievements, skills, growth, credits, grade_level, profile_pic FROM users WHERE email = ?',
+           'SELECT name, username, bio, achievements, skills, growth, credits, grade_level, profile_pic, rating FROM users WHERE email = ?',
             [email]
         );
 
@@ -206,8 +206,9 @@ app.post('/get-user-data', (req, res) => {
                 skills: user.skills || '[]',
                 growth: user.growth || '[]',
                 grade_level: user.grade_level || '',
-                profile_pic: user.profile_pic || ''
-            });
+                profile_pic: user.profile_pic || '',
+                rating: user.rating || 0   // ← added this line
+                });
         } else {
             res.json({ success: false, message: 'User not found' });
         }
@@ -335,7 +336,7 @@ app.post('/get-swipe-matches', (req, res) => {
             };
         });
 
-        const goodMatches = matches.filter(m => m.matchScore >= 10).sort((a, b) => b.matchScore - a.matchScore);
+        const goodMatches = matches.sort((a, b) => b.matchScore - a.matchScore);
 
         console.log(`🎯 Generated ${goodMatches.length} matches`);
         res.json({ success: true, matches: goodMatches });
@@ -345,6 +346,7 @@ app.post('/get-swipe-matches', (req, res) => {
     }
 });
 
+// ============ SEND CONNECTION REQUEST ============
 // ============ SEND CONNECTION REQUEST ============
 app.post('/send-connection-request', (req, res) => {
     const { learnerEmail, tutorEmail, subject, message, learnerGradeLevel, tutorGradeLevel } = req.body;
@@ -360,18 +362,14 @@ app.post('/send-connection-request', (req, res) => {
         };
 
         const compatibleLevels = gradeCompatibility[learnerGradeLevel] || [];
-        if (!compatibleLevels.includes(tutorGradeLevel)) {
-            return res.json({ 
-                success: false, 
-                message: 'Grade level mismatch.' 
-            });
+        if (tutorGradeLevel && !compatibleLevels.includes(tutorGradeLevel)) {
+            return res.json({ success: false, message: 'Grade level mismatch.' });
         }
 
         const existing = query(
             "SELECT * FROM connection_requests WHERE learner_email = ? AND tutor_email = ? AND status IN ('pending', 'accepted')",
             [learnerEmail, tutorEmail]
         );
-
         if (existing.length > 0) {
             return res.json({ success: false, message: 'You already have a request with this user.' });
         }
@@ -380,7 +378,6 @@ app.post('/send-connection-request', (req, res) => {
             'SELECT * FROM connections WHERE (user1_email = ? AND user2_email = ?) OR (user1_email = ? AND user2_email = ?)',
             [learnerEmail, tutorEmail, tutorEmail, learnerEmail]
         );
-
         if (connected.length > 0) {
             return res.json({ success: false, message: 'You are already connected!' });
         }
@@ -394,12 +391,36 @@ app.post('/send-connection-request', (req, res) => {
         console.log(`📨 Connection request sent from ${learnerEmail} to ${tutorEmail}`);
         logDatabaseStats();
 
+        const learnerUser = query('SELECT name, username FROM users WHERE email = ?', [learnerEmail]);
+        const learnerDisplayName = learnerUser[0]?.username || learnerUser[0]?.name || 'A learner';
+
+        createNotification(
+            tutorEmail,
+            'connection_request',
+            `🤝 New connection request from ${learnerDisplayName}`,
+            `Wants to learn: "${subject || 'General'}". ${message ? `Message: "${message}"` : ''}`,
+            { learner_email: learnerEmail, subject, message }
+        );
+
+        const tutorUser = query('SELECT name, username FROM users WHERE email = ?', [tutorEmail]);
+        const tutorDisplayName = tutorUser[0]?.username || tutorUser[0]?.name || 'the mentor';
+
+        createNotification(
+            learnerEmail,
+            'connection_request_sent',
+            '📨 Connection request sent!',
+            `Your request to learn "${subject || 'General'}" was sent to ${tutorDisplayName}. Waiting for their response.`,
+            { tutor_email: tutorEmail, subject }
+        );
+
         res.json({ success: true, message: 'Connection request sent!' });
     } catch (error) {
         console.error('Error sending connection request:', error);
         res.json({ success: false, message: 'Error sending request' });
     }
 });
+
+
 
 // ============ GET PENDING CONNECTION REQUESTS ============
 app.post('/get-pending-requests', (req, res) => {
@@ -466,13 +487,31 @@ app.post('/accept-request', (req, res) => {
     }
 });
 
+
 // ============ REJECT CONNECTION REQUEST ============
 app.post('/reject-request', (req, res) => {
     const { requestId } = req.body;
 
     try {
+        // Get request details BEFORE updating so we can notify the learner
+        const reqRow = query('SELECT * FROM connection_requests WHERE id = ?', [requestId]);
+
         query("UPDATE connection_requests SET status = 'rejected', updated_at = datetime('now', 'localtime') WHERE id = ?", [requestId]);
         console.log(`❌ Connection request rejected: ${requestId}`);
+
+        // Notify the learner
+        if (reqRow.length > 0) {
+            const tutorUser = query('SELECT name, username FROM users WHERE email = ?', [reqRow[0].tutor_email]);
+            const tutorDisplayName = tutorUser[0]?.username || tutorUser[0]?.name || 'A mentor';
+            createNotification(
+                reqRow[0].learner_email,
+                'connection_rejected',
+                `❌ Connection request declined`,
+                `${tutorDisplayName} was unable to accept your connection request at this time.`,
+                { tutor_email: reqRow[0].tutor_email }
+            );
+        }
+
         res.json({ success: true, message: 'Request rejected' });
     } catch (error) {
         console.error('Error rejecting request:', error);
@@ -1193,9 +1232,22 @@ function initDatabase() {
     }
 }
 
+
+app.get('/debug-notifications', (req, res) => {
+  try {
+    const all = query('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 20');
+    const tables = query("SELECT name FROM sqlite_master WHERE type='table'");
+    res.json({ tables: tables.map(t => t.name), notifications: all });
+  } catch(err) {
+    res.json({ error: err.message });
+  }
+});
+
+
 // ============ START SERVER ============
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     initDatabase();
 });
+
