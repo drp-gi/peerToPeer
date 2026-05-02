@@ -134,16 +134,18 @@
     }
  
     // --- View message link ---
+    // --- View message link ---
     if (n.type === 'new_message') {
+      const senderEmail = data.sender_email ? esc(data.sender_email) : '';
       actionsHTML = `
         <div class="notif-actions">
           <button class="notif-btn notif-btn-view"
-                  onclick="window.location.href='messages.html'">
+                  onclick="openChatWith('${senderEmail}', ${n.id})">
             Open Chat
           </button>
         </div>`;
     }
- 
+    
     return `
       <div class="notif-item ${n.is_read ? '' : 'unread'}" id="notifItem_${n.id}">
         <div class="notif-icon ${meta.cls}">${meta.icon}</div>
@@ -342,6 +344,15 @@
       showToast('Error sending schedule');
     }
   };
+
+  // ── Action: Open chat with specific person ───────────────
+  window.openChatWith = async function (senderEmail, notifId) {
+    await markOneRead(notifId);
+    // Store the target email so messages.js can auto-open it
+    sessionStorage.setItem('openChatWith', senderEmail);
+    window.location.href = 'messages.html';
+  };
+
  
   // ── Action: Mentor rejects session request ───────────────
   window.notifRejectSession = async function (sessionId, notifId) {
