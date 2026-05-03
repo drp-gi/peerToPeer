@@ -114,7 +114,7 @@
     <div class="pg-title">Quests & Rewards</div>
     <div class="pg-subtitle">Complete quests to earn bonus credits. Credits refresh on repeatable quests!</div>
 
-    <!-- Credit banner -->
+    <!-- Credit banner — value kept in sync by credit-sync.js via #creditBannerVal -->
     <div class="credit-banner">
       <div class="cb-icon">🪙</div>
       <div>
@@ -143,20 +143,12 @@
 <div id="toast" class="toast"></div>
 <script src="notifications.js"></script>
 <script>
+// FIX: Removed the inline loadCredits() and the inline socket credits handler.
+// credit-sync.js (loaded below) is now the single source of truth for all credit
+// displays including #topCreditsBadge and #creditBannerVal on this page.
+
 const userEmail = localStorage.getItem('userEmail');
 if (!userEmail) window.location.href = 'index.html';
-
-async function loadCredits() {
-  try {
-    const r = await fetch('http://localhost:3000/get-user-data', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: userEmail }) });
-    const d = await r.json();
-    if (d.success) {
-      document.getElementById('topCreditsBadge').textContent = d.credits;
-      document.getElementById('creditBannerVal').textContent = `${d.credits} credit${d.credits !== 1 ? 's' : ''}`;
-      localStorage.setItem('tandem_credits', String(d.credits));
-    }
-  } catch(e) {}
-}
 
 async function loadQuests() {
   try {
@@ -202,21 +194,11 @@ function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.
 document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.href = 'index.html'; });
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadCredits();
   loadQuests();
   loadRecs();
-
-  if (typeof io !== 'undefined') {
-    const socket = io('http://localhost:3000');
-    socket.on('connect', () => socket.emit('register-user', { email: userEmail }));
-    socket.on('credits-updated', ({ credits }) => {
-      document.getElementById('topCreditsBadge').textContent = credits;
-      document.getElementById('creditBannerVal').textContent = `${credits} credit${credits !== 1 ? 's' : ''}`;
-      localStorage.setItem('tandem_credits', String(credits));
-    });
-  }
 });
 </script>
+<!-- credit-sync.js MUST come after socket.io so it can hook into it -->
 <script src="/socket.io/socket.io.js"></script>
 <script src="credit-sync.js"></script>
 </body>

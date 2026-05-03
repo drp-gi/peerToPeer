@@ -133,6 +133,12 @@ async function loadCreditsFromDatabase() {
           data.grade_level) {
         localStorage.setItem('profile_completed', 'true');
       }
+
+      // Update the rating displayed next to the username in the profile header
+      const rating = parseFloat(data.rating || 0);
+      const ratingEl = document.getElementById('profileRating');
+      if (ratingEl) ratingEl.textContent = rating > 0 ? rating.toFixed(1) : '0.0';
+
       return true;
     }
   } catch (error) { console.error('Error loading credits:', error); }

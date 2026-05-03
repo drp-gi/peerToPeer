@@ -12,10 +12,7 @@ body {
 /* ── Page layout ── */
 .wrap { display: flex; min-height: 100vh; }
 
-/* ════════════════════════════════════════
-   SIDEBAR
-   56 px collapsed → 148 px on hover/wide
-════════════════════════════════════════ */
+/* sidebar */
 .sidebar {
   width: 56px;
   min-height: 100vh;

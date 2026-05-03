@@ -324,10 +324,17 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
             if (profilePicData) {
                 localStorage.setItem('tandem_profile_pic', profilePicData);
             }
-            if (localStorage.getItem('tandem_credits') === null) {
-                localStorage.setItem('tandem_credits', '5');
-            }
-            
+
+            // FIX: Use credits returned by the server instead of hardcoding 5.
+            // Only fall back to 5 if the server didn't return a credits value
+            // (e.g. brand-new account before any server-side credit assignment).
+            const serverCredits = (data.credits !== undefined && data.credits !== null)
+                ? Math.round(Number(data.credits))
+                : (localStorage.getItem('tandem_credits') !== null
+                    ? Math.round(Number(localStorage.getItem('tandem_credits')))
+                    : 5);
+            localStorage.setItem('tandem_credits', String(serverCredits));
+
             // Mark profile as completed
             localStorage.setItem('profile_completed', 'true');
 

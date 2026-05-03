@@ -33,20 +33,20 @@ const NEG_TAGS = ['Hard to follow','Often late','Ended early','Unprepared'];
 const STAR_LABELS = ['','Needs work','Below average','Average','Good','Excellent'];
 
 // ── Credits ───────────────────────────────────────────────────
-
-function updateCreditsDisplay(v) {
-    const el = document.getElementById('topCreditsBadge');
-    if (!el) return;
-    el.textContent = v;
-    localStorage.setItem('tandem_credits', String(v));
-}
-
-async function loadCredits() {
-    try {
-        const d = await post('/get-user-data', { email: userEmail });
-        if (d.success) updateCreditsDisplay(d.credits);
-    } catch(e) {}
-}
+// FIX 1: Removed the local updateCreditsDisplay() and loadCredits() functions
+// that conflicted with credit-sync.js. credit-sync.js is now the single source
+// of truth and handles topCreditsBadge on this page.
+//
+// FIX 2: submitSessionRequest() was using parseFloat() to read credits from
+// localStorage which could cause "1.5 < 1" style comparison bugs when the
+// stored value was a decimal. Replaced with Math.round(Number(...)).
+//
+// FIX 3: The socket.on('credits-updated') handler was calling the local
+// updateCreditsDisplay() — removed it so credit-sync.js's own socket listener
+// handles all real-time credit updates consistently.
+//
+// FIX 4: doCompleteSession() called the now-removed loadCredits() after session
+// completion. Replaced with window.syncCredits() exposed by credit-sync.js.
 
 // ── Generic fetch helper ──────────────────────────────────────
 
@@ -141,11 +141,9 @@ function exitChat() {
     if (messageInterval) { clearInterval(messageInterval); messageInterval = null; }
     if (sessionInterval) { clearInterval(sessionInterval); sessionInterval = null; }
 
-    // Remove active classes
     document.querySelectorAll('.connection-item').forEach(i => i.classList.remove('active'));
     document.getElementById('botChatItem')?.classList.remove('active');
 
-    // Reset chat area to empty state
     const chatArea = document.getElementById('chatArea');
     chatArea.innerHTML = `
         <div class="no-connection">
@@ -213,7 +211,6 @@ function renderBotChat() {
 
     const area = document.getElementById('messagesArea');
 
-    // Restore persisted history or show greeting
     if (!botHistory.length) {
         appendBotMsg(area, 'Hi! I am the **Tandem Study AI**. I can help you with:\n\n• Explaining subjects and concepts\n• Study tips and strategies\n• Practice questions\n• Recommendations on what to learn next\n\nWhat would you like to know?');
     } else {
@@ -260,7 +257,6 @@ async function sendBotMessage() {
     botHistory.push({ role: 'user', content: msg });
     area.scrollTop = area.scrollHeight;
 
-    // Thinking indicator
     const thinking = document.createElement('div');
     thinking.className = 'bot-message-wrap';
     thinking.id = 'botThinking';
@@ -268,7 +264,6 @@ async function sendBotMessage() {
     area.appendChild(thinking);
     area.scrollTop = area.scrollHeight;
 
-    // Build user context for smarter AI
     const userGrowth = JSON.parse(localStorage.getItem('tandem_growth') || '[]');
     const userSkills = JSON.parse(localStorage.getItem('tandem_skills') || '[]');
     const grade = localStorage.getItem('tandem_grade') || '';
@@ -289,7 +284,6 @@ Your role:
 - Keep responses concise but complete. Use **bold** for key terms. Use bullet points with • for lists.
 - Never just repeat an introductory message — always respond meaningfully to what the user said.`;
 
-    // Only send last 10 messages for context window efficiency
     const messages = botHistory.slice(-10).map(m => ({ role: m.role, content: m.content }));
 
     try {
@@ -316,7 +310,6 @@ Your role:
 
 function getBotFallback(msg, growth) {
     const m = msg.toLowerCase();
-    // Greetings
     if (/^(hi|hello|hey|sup|yo|howdy|greetings)/.test(m)) {
         const subj = growth[0] || 'your subjects';
         return `Hi there! Great to hear from you. I am here to help with **${subj}** or any other academic topic.\n\nWhat would you like to explore today? You can ask me to:\n• Explain a concept\n• Give you practice questions\n• Suggest a study plan\n• Recommend what to learn next`;
@@ -367,8 +360,7 @@ function showSessionRequestUI(session) {
             <p style="font-size:12px;color:#888;margin-top:4px;">
                 ${session.session_type==='group'?'Group':'One-on-One'} &middot;
                 ${session.session_mode==='face_to_face'?'Face-to-Face':'Online'}
-                ${session.preferred_time?` &middot; ${new Date(session.preferred_time).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})}`:''}
-            </p>
+                ${session.preferred_time?` &middot; ${new Date(session.preferred_time).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})}`:''}</p>
             ${session.session_notes?`<p class="session-notes">"${esc(session.session_notes)}"</p>`:''}
         </div>
         <p style="font-size:12px;color:#888;margin:10px 0 5px;">Propose a schedule:</p>
@@ -505,7 +497,8 @@ async function doCompleteSession(sessionId, rating, feedback, elapsedSeconds, fe
         const d = await post('/complete-session', { sessionId, rating, feedback, elapsedSeconds: elapsedSeconds || 0, feedbackTags: feedbackTags || [] });
         if (d.success) {
             showToast('Session completed!');
-            await loadCredits();
+            // FIX: Use credit-sync.js's syncCredits() instead of the removed local loadCredits()
+            if (typeof window.syncCredits === 'function') window.syncCredits();
             await loadActiveSession();
             hideSessionUI();
             if (currentChatEmail && !isBotChat) await loadMessages(currentChatEmail, currentChatName);
@@ -540,11 +533,9 @@ window.declineF2fStart = function() {
 // ── Session request modal ─────────────────────────────────────
 
 async function showSessionRequestModal(tutorEmail, tutorName) {
-    // Check if learner has an unrated session with this tutor
     const unrated = await checkUnratedSession(tutorEmail);
     if (unrated) {
         showToast('Please rate your last session before requesting a new one.');
-        // Auto-trigger rating modal for the unrated session
         triggerRatingModal(unrated.id, tutorName, unrated.subject, unrated.elapsed_seconds || 0);
         return;
     }
@@ -617,7 +608,6 @@ async function showSessionRequestModal(tutorEmail, tutorName) {
             </div>
         </div>`;
 
-    // Card toggle logic
     ['typeCardSolo','typeCardGroup'].forEach(id => {
         document.getElementById(id)?.addEventListener('click', () => {
             ['typeCardSolo','typeCardGroup'].forEach(x => document.getElementById(x).style.borderColor = '#ddd');
@@ -640,9 +630,11 @@ async function submitSessionRequest(tutorEmail, tutorName) {
     const modeRadio = document.querySelector('input[name="sessMode"]:checked');
     const dtInput   = document.getElementById('sessDateTime')?.value;
     const notes     = document.getElementById('sessNotes')?.value || '';
-    if (!subject)   { showToast('Select a subject.'); return; }
-    if (!dtInput)   { showToast('Choose a date and time.'); return; }
-    const credits = parseFloat(localStorage.getItem('tandem_credits') || '5');
+    if (!subject) { showToast('Select a subject.'); return; }
+    if (!dtInput) { showToast('Choose a date and time.'); return; }
+    // FIX: was parseFloat() which could produce incorrect comparisons on decimal
+    // values like 0.5. Math.round(Number()) ensures a clean integer check.
+    const credits = Math.round(Number(localStorage.getItem('tandem_credits') || '5'));
     if (credits < 1) { showToast('Not enough credits!'); return; }
     const d = await post('/send-session-request', {
         learnerEmail: userEmail, tutorEmail, subject,
@@ -789,11 +781,13 @@ window.mobileBackToList                = mobileBackToList;
 window.loadActiveSession               = loadActiveSession;
 
 // ── Real-time via Socket.io ───────────────────────────────────
+// FIX: Removed the local socket.on('credits-updated') handler that called the
+// now-deleted updateCreditsDisplay(). credit-sync.js registers its own
+// 'credits-updated' listener and is the single handler for real-time updates.
 
 if (typeof io !== 'undefined') {
     const socket = io(API);
     socket.on('connect', () => socket.emit('register-user', { email: userEmail }));
-    socket.on('credits-updated', ({ credits }) => updateCreditsDisplay(credits));
     socket.on('f2f-session-started', ({ sessionId }) => {
         if (currentSession?.id === sessionId && currentSession?.user_role === 'learner') {
             window.showF2fStartOverlay(sessionId);
@@ -804,7 +798,7 @@ if (typeof io !== 'undefined') {
 // ── Init ──────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadCredits();
+    // FIX: Removed loadCredits() call — credit-sync.js handles this on DOMContentLoaded
     loadConnections();
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
         [messageInterval, sessionInterval, sessionTimerInterval].forEach(i => clearInterval(i));
@@ -813,7 +807,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     loadActiveSession();
 
-    // Auto-open chat from sessionStorage (e.g. after video call)
     const autoOpen = sessionStorage.getItem('openChatWith');
     if (autoOpen) {
         sessionStorage.removeItem('openChatWith');
@@ -827,7 +820,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 600);
     }
 
-    // Auto-trigger rating if returning from video call
     const showRating = sessionStorage.getItem('showRatingOnLoad');
     if (showRating === '1') {
         sessionStorage.removeItem('showRatingOnLoad');
