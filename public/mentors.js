@@ -62,13 +62,17 @@ async function loadMentors() {
  
     const matchData = await matchRes.json();
  
-    allMentors = (matchData.matches || []).map(m => ({
-      ...m,
-      skills: Array.isArray(m.skills) ? m.skills
-        : (() => { try { return JSON.parse(m.skills || '[]'); } catch(e) { return []; } })(),
-      growth: Array.isArray(m.growth) ? m.growth
-        : (() => { try { return JSON.parse(m.growth || '[]'); } catch(e) { return []; } })(),
-    }));
+    // Filter out system/AI accounts
+    const SYSTEM_EMAILS = ['system', '__tandem_ai_bot__'];
+    allMentors = (matchData.matches || [])
+      .filter(m => !SYSTEM_EMAILS.includes(m.email) && m.email !== 'system')
+      .map(m => ({
+        ...m,
+        skills: Array.isArray(m.skills) ? m.skills
+          : (() => { try { return JSON.parse(m.skills || '[]'); } catch(e) { return []; } })(),
+        growth: Array.isArray(m.growth) ? m.growth
+          : (() => { try { return JSON.parse(m.growth || '[]'); } catch(e) { return []; } })(),
+      }));
     allMentors.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
  
     // Users excluded by backend = already have pending/accepted requests with them
