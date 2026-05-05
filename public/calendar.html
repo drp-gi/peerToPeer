@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tandem - Schedule</title>
+  <link rel="stylesheet" href="styles-dashboard.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-notifications.css">
+  <style>
+    body { font-family: 'Baloo 2', sans-serif; }
+
+    .pg-title    { font-size: 24px; font-weight: 800; color: #29b6d8; margin-bottom: 4px; letter-spacing: -0.2px; }
+    .pg-subtitle { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+
+    .cal-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+    @media(max-width:900px) { .cal-layout { grid-template-columns: 1fr; } }
+
+    .calendar-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+    .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .month-title { font-size: 18px; font-weight: 800; color: #29b6d8; font-family: 'Baloo 2', sans-serif; }
+    .nav-btn { background: #f1f5f9; border: none; color: #475569; padding: 7px 16px; border-radius: 9px; cursor: pointer; font-family: 'Baloo 2', sans-serif; font-size: 13px; font-weight: 600; transition: .2s; }
+    .nav-btn:hover { background: #e2e8f0; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .weekday { text-align: center; color: #94a3b8; font-weight: 700; font-size: 11px; padding-bottom: 6px; font-family: 'Baloo 2', sans-serif; letter-spacing: .05em; }
+    .day-cell { aspect-ratio: 1/1; background: #f8fafc; border-radius: 10px; padding: 5px; border: 1.5px solid transparent; transition: .15s; min-height: 50px; cursor: default; }
+    .day-cell.has-event { cursor: pointer; }
+    .day-cell.has-event:hover { background: #f0fbfe; border-color: #29b6d8; }
+    .day-cell.day-today { border-color: #29b6d8; background: rgba(41,182,216,.06); }
+    .day-cell.other-month { opacity: .3; }
+    .day-num { font-size: 11px; color: #29b6d8; font-weight: 700; }
+    .day-today .day-num-inner { background: #29b6d8; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .marker { margin-top: 2px; font-size: 9px; padding: 1px 5px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Baloo 2', sans-serif; font-weight: 600; }
+    .m-confirmed  { background: #d1fae5; color: #065f46; }
+    .m-active     { background: #a7f3d0; color: #064e3b; font-weight: 800; }
+    .m-sched      { background: #fef3c7; color: #92400e; }
+    .m-reschedule { background: #fce7f3; color: #831843; }
+    .m-complete   { background: #f1f5f9; color: #64748b; }
+
+    .details-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; align-self: start; position: sticky; top: 20px; max-height: 80vh; overflow-y: auto; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+    .details-panel h3 { font-size: 15px; font-weight: 700; color: #1a2a3a; margin-bottom: 14px; font-family: 'Baloo 2', sans-serif; }
+
+    .sess-card { background: #f8fafc; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #29b6d8; }
+    .sess-card.active     { border-left-color: #16a34a; background: #f0fdf4; }
+    .sess-card.confirmed  { border-left-color: #29b6d8; }
+    .sess-card.scheduled, .sess-card.rescheduling { border-left-color: #f59e0b; background: #fffbeb; }
+    .sess-card.completed  { border-left-color: #94a3b8; background: #f8fafc; }
+    .sc-subject { font-size: 14px; font-weight: 700; color: #1a2a3a; margin-bottom: 4px; font-family: 'Baloo 2', sans-serif; }
+    .sc-meta    { font-size: 12px; color: #64748b; margin-bottom: 3px; }
+    .sc-badge   { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 7px; display: inline-block; margin-bottom: 8px; font-family: 'Baloo 2', sans-serif; }
+    .badge-active     { background: #d1fae5; color: #065f46; }
+    .badge-confirmed  { background: #dbeafe; color: #1e40af; }
+    .badge-scheduled, .badge-rescheduling { background: #fef3c7; color: #92400e; }
+    .badge-completed  { background: #f1f5f9; color: #64748b; }
+    .sc-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .sc-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; font-family: 'Baloo 2', sans-serif; text-decoration: none; transition: .2s; }
+    .sc-btn:hover { opacity: .88; }
+    .sc-btn-start { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; }
+    .sc-btn-join  { background: linear-gradient(135deg, #29b6d8, #1a8fad); color: #fff; }
+    .sc-btn-view  { background: #f1f5f9; color: #475569; }
+    .sc-face { background: #f0fdf4; color: #065f46; border: 1px solid #a7f3d0; border-radius: 9px; padding: 8px; font-size: 12px; text-align: center; }
+    .empty-cal { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 13px; font-family: 'Baloo 2', sans-serif; }
+    .loading-spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
+    .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #29b6d8; border-radius: 50%; animation: spin .9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast { position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #1a2a3a; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 13px; font-weight: 700; z-index: 9999; transition: bottom .4s ease; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.22); font-family: 'Baloo 2', sans-serif; }
+    .toast.toast-show { bottom: 30px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sidebar">
+    <div class="logo" onclick="window.location.href='dashboard.html'">
+      <div class="logo-icon">T</div>
+      <span class="logo-text">Tandem</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='dashboard.html'"><img src="/icons/home.png" alt="home" class="nav-icon"><span class="nav-label">Home</span></div>
+    <div class="nav-item" onclick="window.location.href='mentors.html'"><img src="/icons/friendship.png" alt="mentors" class="nav-icon"><span class="nav-label">Mentors</span></div>
+    <div class="nav-item" onclick="window.location.href='profile.html'"><img src="/icons/profile.png" alt="profile" class="nav-icon"><span class="nav-label">Profile</span></div>
+    <div class="nav-item" onclick="window.location.href='messages.html'"><img src="/icons/message.png" alt="messages" class="nav-icon"><span class="nav-label">Messages</span></div>
+    <div class="nav-item" onclick="window.location.href='ledger.html'"><img src="/icons/crypto.png" alt="ledger" class="nav-icon"><span class="nav-label">Ledger</span></div>
+    <div class="nav-item active" onclick="window.location.href='calendar.html'"><img src="/icons/calendar.png" alt="calendar" class="nav-icon"><span class="nav-label">Calendar</span></div>
+    <div class="nav-item" onclick="window.location.href='quests.html'"><img src="/icons/badge.png" alt="quests" class="nav-icon"><span class="nav-label">Quests</span></div>
+    <div class="nav-item logout-btn" id="logoutBtn"><img src="/icons/logout.png" alt="logout" class="nav-icon"><span class="nav-label">Logout</span></div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="credits-badge">
+        <span id="topCreditsBadge">5</span>
+        <div class="coin"><img src="/icons/crypto.png" alt="credits"></div>
+      </div>
+      <div class="notif-bell-wrap" id="notifBellWrap">
+        <img src="/icons/bell.png" alt="bell" class="mini-coin">
+        <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-dropdown-header"><h4>Notifications</h4><button class="notif-mark-all" id="notifMarkAll">Mark all read</button></div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pg-title">Schedule</div>
+    <div class="pg-subtitle">
+      View all your sessions.
+      <strong style="color:#16a34a;">Mentors</strong>: start the call to activate a confirmed session.
+      <strong style="color:#29b6d8;">Learners</strong>: join after the mentor starts.
+    </div>
+
+    <div class="cal-layout">
+      <div class="calendar-card">
+        <div class="cal-nav">
+          <button class="nav-btn" onclick="moveMonth(-1)">&#9664; Prev</button>
+          <div class="month-title" id="monthLabel">Loading...</div>
+          <button class="nav-btn" onclick="moveMonth(1)">Next &#9654;</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <div class="loading-spinner" style="grid-column:1/-1"><div class="spinner"></div></div>
+        </div>
+      </div>
+      <div class="details-panel">
+        <h3>Your Sessions</h3>
+        <div id="sessionsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="notifications.js"></script>
+<script>
+const userEmail = localStorage.getItem('userEmail');
+if (!userEmail) window.location.href = 'index.html';
+
+let allSessions = [];
+let curMonth = new Date().getMonth();
+let curYear  = new Date().getFullYear();
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+async function loadCredits() {
+  try {
+    const r = await (await fetch('http://localhost:3000/get-user-data', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:userEmail }) })).json();
+    if (r.success) document.getElementById('topCreditsBadge').textContent = r.credits;
+  } catch(e) {}
+}
+
+async function loadSessions() {
+  try {
+    const r = await (await fetch('http://localhost:3000/get-calendar-sessions', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:userEmail }) })).json();
+    allSessions = r.sessions || [];
+    renderCalendar();
+    renderList(allSessions);
+  } catch(e) { document.getElementById('sessionsList').innerHTML = '<div class="empty-cal">Error loading sessions</div>'; }
+}
+
+function sessDate(s) { const raw = s.scheduled_time || s.session_start || s.created_at; return raw ? new Date(raw) : null; }
+
+function moveMonth(d) {
+  curMonth += d;
+  if (curMonth > 11) { curMonth = 0; curYear++; }
+  if (curMonth < 0)  { curMonth = 11; curYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  document.getElementById('monthLabel').textContent = `${MONTHS[curMonth]} ${curYear}`;
+  const grid = document.getElementById('calendarGrid');
+  let html = DAYS.map(d => `<div class="weekday">${d}</div>`).join('');
+  const firstDay = new Date(curYear, curMonth, 1).getDay();
+  const days = new Date(curYear, curMonth + 1, 0).getDate();
+  const today = new Date();
+
+  for (let i = 0; i < firstDay; i++) {
+    const pd = new Date(curYear, curMonth, -firstDay + i + 1);
+    html += `<div class="day-cell other-month"><div class="day-num">${pd.getDate()}</div></div>`;
+  }
+  for (let d = 1; d <= days; d++) {
+    const isToday = today.getDate()===d && today.getMonth()===curMonth && today.getFullYear()===curYear;
+    const daySess = allSessions.filter(s => { const sd = sessDate(s); return sd && sd.getDate()===d && sd.getMonth()===curMonth && sd.getFullYear()===curYear; });
+    const markers = daySess.slice(0,3).map(s => {
+      const cls = s.status==='active'?'m-active':s.status==='confirmed'?'m-confirmed':s.status==='scheduled'?'m-sched':s.status==='rescheduling'?'m-reschedule':'m-complete';
+      return `<div class="marker ${cls}">${esc(s.subject||'Session')}</div>`;
+    }).join('');
+    html += `<div class="day-cell ${isToday?'day-today':''} ${daySess.length?'has-event':''}" ${daySess.length?`onclick="filterDay(${d})"`:''}><div class="day-num">${isToday?`<div class="day-num-inner">${d}</div>`:d}</div>${markers}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function filterDay(d) {
+  const daySess = allSessions.filter(s => { const sd = sessDate(s); return sd && sd.getDate()===d && sd.getMonth()===curMonth && sd.getFullYear()===curYear; });
+  renderList(daySess.length ? daySess : allSessions);
+}
+
+function renderList(sessions) {
+  const el = document.getElementById('sessionsList');
+  if (!sessions.length) { el.innerHTML = '<div class="empty-cal">No sessions yet.<br>Connect with a mentor to get started!</div>'; return; }
+  el.innerHTML = sessions.map(s => {
+    const isLearner = s.user_role === 'learner';
+    const peer = isLearner ? (s.tutor_username||s.tutor_name) : (s.learner_username||s.learner_name);
+    const peerEmail = isLearner ? s.tutor_email : s.learner_email;
+    const dt = sessDate(s);
+    const dtStr = dt ? dt.toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true }) : '—';
+    const typeLabel = s.session_type==='group' ? `Group (${s.attendee_count||1})` : 'One-on-One';
+    const modeLabel = s.session_mode==='face_to_face' ? 'Face-to-Face' : 'Online';
+    const statusLabel = { active:'Active', confirmed:'Confirmed', scheduled:'Awaiting Acceptance', rescheduling:'Rescheduling', completed:'Completed' }[s.status] || s.status;
+    const badgeCls = `badge-${s.status==='rescheduling'?'rescheduling':s.status}`;
+    const myName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || userEmail;
+
+    let actions = '';
+    if (s.session_mode !== 'face_to_face') {
+      if (s.status === 'active') {
+        const vc = new URLSearchParams({ email:userEmail, peer:peerEmail, session:s.id, subject:esc(s.subject||'Session'), name:myName, role:s.user_role });
+        actions += `<a class="sc-btn sc-btn-join" href="video-call.html?${vc}" target="_blank">Join Video Call</a>`;
+      }
+      if (s.status === 'confirmed' && !isLearner) {
+        actions += `<button class="sc-btn sc-btn-start" onclick="startSession(${s.id},'${esc(peerEmail)}','${esc(s.subject||'')}')">Start Session</button>`;
+      }
+      if (s.status === 'confirmed' && isLearner) {
+        const vc = new URLSearchParams({ email:userEmail, peer:peerEmail, session:s.id, subject:esc(s.subject||'Session'), name:myName, role:'learner' });
+        actions += `<a class="sc-btn sc-btn-view" href="video-call.html?${vc}" target="_blank" style="background:#e0f7fd;color:#1a8fad;">Call Page (wait for mentor)</a>`;
+      }
+    } else {
+      if (['active','confirmed'].includes(s.status)) {
+        actions += `<div class="sc-face">Face-to-face — meet at the agreed location at the scheduled time.</div>`;
+      }
+    }
+
+    return `<div class="sess-card ${s.status}">
+      <div class="sc-subject">${esc(s.subject||'Session')}</div>
+      <div class="sc-meta">${isLearner?'Mentor':'Learner'}: <strong>${esc(peer)}</strong></div>
+      <div class="sc-meta">${typeLabel} &middot; ${modeLabel}</div>
+      <div class="sc-meta">${dtStr}</div>
+      <span class="sc-badge ${badgeCls}">${statusLabel}</span>
+      ${actions ? `<div class="sc-actions">${actions}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function startSession(sessionId, peerEmail, subject) {
+  const myName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || userEmail;
+  try {
+    const r = await (await fetch('http://localhost:3000/start-session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId, tutorEmail:userEmail }) })).json();
+    if (r.success) {
+      showToast('Session started!');
+      await loadSessions();
+      const vc = new URLSearchParams({ email:userEmail, peer:peerEmail, session:sessionId, subject:subject||'Session', name:myName, role:'tutor' });
+      window.open(`video-call.html?${vc}`, '_blank', 'width=1100,height=700,resizable=yes');
+    } else showToast(r.message || 'Error starting session');
+  } catch(e) { showToast('Error'); }
+}
+
+function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function showToast(msg) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.classList.add('toast-show'); setTimeout(() => t.classList.remove('toast-show'), 3500); }
+
+document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.href = 'index.html'; });
+document.addEventListener('DOMContentLoaded', () => { loadCredits(); loadSessions(); setInterval(loadSessions, 30000); });
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="credit-sync.js"></script>
+<script src="rating-modal.js"></script>
+</body>
+</html>

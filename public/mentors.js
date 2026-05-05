@@ -62,13 +62,17 @@ async function loadMentors() {
  
     const matchData = await matchRes.json();
  
-    allMentors = (matchData.matches || []).map(m => ({
-      ...m,
-      skills: Array.isArray(m.skills) ? m.skills
-        : (() => { try { return JSON.parse(m.skills || '[]'); } catch(e) { return []; } })(),
-      growth: Array.isArray(m.growth) ? m.growth
-        : (() => { try { return JSON.parse(m.growth || '[]'); } catch(e) { return []; } })(),
-    }));
+    // Filter out system/AI accounts
+    const SYSTEM_EMAILS = ['system', '__tandem_ai_bot__'];
+    allMentors = (matchData.matches || [])
+      .filter(m => !SYSTEM_EMAILS.includes(m.email) && m.email !== 'system')
+      .map(m => ({
+        ...m,
+        skills: Array.isArray(m.skills) ? m.skills
+          : (() => { try { return JSON.parse(m.skills || '[]'); } catch(e) { return []; } })(),
+        growth: Array.isArray(m.growth) ? m.growth
+          : (() => { try { return JSON.parse(m.growth || '[]'); } catch(e) { return []; } })(),
+      }));
     allMentors.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
  
     // Users excluded by backend = already have pending/accepted requests with them
@@ -123,7 +127,12 @@ function renderMentors(mentors) {
           ${mentor.matchScore ? `<div class="match-pill">${Math.round(mentor.matchScore)}%</div>` : ''}
         </div>
         <div class="mentor-card-info">
-          <div class="mentor-card-name">${mentor.username || mentor.name}</div>
+              <div class="mentor-card-name">
+                ${mentor.name || mentor.username || 'Unknown'}
+                <span style="display:block; font-size:12px; font-weight:400; color:#94a3b8; margin-top:1px;">
+                  @${mentor.username || mentor.name || ''}
+                </span>
+              </div>
           <div class="mentor-card-rating">
             <span class="stars-display">${stars}</span>
             <span class="rating-val">${rating.toFixed(1)}</span>
@@ -143,7 +152,7 @@ function renderMentors(mentors) {
       <button class="mentor-connect-btn ${isPending ? 'btn-pending' : ''}"
               onclick="event.stopPropagation(); ${isPending ? '' : `openMentorModal(window._mentorList[${idx}])`}"
               ${isPending ? 'disabled' : ''}>
-        ${isPending ? '⏳ Request Pending' : '📚 View Profile & Connect'}
+        ${isPending ? 'Request Pending' : 'View Profile & Connect'}
       </button>
     </div>`;
   }).join('');
@@ -199,7 +208,12 @@ function openMentorModal(mentor) {
     avatarEl.innerHTML = `<span style="font-size:2rem;font-weight:600;color:#185FA5;">${(mentor.username || mentor.name || '?').charAt(0).toUpperCase()}</span>`;
   }
  
-  document.getElementById('modalName').textContent = mentor.username || mentor.name || 'Unknown';
+
+document.getElementById('modalName').innerHTML = `
+  ${mentor.name || mentor.username || 'Unknown'}
+  <span style="display:block; font-size:14px; font-weight:400; color:#778899; margin-top:2px;">
+    @${mentor.username || mentor.name || ''}
+  </span>`;
   document.getElementById('modalBio').textContent = mentor.bio || 'Passionate about helping others learn and grow.';
  
   const rating = parseFloat(mentor.rating) || 0;
@@ -250,12 +264,12 @@ function openMentorModal(mentor) {
   const isPending = pendingEmails.has(mentor.email);
   const connectBtn = document.getElementById('modalConnectBtn');
   if (isPending) {
-    connectBtn.textContent = '⏳ Request Pending';
+    connectBtn.textContent = 'Request Pending';
     connectBtn.disabled = true;
     connectBtn.style.opacity = '0.6';
     connectBtn.onclick = null;
   } else {
-    connectBtn.textContent = '✅ Connect';
+    connectBtn.textContent = 'Connect';
     connectBtn.disabled = false;
     connectBtn.style.opacity = '1';
     connectBtn.onclick = () => { closeMentorModal(); openSubjectModal(mentor); };

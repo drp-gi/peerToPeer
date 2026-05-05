@@ -1,165 +1,548 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tandem - Messages</title>
-  <link rel="stylesheet" href="styles-dashboard.css" />
-  <link rel="stylesheet" href="styles-messages.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-dashboard.css"/>
+  <link rel="stylesheet" href="styles-messages.css"/>
   <link rel="stylesheet" href="styles-notifications.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Formal font override */
+    body, input, textarea, button, select { font-family: 'Baloo 2', sans-serif; }
+
+    /* Page must be exactly viewport height */
+    html, body { height: 100%; overflow: hidden; }
+    .wrap      { height: 100%; overflow: hidden; }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      padding: 14px 18px 0;
+    }
+      
+
+    .messages-header-area { flex-shrink: 0; }
+
+    /* Chat container fills all remaining height */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+    }
+
+    /* Connections sidebar */
+    .connections-sidebar {
+      width: 240px;
+      min-width: 200px;
+      max-width: 260px;
+      border-right: 1px solid #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #fafafa;
+    }
+    .connections-header { padding: 14px 16px 10px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+    .connections-header h3 { font-size: 14px; font-weight: 600; color: #1a2a3a; margin-bottom: 1px; }
+    .connections-header p  { font-size: 11px; color: #aaa; }
+
+    /* Bot item — NOT active by default */
+    .bot-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; cursor: pointer;
+      border-bottom: 2px solid #e0f5fb;
+      background: linear-gradient(135deg,#f0fbfe,#eef6ff);
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .bot-item:hover { background: linear-gradient(135deg,#e0f7fd,#e6f0ff); }
+    .bot-item.active { background: linear-gradient(135deg,#d4f1fa,#dceaff); border-left: 3px solid #29b6d8; }
+    .bot-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg,#29b6d8,#7c6af7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .bot-name { font-size: 13px; font-weight: 600; color: #29b6d8; }
+    .bot-sub  { font-size: 10px; color: #888; line-height: 1.3; }
+
+    /* Connections list scrolls internally */
+    .connections-list { flex: 1; overflow-y: auto; }
+
+    /* Chat area */
+    .chat-area {
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0; overflow: hidden; background: #fff;
+    }
+
+    /* Chat header — fixed */
+    .chat-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-bottom: 1px solid #eee;
+      flex-shrink: 0; background: #fff;
+    }
+    .chat-header-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #d0e8f0; overflow: hidden; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .chat-header-info   { flex: 1; min-width: 0; }
+    .chat-header-name   { font-size: 14px; font-weight: 600; color: #1a2a3a; }
+    .chat-header-status { font-size: 11px; color: #888; }
+    .chat-header-actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; flex-shrink: 0; }
+
+    /* Exit chat button */
+    .exit-chat-btn {
+      background: #f5f5f5; color: #888; border: 1px solid #e0e0e0;
+      border-radius: 14px; padding: 5px 10px; font-size: 11px; font-weight: 500;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+    }
+    .exit-chat-btn:hover { background: #ffeaea; color: #c0392b; border-color: #fca5a5; }
+
+    /* Messages area — ONLY this scrolls */
+    .messages-area {
+      flex: 1; overflow-y: auto;
+      padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+
+    /* Input bar */
+    .message-input-area {
+      display: flex; gap: 8px; align-items: center;
+      padding: 10px 14px; border-top: 1px solid #eee;
+      flex-shrink: 0; background: #fff;
+    }
+    .message-input {
+      flex: 1; padding: 9px 12px;
+      border: 1px solid #ddd; border-radius: 20px;
+      font-size: 13px; font-family: inherit; outline: none;
+    }
+    .message-input:focus { border-color: #29b6d8; }
+    .send-btn {
+      background: linear-gradient(135deg,#29b6d8,#1fa0be);
+      color: #fff; border: none; border-radius: 20px;
+      padding: 9px 16px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+    }
+
+    /* Video call + session request buttons */
+    .video-call-btn {
+      background: linear-gradient(135deg,#29b6d8,#1fa0be); color: #fff;
+      border: none; border-radius: 14px; padding: 5px 11px; font-size: 11px;
+      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center;
+      gap: 4px; font-family: inherit; text-decoration: none; white-space: nowrap;
+    }
+    .session-request-btn {
+      background: #f0fbfe; color: #29b6d8;
+      border: 1.5px solid #29b6d8; border-radius: 14px;
+      padding: 5px 11px; font-size: 11px; font-weight: 600;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+    }
+    .session-request-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Empty / no connection state */
+    .no-connection {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      color: #ccc; text-align: center; padding: 24px;
+    }
+    .no-connection-icon { font-size: 36px; }
+    .no-connection h4   { font-size: 14px; color: #999; }
+    .no-connection p    { font-size: 12px; color: #bbb; }
+
+    /* Bot chat bubbles */
+    .bot-message-wrap { display: flex; align-items: flex-end; gap: 7px; margin-bottom: 8px; }
+    .bot-message { max-width: 78%; padding: 9px 13px; border-radius: 16px; font-size: 13px; line-height: 1.5; word-wrap: break-word; }
+    .bot-bubble  { background: linear-gradient(135deg,#f0fbfe,#eef6ff); border: 1px solid #c8e8f5; border-radius: 16px 16px 16px 4px; color: #1a2a3a; }
+    .bot-bubble-user { background: #29b6d8; color: #fff; border-radius: 16px 16px 4px 16px; }
+    .bot-avatar-mini { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg,#29b6d8,#7c6af7); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .bot-thinking { display: flex; gap: 4px; align-items: center; padding: 9px 13px; }
+    .bot-dot { width: 6px; height: 6px; border-radius: 50%; background: #29b6d8; animation: botDot 1.2s infinite; }
+    .bot-dot:nth-child(2) { animation-delay: .2s; }
+    .bot-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes botDot { 0%,80%,100%{transform:scale(0.8);opacity:.5;}40%{transform:scale(1);opacity:1;} }
+
+    /* Human message bubbles */
+    .message { max-width: 72%; margin-bottom: 4px; }
+    .message-sent     { align-self: flex-end; }
+    .message-received { align-self: flex-start; }
+    .message-text { padding: 9px 13px; border-radius: 16px; font-size: 13px; line-height: 1.5; word-wrap: break-word; }
+    .message-sent     .message-text { background: #29b6d8; color: #fff; border-radius: 16px 16px 4px 16px; }
+    .message-received .message-text { background: #f0f0f0; color: #1a2a3a; border-radius: 16px 16px 16px 4px; }
+    .message-time { font-size: 10px; color: #bbb; margin-top: 2px; text-align: right; }
+    .message-date-separator { text-align: center; margin: 10px 0; }
+    .message-date-separator span { background: #f0f0f0; color: #aaa; font-size: 11px; padding: 2px 10px; border-radius: 10px; }
+
+    /* Session modal */
+    .session-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      display: none; align-items: center; justify-content: center;
+      z-index: 9990; padding: 16px;
+    }
+    .session-modal-content {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 440px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .session-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 18px; border-bottom: 1px solid #eee;
+    }
+    .session-modal-header h3 { font-size: 15px; font-weight: 600; color: #1a2a3a; }
+    .session-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
+    .session-modal-body { padding: 16px 18px; }
+    .session-timer { font-size: 36px; font-weight: 700; color: #f5a623; text-align: center; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+    .session-btn-accept  { background: #29b6d8; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .session-btn-reject  { background: #ff4757; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .session-btn-complete { background: #4caf7d; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; width: 100%; margin-top: 8px; }
+    .session-actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
+    .session-info p  { font-size: 13px; color: #333; margin-bottom: 4px; }
+    .session-notes   { font-size: 12px; color: #777; font-style: italic; margin-top: 6px; }
+    .session-status-active { color: #4caf7d; font-weight: 600; margin-top: 6px; font-size: 12px; }
+    .session-input { width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; font-family: inherit; margin-top: 6px; }
+    .session-btn-send   { background: #29b6d8; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; flex: 2; }
+    .session-btn-cancel { background: #eee; color: #555; border: none; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; flex: 1; }
+
+    /* Rating overlay */
+    .rating-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      display: none; align-items: center; justify-content: center;
+      z-index: 9998; padding: 16px;
+    }
+    .rating-box {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 400px;
+      overflow: hidden;
+    }
+    .rating-head { background: linear-gradient(135deg,#29b6d8,#1fa0be); padding: 16px 20px; color: #fff; }
+    .rating-head h3 { font-size: 16px; margin-bottom: 2px; font-weight: 600; }
+    .rating-head p  { font-size: 12px; opacity: .85; }
+    .rating-body { padding: 16px 20px; }
+    .stars-row { display: flex; gap: 7px; margin-bottom: 5px; }
+    .star-btn { font-size: 28px; cursor: pointer; color: #ddd; line-height: 1; background: none; border: none; padding: 0; }
+    .star-btn.lit { color: #f5a623; }
+    .star-label { font-size: 12px; color: #aaa; margin-bottom: 12px; min-height: 15px; }
+    .tag-section { margin-bottom: 10px; }
+    .tag-section-label { font-size: 12px; font-weight: 600; color: #333; margin-bottom: 6px; }
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+    .feedback-tag { padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 500; border: 1.5px solid #e0e4ea; background: #f7f9fc; color: #445566; cursor: pointer; }
+    .feedback-tag.selected { background: #29b6d8; border-color: #29b6d8; color: #fff; }
+    .rating-textarea { width: 100%; padding: 9px 11px; border: 1.5px solid #e0e4ea; border-radius: 8px; font-size: 13px; font-family: inherit; resize: vertical; outline: none; box-sizing: border-box; margin-bottom: 12px; }
+    .rating-textarea:focus { border-color: #29b6d8; }
+    .rating-actions { display: flex; gap: 8px; }
+    .rating-btn-skip   { flex: 1; padding: 9px; border: 1.5px solid #e0e4ea; border-radius: 8px; background: #fff; color: #778899; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
+    .rating-btn-submit { flex: 2; padding: 9px; border: none; border-radius: 8px; background: linear-gradient(135deg,#29b6d8,#1fa0be); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+    /* Mobile */
+    .mobile-back-btn {
+      display: none; align-items: center; gap: 6px;
+      background: none; border: none; color: #29b6d8;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      padding: 4px 0; margin-bottom: 8px; font-family: inherit; flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+  /* Push main content above the bottom nav bar */
+  .main {
+    padding-bottom: 56px !important;
+  }
+
+  /* Make chat container account for the nav bar */
+  .chat-container {
+    height: calc(100vh - 56px - 140px) !important;
+    min-height: 0 !important;
+  }
+
+  /* Keep input bar always visible above nav */
+  .message-input-area {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Messages area fills remaining space */
+  .messages-area {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  /* Chat area is full flex column */
+  .chat-area {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    height: 100% !important;
+  }
+
+  .message-input {
+    font-size: 16px !important; /* prevents iOS keyboard zoom */
+  }
+}
+
+    @media (max-width: 600px) {
+      html, body { overflow: hidden; }
+      .main { padding: 10px 12px 0; }
+      .connections-sidebar { width: 100%; max-width: 100%; border-right: none; }
+      .connections-sidebar.mobile-hidden { display: none; }
+      .chat-area { display: none; }
+      .chat-area.mobile-active { display: flex; }
+      .mobile-back-btn { display: flex !important; }
+    }
+
+
+    
+
+    /* Connection item */
+    .connection-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
+      transition: background 0.15s;
+    }
+    .connection-item:hover { background: #f5f5f5; }
+    .connection-item.active { background: #e8f7fc; }
+    .connection-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #d0e8f0; overflow: hidden; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .connection-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .connection-info { flex: 1; min-width: 0; }
+    .connection-name    { font-size: 13px; font-weight: 600; color: #1a2a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .connection-preview { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Empty state inside connections list */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 6px; color: #ccc; text-align: center; }
+    .empty-state-icon { font-size: 28px; }
+    .empty-state h4 { font-size: 13px; color: #aaa; }
+    .empty-state p  { font-size: 11px; }
+
+
+    /* Fix input bar disappearing on small widths */
+.chat-container {
+  min-height: 0;
+  flex: 1;
+}
+
+.chat-area {
+  min-height: 0;
+}
+
+.messages-area {
+  min-height: 0;
+  flex: 1;
+}
+
+.message-input-area {
+  flex-shrink: 0 !important;
+  min-height: 56px;
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding-bottom: 0 !important;
+  }
+
+  .chat-container {
+    border-radius: 8px;
+  }
+
+  .message-input-area {
+    padding: 8px 10px;
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    z-index: 10;
+    border-top: 1px solid #eee;
+  }
+
+  .message-input {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-
 <div class="wrap">
-
   <div class="sidebar">
-    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
-
+    <div class="logo" onclick="window.location.href='dashboard.html'">
+      <div class="logo-icon">T</div>
+      <span class="logo-text">Tandem</span>
+    </div>
     <div class="nav-item" onclick="window.location.href='dashboard.html'">
-      <img src="/icons/home.png" alt="home" class="nav-icon">
-      <span>HOME</span>
+      <img src="/icons/home.png" class="nav-icon" alt="Home">
+      <span class="nav-label">Home</span>
     </div>
-
     <div class="nav-item" onclick="window.location.href='mentors.html'">
-      <img src="/icons/help.png" alt="mentors" class="nav-icon">
-      <span>MENTORS</span>
+      <img src="/icons/friendship.png" class="nav-icon" alt="Mentors">
+      <span class="nav-label">Mentors</span>
     </div>
-
     <div class="nav-item" onclick="window.location.href='profile.html'">
-      <img src="/icons/profile.png" alt="profile" class="nav-icon">
-      <span>PROFILE</span>
+      <img src="/icons/profile.png" class="nav-icon" alt="Profile">
+      <span class="nav-label">Profile</span>
     </div>
-
     <div class="nav-item active" onclick="window.location.href='messages.html'">
-      <img src="/icons/message.png" alt="messages" class="nav-icon">
-      <span>MESSAGES</span>
+      <img src="/icons/message.png" class="nav-icon" alt="Messages">
+      <span class="nav-label">Messages</span>
     </div>
-
     <div class="nav-item" onclick="window.location.href='ledger.html'">
-      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
-      <span>LEDGER</span>
+      <img src="/icons/crypto.png" class="nav-icon" alt="Ledger">
+      <span class="nav-label">Ledger</span>
     </div>
-
+    <div class="nav-item" onclick="window.location.href='calendar.html'">
+      <img src="/icons/calendar.png" class="nav-icon" alt="Calendar">
+      <span class="nav-label">Calendar</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='quests.html'">
+      <img src="/icons/badge.png" class="nav-icon" alt="Quests">
+      <span class="nav-label">Quests</span>
+    </div>
     <div class="nav-item logout-btn" id="logoutBtn">
-      <img src="/icons/logout.png" alt="logout" class="nav-icon">
-      <span>LOGOUT</span>
+      <img src="/icons/logout.png" class="nav-icon" alt="Logout">
+      <span class="nav-label">Logout</span>
     </div>
   </div>
 
   <div class="main">
-    <div class="topbar">
-      <div class="credits-badge">
-        <span id="topCreditsBadge">5</span>
-        <div class="coin">
-          <img src="/icons/crypto.png" alt="crypto">
+    <div class="messages-header-area">
+      <div class="topbar">
+        <div class="credits-badge">
+          <span id="topCreditsBadge">5</span>
+          <div class="coin"><img src="/icons/crypto.png" alt="credits"></div>
         </div>
-      </div>
-      <div class="notif-bell-wrap" id="notifBellWrap">
-        <img src="/icons/bell.png" alt="bell" class="mini-coin">
-        <span class="notif-badge" id="notifBadge" style="display:none;"></span>
-        <div class="notif-dropdown" id="notifDropdown">
-          <div class="notif-dropdown-header">
-            <h4>🔔 Notifications</h4>
-            <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
+        <div class="notif-bell-wrap" id="notifBellWrap">
+          <img src="/icons/bell.png" alt="bell" class="mini-coin">
+          <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <h4>Notifications</h4>
+              <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
+            </div>
+            <div class="notif-list" id="notifList"></div>
           </div>
-          <div class="notif-list" id="notifList"></div>
         </div>
       </div>
-    </div>
 
-    <div class="pg-title">Messages</div>
-    <div class="pg-subtitle">Chat with your connected peers</div>
+      <button class="mobile-back-btn" id="mobileBackBtn" onclick="mobileBackToList()">← Conversations</button>
+
+      <div class="pg-title">Messages</div>
+      <div class="pg-subtitle">Chat with your connections or ask the Tandem Study AI</div>
+    </div>
 
     <div class="chat-container">
       <div class="connections-sidebar" id="connectionsSidebar">
         <div class="connections-header">
           <h3>Conversations</h3>
-          <p>People you're connected with</p>
+          <p>AI assistant + connections</p>
         </div>
+
+        <div class="bot-item" id="botChatItem" onclick="selectBotChat()">
+          <div class="bot-avatar">&#x1F916;</div>
+          <div>
+            <div class="bot-name">Tandem Study AI</div>
+            <div class="bot-sub">Study help, tips &amp; explanations</div>
+          </div>
+        </div>
+
         <div class="connections-list" id="connectionsList">
-          <div class="loading-spinner"><div class="spinner"></div><p>Loading conversations...</p></div>
+          <div class="loading-spinner"><div class="spinner"></div></div>
         </div>
       </div>
-      
+
       <div class="chat-area" id="chatArea">
-          <div class="no-connection">
-              <div class="no-connection-icon">💬</div>
-              <h4>No conversation selected</h4>
-              <p>Select a conversation from the sidebar to start messaging</p>
-          </div>
+        <div class="no-connection">
+          <div class="no-connection-icon"><i data-lucide="message-circle" style="width:40px;height:40px;stroke:#cbd5e1;stroke-width:1.5;"></i></div>
+          <h4>No conversation selected</h4>
+          <p>Pick a chat or talk to Tandem AI</p>
+        </div>
       </div>
 
-      <!-- Session Status Modal -->
-      <div id="sessionModal" class="session-modal" style="display:none;">
-          <div class="session-modal-content">
-              <div class="session-modal-header">
-                  <h3 id="sessionModalTitle">Active Session</h3>
-                  <button class="session-modal-close" onclick="closeSessionModal()">&times;</button>
-              </div>
-              <div class="session-modal-body" id="sessionModalBody">
-                  <div class="session-timer" id="sessionTimerDisplay">30:00</div>
-                  <div class="session-info" id="sessionInfo"></div>
-                  <div class="session-actions" id="sessionActions">
-                      <button class="session-btn-complete" id="completeSessionBtn">Complete Session</button>
-                  </div>
-              </div>
+      <div id="sessionModal" class="session-modal">
+        <div class="session-modal-content">
+          <div class="session-modal-header">
+            <h3 id="sessionModalTitle">Session</h3>
+            <button class="session-modal-close" onclick="closeSessionModal()">&times;</button>
           </div>
+          <div class="session-modal-body" id="sessionModalBody"></div>
+        </div>
       </div>
 
-      <!-- Rating Modal -->
-      <div id="ratingModal" class="rating-modal" style="display:none;">
-          <div class="rating-modal-content">
-              <h3>Rate Your Session</h3>
-              <div class="rating-stars" id="ratingStars">
-                  <span data-rating="1">★</span>
-                  <span data-rating="2">★</span>
-                  <span data-rating="3">★</span>
-                  <span data-rating="4">★</span>
-                  <span data-rating="5">★</span>
-              </div>
-              <textarea id="ratingFeedback" placeholder="Share your feedback about the session..." rows="3"></textarea>
-              <div class="rating-actions">
-                  <button class="rating-btn-submit" id="submitRatingBtn">Submit Rating</button>
-                  <button class="rating-btn-skip" id="skipRatingBtn">Skip</button>
-              </div>
-          </div>
-      </div>
-
-      <!-- Session Request Modal -->
-      <div id="sessionRequestModal" class="session-modal" style="display:none;">
-          <div class="session-modal-content">
-              <div class="session-modal-header">
-                  <h3>Request a Session</h3>
-                  <button class="session-modal-close" onclick="closeSessionRequestModal()">&times;</button>
-              </div>
-              <div class="session-modal-body">
-                  <div class="session-request-info" id="sessionRequestTutorInfo"></div>
-                  <div class="form-group">
-                      <label>Subject/Topic</label>
-                      <input type="text" id="sessionSubject" placeholder="What subject do you need help with?" class="session-input">
-                  </div>
-                  <div class="form-group">
-                      <label>Additional Notes (optional)</label>
-                      <textarea id="sessionNotes" placeholder="Any specific topics or questions you'd like to cover?" rows="3" class="session-textarea"></textarea>
-                  </div>
-                  <div class="session-request-info">
-                      <span class="credit-warning">⚠️ This will cost 1 credit (30 minutes of tutoring)</span>
-                  </div>
-                  <div class="session-actions">
-                      <button class="session-btn-send" id="sendSessionRequestBtn">Send Request</button>
-                      <button class="session-btn-cancel" onclick="closeSessionRequestModal()">Cancel</button>
-                  </div>
-              </div>
-          </div>
+      <div id="sessionRequestModal" class="session-modal">
+        <div class="session-modal-content"></div>
       </div>
     </div>
+
+    <div class="rating-overlay" id="ratingOverlay">
+      <div class="rating-box">
+        <div class="rating-head">
+          <h3>Rate Your Session</h3>
+          <p id="ratingMeta">How was it?</p>
+        </div>
+        <div class="rating-body">
+          <div class="stars-row" id="starsRow">
+            <button class="star-btn" data-v="1">&#9733;</button>
+            <button class="star-btn" data-v="2">&#9733;</button>
+            <button class="star-btn" data-v="3">&#9733;</button>
+            <button class="star-btn" data-v="4">&#9733;</button>
+            <button class="star-btn" data-v="5">&#9733;</button>
+          </div>
+          <div class="star-label" id="starLabel"></div>
+          <div class="tag-section">
+            <div class="tag-section-label">What went well?</div>
+            <div class="tags-wrap" id="posTags"></div>
+          </div>
+          <div class="tag-section">
+            <div class="tag-section-label">Anything to improve?</div>
+            <div class="tags-wrap" id="negTags"></div>
+          </div>
+          <textarea class="rating-textarea" id="ratingText" rows="3" placeholder="Leave a note for the mentor (optional)..."></textarea>
+          <div class="rating-actions">
+            <button class="rating-btn-skip"   onclick="submitRating(false)">Skip</button>
+            <button class="rating-btn-submit" onclick="submitRating(true)">Submit Rating</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rating-overlay" id="f2fStartOverlay">
+      <div class="rating-box" style="max-width:340px;">
+        <div class="rating-head" style="background:linear-gradient(135deg,#4caf7d,#22a05a);">
+          <h3>Session Starting</h3>
+          <p>Your mentor has started the face-to-face session</p>
+        </div>
+        <div class="rating-body" style="text-align:center;">
+          <p style="font-size:13px;color:#333;margin-bottom:14px;">Confirm you are present to start the timer.</p>
+          <div style="display:flex;gap:8px;justify-content:center;">
+            <button class="rating-btn-skip"   onclick="declineF2fStart()" style="flex:1;">Not yet</button>
+            <button class="rating-btn-submit" onclick="confirmF2fStart()" style="flex:2;background:linear-gradient(135deg,#4caf7d,#22a05a);">I am here — Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
+<script src="/socket.io/socket.io.js"></script>
+<script src="credit-sync.js"></script>
 <script src="notifications.js"></script>
 <script src="messages.js"></script>
+
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  </script>
 </body>
 </html>

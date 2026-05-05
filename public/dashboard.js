@@ -8,15 +8,15 @@ function encryptEmail(email) {
  
 // Load user info
 function loadUserInfo() {
-  const username = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'User';
-  const email = localStorage.getItem('userEmail') || '';
+  const fullName = localStorage.getItem('userName') || localStorage.getItem('tandem_username') || 'User';
+  const username = localStorage.getItem('tandem_username') || '';
   const profilePic = localStorage.getItem('tandem_profile_pic') || null;
- 
+
   const profileUsernameEl = document.getElementById('profileUsername');
-  if (profileUsernameEl) profileUsernameEl.textContent = username.toUpperCase();
- 
+  if (profileUsernameEl) profileUsernameEl.textContent = fullName;
+
   const profileEmailEl = document.getElementById('profileEmail');
-  if (profileEmailEl) profileEmailEl.textContent = encryptEmail(email);
+  if (profileEmailEl) profileEmailEl.textContent = username ? '@' + username : '';
  
   if (profilePic) {
     const avatarContainer = document.getElementById('avatarContainer');
@@ -133,6 +133,12 @@ async function loadCreditsFromDatabase() {
           data.grade_level) {
         localStorage.setItem('profile_completed', 'true');
       }
+
+      // Update the rating displayed next to the username in the profile header
+      const rating = parseFloat(data.rating || 0);
+      const ratingEl = document.getElementById('profileRating');
+      if (ratingEl) ratingEl.textContent = rating > 0 ? rating.toFixed(1) : '0.0';
+
       return true;
     }
   } catch (error) { console.error('Error loading credits:', error); }
