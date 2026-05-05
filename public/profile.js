@@ -162,7 +162,7 @@ function renderView() {
 
     const growthEl = document.getElementById('viewGrowth');
     if (growthEl) growthEl.innerHTML = growth.length
-        ? growth.map(g => `<span class="skill-tag-growth">${g}</span>`).join('')
+        ? growth.map(g => `<span class="growth-tag">${g}</span>`).join('')
         : '<span style="color:#bbb;font-size:13px;">No growth subjects added yet.</span>';
 
     const gradeKey   = localStorage.getItem('tandem_grade') || '';
