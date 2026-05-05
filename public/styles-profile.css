@@ -65,7 +65,7 @@
 .ov-box { border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; background: #fff; }
 .ov-full { grid-column: 1 / -1; }
 .ov-title { font-size: 15px; font-weight: 700; color: #1a2a3a; margin-bottom: 10px; font-family: 'Baloo 2', sans-serif; }
-.ov-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.ov-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap;}
 .ov-link { font-size: 13px; color: #29b6d8; text-decoration: none; font-weight: 600; }
 .ov-content { font-size: 14px; color: #475569; }
 .ov-content.muted { color: #94a3b8; }
@@ -123,3 +123,118 @@
 /* ── Toast ── */
 .toast { position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #1a2a3a; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 13px; font-weight: 700; z-index: 9999; transition: bottom 0.4s ease; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.22); font-family: 'Baloo 2', sans-serif; }
 .toast.toast-show { bottom: 30px; }
+
+
+
+
+/* ── Mobile / Responsive fixes ── */
+@media (max-width: 768px) {
+
+  /* Stack the profile card vertically */
+  .pf-card {
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 18px;
+    gap: 20px;
+  }
+
+  /* Center the left section */
+  .pf-left {
+    align-items: center;
+    text-align: center;
+    min-width: unset;
+    width: 100%;
+  }
+
+  /* Hide vertical divider, show horizontal one */
+  .pf-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
+
+  /* Stats wrap and center */
+  .pf-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    width: 100%;
+  }
+
+  .stat-item {
+    min-width: 70px;
+  }
+
+  /* Overview grid goes single column */
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ov-full {
+    grid-column: 1;
+  }
+
+  /* Grade grid goes 2 columns on mobile */
+  .grade-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Edit form full width */
+  .edit-form {
+    max-width: 100%;
+  }
+
+  /* Edit actions stack */
+  .ef-actions {
+    flex-direction: column;
+  }
+
+  .ef-btn-cancel,
+  .ef-btn-save {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Name font size smaller */
+  .pf-name {
+    font-size: 20px;
+  }
+
+  /* Tabs scroll horizontally if needed */
+  .pf-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Grade grid single column on very small screens */
+  .grade-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .grade-card {
+    padding: 10px 6px;
+  }
+
+  .grade-name {
+    font-size: 11px;
+  }
+
+  .grade-range {
+    font-size: 10px;
+  }
+
+  .pf-stats {
+    gap: 12px;
+  }
+
+  .stat-number {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+}

@@ -76,7 +76,8 @@ async function loadConnections() {
                     </div>
                 </div>`).join('');
         } else {
-            list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#x1F44B;</div><h4>No connections yet</h4><p>Go to Find Mentors!</p></div>`;
+            list.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><i data-lucide="users" style="width:28px;height:28px;stroke:#cbd5e1;stroke-width:1.5;"></i></div><h4>No connections yet</h4><p>Go to Find Mentors!</p></div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     } catch(e) { document.getElementById('connectionsList').innerHTML = '<div class="empty-state">Error loading</div>'; }
 }
@@ -133,7 +134,9 @@ function exitChat() {
             <h4>No conversation selected</h4>
             <p>Pick a chat or talk to Tandem AI</p>
         </div>`;
+    
 
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     if (window.innerWidth <= 600) mobileBackToList();
 }
 
@@ -195,7 +198,7 @@ function renderBotChat() {
     const userName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'there';
 
     if (!botHistory.length) {
-        const welcomeMsg = `Hi ${userName}! 👋 I am your **Tandem Study AI**!\n\nI can help you with a lot of things. Just tell me what you need:\n\n• **Any subject** — Math, Science, English, Programming, Networking, and more\n• **Study strategies** — tips to learn faster and retain more\n• **Practice questions** — ask me to quiz you on anything\n• **Learning roadmaps** — what to study next based on your goals\n• **Tandem platform** — how credits, sessions, and quests work\n\nWhat would you like to explore today?`;
+        const welcomeMsg = `Hi ${userName}! I am your **Tandem Study AI**!\n\nI can help you with a lot of things. Just tell me what you need:\n\n• **Any subject** — Math, Science, English, Programming, Networking, and more\n• **Study strategies** — tips to learn faster and retain more\n• **Practice questions** — ask me to quiz you on anything\n• **Learning roadmaps** — what to study next based on your goals\n• **Tandem platform** — how credits, sessions, and quests work\n\nWhat would you like to explore today?`;
         appendBotMsg(area, welcomeMsg);
     } else {
         botHistory.forEach(m => {
@@ -231,6 +234,7 @@ function formatBotText(t) {
         .replace(/\n/g, '<br>')
         .replace(/• /g, '&bull; ');
 }
+if (typeof lucide !== 'undefined') lucide.createIcons();
 
 // ── SMART BOT MESSAGE SENDER ──────────────────────────────────
 

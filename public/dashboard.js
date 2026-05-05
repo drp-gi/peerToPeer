@@ -8,15 +8,15 @@ function encryptEmail(email) {
  
 // Load user info
 function loadUserInfo() {
-  const username = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'User';
-  const email = localStorage.getItem('userEmail') || '';
+  const fullName = localStorage.getItem('userName') || localStorage.getItem('tandem_username') || 'User';
+  const username = localStorage.getItem('tandem_username') || '';
   const profilePic = localStorage.getItem('tandem_profile_pic') || null;
- 
+
   const profileUsernameEl = document.getElementById('profileUsername');
-  if (profileUsernameEl) profileUsernameEl.textContent = username.toUpperCase();
- 
+  if (profileUsernameEl) profileUsernameEl.textContent = fullName;
+
   const profileEmailEl = document.getElementById('profileEmail');
-  if (profileEmailEl) profileEmailEl.textContent = encryptEmail(email);
+  if (profileEmailEl) profileEmailEl.textContent = username ? '@' + username : '';
  
   if (profilePic) {
     const avatarContainer = document.getElementById('avatarContainer');

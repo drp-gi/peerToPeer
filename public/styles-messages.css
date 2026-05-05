@@ -155,13 +155,13 @@
 
 /* Empty / no connection state */
 .no-connection { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #94a3b8; text-align: center; padding: 24px; }
-.no-connection-icon { font-size: 36px; }
+.no-connection-icon { display: flex; justify-content: center; margin-bottom: 4px; }
 .no-connection h4   { font-size: 14px; color: #64748b; font-family: 'Baloo 2', sans-serif; font-weight: 700; }
 .no-connection p    { font-size: 12px; }
 
 /* Empty state */
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 6px; color: #94a3b8; text-align: center; }
-.empty-state-icon { font-size: 28px; }
+.empty-state-icon { display: flex; justify-content: center; margin-bottom: 4px; }
 .empty-state h4 { font-size: 13px; color: #64748b; font-family: 'Baloo 2', sans-serif; font-weight: 700; }
 .empty-state p  { font-size: 11px; }
 

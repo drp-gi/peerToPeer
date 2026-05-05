@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles-dashboard.css"/>
   <link rel="stylesheet" href="styles-messages.css"/>
   <link rel="stylesheet" href="styles-notifications.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     /* Formal font override */
     body, input, textarea, button, select { font-family: 'Baloo 2', sans-serif; }
@@ -22,6 +23,7 @@
       overflow: hidden;
       padding: 14px 18px 0;
     }
+      
 
     .messages-header-area { flex-shrink: 0; }
 
@@ -244,6 +246,46 @@
       font-size: 13px; font-weight: 500; cursor: pointer;
       padding: 4px 0; margin-bottom: 8px; font-family: inherit; flex-shrink: 0;
     }
+    @media (max-width: 768px) {
+  /* Push main content above the bottom nav bar */
+  .main {
+    padding-bottom: 56px !important;
+  }
+
+  /* Make chat container account for the nav bar */
+  .chat-container {
+    height: calc(100vh - 56px - 140px) !important;
+    min-height: 0 !important;
+  }
+
+  /* Keep input bar always visible above nav */
+  .message-input-area {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Messages area fills remaining space */
+  .messages-area {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  /* Chat area is full flex column */
+  .chat-area {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    height: 100% !important;
+  }
+
+  .message-input {
+    font-size: 16px !important; /* prevents iOS keyboard zoom */
+  }
+}
+
     @media (max-width: 600px) {
       html, body { overflow: hidden; }
       .main { padding: 10px 12px 0; }
@@ -253,6 +295,9 @@
       .chat-area.mobile-active { display: flex; }
       .mobile-back-btn { display: flex !important; }
     }
+
+
+    
 
     /* Connection item */
     .connection-item {
@@ -277,6 +322,50 @@
     .empty-state-icon { font-size: 28px; }
     .empty-state h4 { font-size: 13px; color: #aaa; }
     .empty-state p  { font-size: 11px; }
+
+
+    /* Fix input bar disappearing on small widths */
+.chat-container {
+  min-height: 0;
+  flex: 1;
+}
+
+.chat-area {
+  min-height: 0;
+}
+
+.messages-area {
+  min-height: 0;
+  flex: 1;
+}
+
+.message-input-area {
+  flex-shrink: 0 !important;
+  min-height: 56px;
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding-bottom: 0 !important;
+  }
+
+  .chat-container {
+    border-radius: 8px;
+  }
+
+  .message-input-area {
+    padding: 8px 10px;
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    z-index: 10;
+    border-top: 1px solid #eee;
+  }
+
+  .message-input {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -292,7 +381,7 @@
       <span class="nav-label">Home</span>
     </div>
     <div class="nav-item" onclick="window.location.href='mentors.html'">
-      <img src="/icons/help.png" class="nav-icon" alt="Mentors">
+      <img src="/icons/friendship.png" class="nav-icon" alt="Mentors">
       <span class="nav-label">Mentors</span>
     </div>
     <div class="nav-item" onclick="window.location.href='profile.html'">
@@ -312,7 +401,7 @@
       <span class="nav-label">Calendar</span>
     </div>
     <div class="nav-item" onclick="window.location.href='quests.html'">
-      <img src="/icons/crypto.png" class="nav-icon" alt="Quests">
+      <img src="/icons/badge.png" class="nav-icon" alt="Quests">
       <span class="nav-label">Quests</span>
     </div>
     <div class="nav-item logout-btn" id="logoutBtn">
@@ -369,7 +458,7 @@
 
       <div class="chat-area" id="chatArea">
         <div class="no-connection">
-          <div class="no-connection-icon">&#x1F4AC;</div>
+          <div class="no-connection-icon"><i data-lucide="message-circle" style="width:40px;height:40px;stroke:#cbd5e1;stroke-width:1.5;"></i></div>
           <h4>No conversation selected</h4>
           <p>Pick a chat or talk to Tandem AI</p>
         </div>
@@ -447,5 +536,13 @@
 <script src="credit-sync.js"></script>
 <script src="notifications.js"></script>
 <script src="messages.js"></script>
+
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  </script>
 </body>
 </html>

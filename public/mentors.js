@@ -127,7 +127,12 @@ function renderMentors(mentors) {
           ${mentor.matchScore ? `<div class="match-pill">${Math.round(mentor.matchScore)}%</div>` : ''}
         </div>
         <div class="mentor-card-info">
-          <div class="mentor-card-name">${mentor.username || mentor.name}</div>
+              <div class="mentor-card-name">
+                ${mentor.name || mentor.username || 'Unknown'}
+                <span style="display:block; font-size:12px; font-weight:400; color:#94a3b8; margin-top:1px;">
+                  @${mentor.username || mentor.name || ''}
+                </span>
+              </div>
           <div class="mentor-card-rating">
             <span class="stars-display">${stars}</span>
             <span class="rating-val">${rating.toFixed(1)}</span>
@@ -147,7 +152,7 @@ function renderMentors(mentors) {
       <button class="mentor-connect-btn ${isPending ? 'btn-pending' : ''}"
               onclick="event.stopPropagation(); ${isPending ? '' : `openMentorModal(window._mentorList[${idx}])`}"
               ${isPending ? 'disabled' : ''}>
-        ${isPending ? '⏳ Request Pending' : '📚 View Profile & Connect'}
+        ${isPending ? 'Request Pending' : 'View Profile & Connect'}
       </button>
     </div>`;
   }).join('');
@@ -259,12 +264,12 @@ document.getElementById('modalName').innerHTML = `
   const isPending = pendingEmails.has(mentor.email);
   const connectBtn = document.getElementById('modalConnectBtn');
   if (isPending) {
-    connectBtn.textContent = '⏳ Request Pending';
+    connectBtn.textContent = 'Request Pending';
     connectBtn.disabled = true;
     connectBtn.style.opacity = '0.6';
     connectBtn.onclick = null;
   } else {
-    connectBtn.textContent = '✅ Connect';
+    connectBtn.textContent = 'Connect';
     connectBtn.disabled = false;
     connectBtn.style.opacity = '1';
     connectBtn.onclick = () => { closeMentorModal(); openSubjectModal(mentor); };
