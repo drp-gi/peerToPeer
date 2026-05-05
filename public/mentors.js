@@ -203,7 +203,12 @@ function openMentorModal(mentor) {
     avatarEl.innerHTML = `<span style="font-size:2rem;font-weight:600;color:#185FA5;">${(mentor.username || mentor.name || '?').charAt(0).toUpperCase()}</span>`;
   }
  
-  document.getElementById('modalName').textContent = mentor.username || mentor.name || 'Unknown';
+
+document.getElementById('modalName').innerHTML = `
+  ${mentor.name || mentor.username || 'Unknown'}
+  <span style="display:block; font-size:14px; font-weight:400; color:#778899; margin-top:2px;">
+    @${mentor.username || mentor.name || ''}
+  </span>`;
   document.getElementById('modalBio').textContent = mentor.bio || 'Passionate about helping others learn and grow.';
  
   const rating = parseFloat(mentor.rating) || 0;

@@ -136,10 +136,20 @@ function renderView() {
     const pfAvatar = document.getElementById('pfAvatar');
     if (pfAvatar && pic) pfAvatar.innerHTML = `<img src="${pic}" alt="Profile">`;
 
+   
+    const name = localStorage.getItem('userName') || localStorage.getItem('tandem_username') || 'User';
+    const email = localStorage.getItem('userEmail') || '';
+
     const pfName = document.getElementById('pfName');
-    if (pfName) pfName.textContent = username.toUpperCase();
+    if (pfName) pfName.textContent = name;
+
     const pfHandle = document.getElementById('pfHandle');
     if (pfHandle) pfHandle.textContent = '@' + username.toLowerCase().replace(/\s+/g,'_');
+
+    // Add email display under the handle
+    const pfEmail = document.getElementById('pfEmail');
+    if (pfEmail) pfEmail.textContent = encryptEmail(email);
+
     const pfBio = document.getElementById('pfBio');
     if (pfBio) pfBio.textContent = bio || 'Enter Bio';
     const viewBio = document.getElementById('viewBio');
@@ -192,7 +202,9 @@ function renderEdit() {
     try { skills = JSON.parse(localStorage.getItem('tandem_skills') || '[]'); } catch(e) {}
     try { growth = JSON.parse(localStorage.getItem('tandem_growth') || '[]');  } catch(e) {}
 
-    document.getElementById('editName').value         = username;
+    const fullName = localStorage.getItem('userName') || localStorage.getItem('tandem_username') || '';
+    document.getElementById('editName').value = fullName;
+    document.getElementById('editName').placeholder = 'Your full name';
     document.getElementById('editBio').value          = bio;
     document.getElementById('editHandle').textContent = '@' + username.toLowerCase().replace(/\s+/g,'_');
     document.getElementById('editAchievements').value = achievements;
@@ -345,7 +357,7 @@ async function saveProfile() {
 
     if (!name) { showToast('Please enter your name.'); return; }
 
-    localStorage.setItem('tandem_username', name);
+    localStorage.setItem('userName', name);
     localStorage.setItem('tandem_bio', bio);
     localStorage.setItem('tandem_achievements', achievements);
     localStorage.setItem('tandem_skills', JSON.stringify(skills));
@@ -362,7 +374,10 @@ async function saveProfile() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email, username: name, bio, achievements, skills, growth,
+                    email,
+                    name: name,                // ← full display name
+                    username: localStorage.getItem('tandem_username') || name,  // ← keep existing username
+                    bio, achievements, skills, growth,
                     grade_level: editGradeLevel,
                     profile_pic: editPicData || localStorage.getItem('tandem_profile_pic') || null
                 })

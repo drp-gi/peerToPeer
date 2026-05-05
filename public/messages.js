@@ -14,15 +14,14 @@ let sessionInterval    = null;
 let currentSession     = null;
 let sessionTimerInterval = null;
 let ratingData         = { rating: 0, tags: new Set() };
-let pendingSessionCompletion = null; // { sessionId, elapsedSeconds }
+let pendingSessionCompletion = null;
 
-// Bot conversation history — persistent via localStorage
+// Bot conversation history
 const BOT_HISTORY_KEY = `tandem_bot_history_${userEmail}`;
 let botHistory = [];
 try { botHistory = JSON.parse(localStorage.getItem(BOT_HISTORY_KEY) || '[]'); } catch(e) { botHistory = []; }
 
 function saveBotHistory() {
-    // Keep last 40 messages to avoid localStorage bloat
     const toSave = botHistory.slice(-40);
     localStorage.setItem(BOT_HISTORY_KEY, JSON.stringify(toSave));
 }
@@ -31,22 +30,6 @@ function saveBotHistory() {
 const POS_TAGS = ['Clear explanation','Patient','Knowledgeable','Engaging','Helpful','Punctual','Improved my skills'];
 const NEG_TAGS = ['Hard to follow','Often late','Ended early','Unprepared'];
 const STAR_LABELS = ['','Needs work','Below average','Average','Good','Excellent'];
-
-// ── Credits ───────────────────────────────────────────────────
-// FIX 1: Removed the local updateCreditsDisplay() and loadCredits() functions
-// that conflicted with credit-sync.js. credit-sync.js is now the single source
-// of truth and handles topCreditsBadge on this page.
-//
-// FIX 2: submitSessionRequest() was using parseFloat() to read credits from
-// localStorage which could cause "1.5 < 1" style comparison bugs when the
-// stored value was a decimal. Replaced with Math.round(Number(...)).
-//
-// FIX 3: The socket.on('credits-updated') handler was calling the local
-// updateCreditsDisplay() — removed it so credit-sync.js's own socket listener
-// handles all real-time credit updates consistently.
-//
-// FIX 4: doCompleteSession() called the now-removed loadCredits() after session
-// completion. Replaced with window.syncCredits() exposed by credit-sync.js.
 
 // ── Generic fetch helper ──────────────────────────────────────
 
@@ -59,8 +42,7 @@ async function post(path, body) {
     return r.json();
 }
 
-// ── Check if learner has an unrated completed session ─────────
-// Learner cannot start a new session until they rate their last one
+// ── Check unrated session ─────────────────────────────────────
 
 async function checkUnratedSession(tutorEmail) {
     try {
@@ -132,7 +114,7 @@ function mobileSwitchToChat() {
     }
 }
 
-// ── Exit chat — clears all active state ───────────────────────
+// ── Exit chat ─────────────────────────────────────────────────
 
 function exitChat() {
     currentChatEmail = null;
@@ -155,7 +137,7 @@ function exitChat() {
     if (window.innerWidth <= 600) mobileBackToList();
 }
 
-// ── Select a human chat ───────────────────────────────────────
+// ── Select human chat ─────────────────────────────────────────
 
 async function selectChat(chatEmail, chatName) {
     isBotChat = false;
@@ -205,14 +187,16 @@ function renderBotChat() {
         </div>
         <div class="messages-area" id="messagesArea" style="background:#fafcff;"></div>
         <div class="message-input-area">
-            <input type="text" class="message-input" id="messageInput" placeholder="Ask anything — subjects, study tips, explanations...">
+            <input type="text" class="message-input" id="messageInput" placeholder="Ask me anything — subjects, study tips, quizzes...">
             <button class="send-btn" id="sendMsgBtn">Send</button>
         </div>`;
 
     const area = document.getElementById('messagesArea');
+    const userName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'there';
 
     if (!botHistory.length) {
-        appendBotMsg(area, 'Hi! I am the **Tandem Study AI**. I can help you with:\n\n• Explaining subjects and concepts\n• Study tips and strategies\n• Practice questions\n• Recommendations on what to learn next\n\nWhat would you like to know?');
+        const welcomeMsg = `Hi ${userName}! 👋 I am your **Tandem Study AI**!\n\nI can help you with a lot of things. Just tell me what you need:\n\n• **Any subject** — Math, Science, English, Programming, Networking, and more\n• **Study strategies** — tips to learn faster and retain more\n• **Practice questions** — ask me to quiz you on anything\n• **Learning roadmaps** — what to study next based on your goals\n• **Tandem platform** — how credits, sessions, and quests work\n\nWhat would you like to explore today?`;
+        appendBotMsg(area, welcomeMsg);
     } else {
         botHistory.forEach(m => {
             if (m.role === 'user') appendUserBotMsg(area, m.content);
@@ -233,18 +217,22 @@ function appendBotMsg(area, text) {
         <div class="bot-message bot-bubble">${formatBotText(text)}</div>`;
     area.appendChild(el);
 }
+
 function appendUserBotMsg(area, text) {
     const el = document.createElement('div');
     el.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:10px;';
     el.innerHTML = `<div class="bot-message bot-bubble-user">${esc(text)}</div>`;
     area.appendChild(el);
 }
+
 function formatBotText(t) {
     return esc(t)
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\n/g, '<br>')
-        .replace(/&bull;|• /g, '&bull; ');
+        .replace(/• /g, '&bull; ');
 }
+
+// ── SMART BOT MESSAGE SENDER ──────────────────────────────────
 
 async function sendBotMessage() {
     const inp = document.getElementById('messageInput');
@@ -252,79 +240,206 @@ async function sendBotMessage() {
     if (!msg) return;
     inp.value = '';
 
+    // Disable while waiting
+    if (inp) inp.disabled = true;
+    const sendBtn = document.getElementById('sendMsgBtn');
+    if (sendBtn) sendBtn.disabled = true;
+
     const area = document.getElementById('messagesArea');
     appendUserBotMsg(area, msg);
     botHistory.push({ role: 'user', content: msg });
     area.scrollTop = area.scrollHeight;
 
+    // Show thinking animation
     const thinking = document.createElement('div');
     thinking.className = 'bot-message-wrap';
     thinking.id = 'botThinking';
-    thinking.innerHTML = `<div class="bot-avatar-mini">&#x1F916;</div><div class="bot-thinking"><div class="bot-dot"></div><div class="bot-dot"></div><div class="bot-dot"></div></div>`;
+    thinking.innerHTML = `
+        <div class="bot-avatar-mini">&#x1F916;</div>
+        <div class="bot-thinking">
+            <div class="bot-dot"></div>
+            <div class="bot-dot"></div>
+            <div class="bot-dot"></div>
+        </div>`;
     area.appendChild(thinking);
     area.scrollTop = area.scrollHeight;
 
-    const userGrowth = JSON.parse(localStorage.getItem('tandem_growth') || '[]');
-    const userSkills = JSON.parse(localStorage.getItem('tandem_skills') || '[]');
-    const grade = localStorage.getItem('tandem_grade') || '';
+    // Get user data from localStorage
+    const userName   = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'there';
+    const credits    = localStorage.getItem('tandem_credits') || '0';
+    const userGrowth = (() => { try { return JSON.parse(localStorage.getItem('tandem_growth') || '[]'); } catch(e) { return []; } })();
+    const userSkills = (() => { try { return JSON.parse(localStorage.getItem('tandem_skills') || '[]'); } catch(e) { return []; } })();
+    const grade      = localStorage.getItem('tandem_grade') || '';
 
-    const systemPrompt = `You are the Tandem Study AI, a knowledgeable and helpful academic tutor assistant built into the Tandem peer-tutoring platform.
+    // Build smart system prompt
+    const systemPrompt = `You are Tandem Study AI — a smart, friendly, and knowledgeable academic tutor built into Tandem, a peer-to-peer learning platform for Filipino students.
 
-Student context:
-- Learning goals: ${userGrowth.join(', ') || 'general academics'}
-- Current skills: ${userSkills.join(', ') || 'various subjects'}
+STUDENT PROFILE:
+- Name: ${userName}
 - Grade level: ${grade || 'not specified'}
+- Learning goals (wants to learn): ${userGrowth.length ? userGrowth.join(', ') : 'general academics'}
+- Current skills (already knows): ${userSkills.length ? userSkills.join(', ') : 'various subjects'}
+- Credits remaining: ${credits}
 
-Your role:
-- Answer ANY message naturally, including greetings. If someone says "hi", respond warmly and ask what they need help with.
-- Explain academic concepts clearly and thoroughly.
-- Suggest study strategies personalized to the student.
-- Recommend subjects to study next based on their goals.
-- If asked about finding a human mentor, tell them to use the Find Mentors section.
-- Keep responses concise but complete. Use **bold** for key terms. Use bullet points with • for lists.
-- Never just repeat an introductory message — always respond meaningfully to what the user said.`;
+PLATFORM KNOWLEDGE:
+- 1 credit = 30 minutes of mentor session time
+- New users start with 5 credits
+- Learners spend credits to book mentor sessions
+- Mentors earn credits by teaching others
+- Sessions are rated with stars after completion
+- Quests give bonus credits for achieving milestones
+- To find a human mentor, go to the Find Mentors section
 
-    const messages = botHistory.slice(-10).map(m => ({ role: m.role, content: m.content }));
+YOUR PERSONALITY:
+- Friendly and encouraging like a kuya or ate (older sibling) tutor
+- Always address the student by their name: ${userName}
+- Use simple, conversational Filipino-friendly English
+- Be warm, patient, and supportive
+- Celebrate when students understand something
+- Never make the student feel bad for not knowing something
+
+YOUR RESPONSE RULES — VERY IMPORTANT:
+1. ALWAYS respond to EVERY message — never ignore anything
+2. When someone says hi, hello, hey, kumusta, kamusta — greet them warmly by name and ask what they need help with today
+3. When someone asks about what you can do — list your capabilities and then ask what they want to explore
+4. When someone picks a topic (like "quiz me" or "I want to study Math") — immediately engage with that specific topic using their learning goals and skills as context
+5. When someone asks about a subject — give a clear, thorough explanation with examples
+6. When someone wants practice questions — generate 3-5 questions appropriate for their grade level
+7. When someone asks for a study plan — create a personalized one based on their learning goals
+8. When someone asks about credits or the platform — explain clearly and helpfully
+9. NEVER say you cannot help — always find a way to assist
+10. Keep responses well-structured with bullet points and bold key terms
+
+SUBJECT EXPERTISE:
+- Mathematics (Algebra, Calculus, Geometry, Statistics, Trigonometry)
+- Science (Biology, Chemistry, Physics, Earth Science)
+- English (Grammar, Writing, Reading Comprehension, Literature)
+- Filipino / Araling Panlipunan
+- Computer Science (Programming, Web Dev, Networking, Databases)
+- Networking (Subnetting, IPv4, IPv6, Cisco, CCNA topics)
+- History and Social Studies
+- Economics and Business
+
+SPECIAL INSTRUCTIONS:
+- If the student mentions a subject from their learning goals, prioritize helping with that
+- If they ask to be quizzed, create questions at their grade level
+- If they ask what to study next, recommend based on their growth areas
+- Always end with a follow-up question to keep them engaged
+- Use Filipino examples when relevant (palengke, Jollibee, piso, barangay, etc.)`;
+
+    // Send last 20 messages for context
+    const messages = botHistory.slice(-20).map(m => ({ role: m.role, content: m.content }));
+
+    let reply = null;
 
     try {
         const response = await fetch(`${API}/ai-chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, systemPrompt })
+            body: JSON.stringify({ messages, systemPrompt, userEmail })
         });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
         const data = await response.json();
-        const reply = data.reply || getBotFallback(msg, userGrowth);
-        botHistory.push({ role: 'assistant', content: reply });
-        saveBotHistory();
-        thinking.remove();
-        appendBotMsg(area, reply);
+        console.log('AI response:', data);
+
+        if (data.success && data.reply) {
+            reply = data.reply;
+        } else {
+            console.warn('No AI reply, using fallback:', data);
+            reply = null;
+        }
     } catch(e) {
-        thinking.remove();
-        const fallback = getBotFallback(msg, userGrowth);
-        botHistory.push({ role: 'assistant', content: fallback });
-        saveBotHistory();
-        appendBotMsg(area, fallback);
+        console.error('Bot fetch error:', e);
+        reply = null;
     }
+
+    // Remove thinking dots
+    document.getElementById('botThinking')?.remove();
+
+    // Re-enable input
+    if (inp) inp.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
+    inp?.focus();
+
+    // Use fallback only if API completely failed
+    if (!reply) {
+        reply = getBotFallback(msg, userGrowth, userName, credits, grade);
+    }
+
+    botHistory.push({ role: 'assistant', content: reply });
+    saveBotHistory();
+    appendBotMsg(area, reply);
     area.scrollTop = area.scrollHeight;
 }
 
-function getBotFallback(msg, growth) {
-    const m = msg.toLowerCase();
-    if (/^(hi|hello|hey|sup|yo|howdy|greetings)/.test(m)) {
-        const subj = growth[0] || 'your subjects';
-        return `Hi there! Great to hear from you. I am here to help with **${subj}** or any other academic topic.\n\nWhat would you like to explore today? You can ask me to:\n• Explain a concept\n• Give you practice questions\n• Suggest a study plan\n• Recommend what to learn next`;
+// ── SMART FALLBACK (when API fails) ──────────────────────────
+
+function getBotFallback(msg, growth = [], userName = 'there', credits = '0', grade = '') {
+    const m = msg.toLowerCase().trim();
+    const name = userName;
+    const subj = growth[0] || 'your subjects';
+
+    // Greetings
+    if (/^(hi|hello|hey|sup|yo|howdy|kumusta|kamusta|musta|good morning|good afternoon|good evening|magandang|hola)/.test(m)) {
+        return `Hello ${name}! 👋 Great to see you!\n\nI am your **Tandem Study AI** and I am here to help you learn. Here is what I can do for you:\n\n• **Any subject** — Math, Science, English, Programming, Networking, and more\n• **Study strategies** — tips to help you learn faster\n• **Practice questions** — ask me to quiz you on anything\n• **Learning roadmaps** — what to study next based on your goals\n• **Tandem platform** — how credits, sessions, and quests work\n\nYou are learning **${subj}** right now. Want to start with that, or is there something else on your mind?`;
     }
-    if (m.includes('study tip') || m.includes('how to study')) {
-        return `Here are proven study strategies:\n\n• **Pomodoro Technique** — 25 min focused study, 5 min break\n• **Active recall** — test yourself instead of re-reading\n• **Spaced repetition** — review material at increasing intervals\n• **Teach it back** — explain concepts aloud as if teaching someone\n• **Mind maps** — visualize connections between ideas\n\nWant tips for a specific subject?`;
+
+    // What can you do
+    if (m.includes('what can you do') || m.includes('what can you help') || m.includes('help me') || m.includes('capabilities') || m.includes('features')) {
+        return `Great question, ${name}! Here is everything I can help you with:\n\n• **Explain any subject** — just ask me to explain a topic and I will break it down clearly\n• **Quiz you** — say "quiz me on Math" or "give me practice questions about networking"\n• **Study plans** — ask me to make a study schedule for you\n• **Study tips** — I know the best strategies to help you learn and retain more\n• **Learning roadmap** — I will recommend what to study next based on your goals\n• **Tandem help** — questions about credits, sessions, and how the platform works\n\nSince you are learning **${subj}**, want me to start there? Just say the word!`;
     }
-    if (m.includes('recommend') || m.includes('what should i study')) {
-        const subj = growth[0] || 'your chosen subject';
-        return `Based on your learning goals, I suggest focusing on **${subj}**.\n\nA good study path:\n1. Master the fundamentals first\n2. Practice with worked examples\n3. Find a mentor for guided sessions\n4. Test yourself regularly\n\nYou can find mentors who teach ${subj} in the **Find Mentors** section.`;
+
+    // Quiz request
+    if (m.includes('quiz') || m.includes('test me') || m.includes('practice question') || m.includes('give me question')) {
+        const topic = growth[0] || 'general knowledge';
+        return `Sure thing, ${name}! Let us do a quick quiz on **${topic}**! 📝\n\nHere are 3 practice questions for you:\n\n**Question 1:** What is the most fundamental concept in ${topic} that beginners should master first?\n\n**Question 2:** Can you give a real-world example of how ${topic} is used in everyday life?\n\n**Question 3:** What is the biggest challenge most students face when learning ${topic}?\n\nTake your time and answer any one of them — I will give you feedback and explain the correct answer! Which one do you want to start with?`;
     }
-    if (m.includes('math') || m.includes('algebra') || m.includes('calculus')) {
-        return `For Math success:\n\n• Practice daily — even 20 minutes matters\n• **Never skip steps** — write everything out\n• Work backwards from answers to understand solutions\n• Khan Academy is great for free video explanations\n• Finding a mentor for 1-on-1 help is highly effective for Math!\n\nWhat specific Math topic can I explain?`;
+
+    // Study tips
+    if (m.includes('study tip') || m.includes('how to study') || m.includes('paano mag-aral') || m.includes('study strategy') || m.includes('learn faster')) {
+        return `Here are the most effective study strategies, ${name}! 📚\n\n• **Pomodoro Technique** — study for 25 minutes, then rest for 5 minutes. Repeat 4 times then take a longer break\n• **Active recall** — instead of re-reading, close the book and try to recall what you learned from memory\n• **Spaced repetition** — review material after 1 day, then 3 days, then 1 week — this locks it into long-term memory\n• **Teach it back** — explain the concept out loud as if you are teaching someone else. If you cannot explain it, you do not know it yet\n• **Mind mapping** — draw visual connections between ideas to see the big picture\n• **Practice problems** — for Math and Science, doing problems is more effective than reading\n\nFor **${subj}** specifically, the most important thing is consistent daily practice — even just 20 minutes a day makes a huge difference!\n\nWant me to make a personalized study schedule for you?`;
     }
-    return `That is a great question! I am having a brief connection issue, but I am here to help with:\n\n• **Concept explanations** — ask me about any subject\n• **Study strategies** — tips for better learning\n• **Practice questions** — ask me to quiz you\n• **Learning roadmaps** — what to study next\n\nWhat subject would you like to explore?`;
+
+    // Study plan / roadmap
+    if (m.includes('study plan') || m.includes('study schedule') || m.includes('what should i study') || m.includes('roadmap') || m.includes('recommend')) {
+        const subjects = growth.length ? growth.join(', ') : 'your chosen subjects';
+        return `Here is a personalized learning roadmap for you, ${name}! 🗺️\n\nBased on your learning goals (${subjects}), here is what I recommend:\n\n**Week 1-2: Build the Foundation**\n• Focus on the fundamentals of ${growth[0] || 'your first subject'}\n• Spend 30-45 minutes daily\n• Find a mentor on Tandem for guided learning\n\n**Week 3-4: Practice and Apply**\n• Solve practice problems every day\n• Ask your mentor to quiz you\n• Review mistakes immediately\n\n**Week 5+: Level Up**\n• Move to more advanced topics\n• Teach concepts to others to test your understanding\n• Track your progress through Tandem sessions\n\nRemember — you have **${credits} credits** on Tandem! Each credit gives you 30 minutes with a real human mentor. Want me to suggest which subject to tackle first?`;
+    }
+
+    // Credits / platform
+    if (m.includes('credit') || m.includes('how does tandem') || m.includes('how do i use') || m.includes('session') || m.includes('mentor')) {
+        return `Here is how **Tandem** works, ${name}! 💳\n\n**Credits System:**\n• You currently have **${credits} credits**\n• 1 credit = 30 minutes of mentor session time\n• Learners spend credits to book sessions\n• Mentors earn credits by teaching\n\n**How to get more credits:**\n• Complete quests (check the Quests section!)\n• Become a mentor yourself and teach others\n• Log in daily for streak bonuses\n\n**How to book a session:**\n1. Go to **Find Mentors**\n2. Connect with a mentor who teaches what you need\n3. Send a session request\n4. When accepted, join the session!\n\nAfter each session, rate your mentor with stars to help others find great tutors.\n\nDo you want to know more about anything specific?`;
+    }
+
+    // Math
+    if (m.includes('math') || m.includes('algebra') || m.includes('calculus') || m.includes('geometry') || m.includes('trigonometry') || m.includes('statistics')) {
+        return `Let us talk about **Math**, ${name}! 🔢\n\nMath can feel scary but it is actually very logical — once you understand the pattern, it clicks!\n\n**Tips for Math success:**\n• Never skip steps — write everything out even if it feels slow\n• Practice daily — even 15-20 minutes is enough\n• When stuck, work backwards from the answer to understand the solution\n• Khan Academy has great free video explanations\n• A Tandem mentor can give you personalized 1-on-1 help!\n\n**What specific Math topic do you need help with?** I can explain:\n• Algebra (equations, factoring, quadratics)\n• Calculus (limits, derivatives, integrals)\n• Geometry (shapes, proofs, theorems)\n• Statistics (mean, median, probability)\n• Trigonometry (sin, cos, tan, identities)`;
+    }
+
+    // Networking / IT
+    if (m.includes('subnet') || m.includes('network') || m.includes('ip address') || m.includes('cisco') || m.includes('ccna') || m.includes('ipv6') || m.includes('router') || m.includes('switch')) {
+        return `Let us talk about **Networking**, ${name}! 🌐\n\nHere are some key concepts:\n\n• **/24 network** = 256 total addresses, 254 usable hosts\n• **/26 network** = 64 addresses, 4 subnets from a /24\n• **Block size** = 256 minus the last octet of subnet mask\n• **IPv6** = 128 bits total, interface ID starts at bit 64\n• **/26 mask** = 255.255.255.192 in decimal\n\n**Fast subnetting trick:**\n1. Find borrowed bits: new prefix minus old prefix\n2. Subnets = 2^(borrowed bits)\n3. Block size = 256 minus last octet of mask\n\nWhat specific networking topic do you want me to explain? I can help with:\n• Subnetting (IPv4 and IPv6)\n• CCNA topics\n• Routing and switching\n• Network protocols`;
+    }
+
+    // Programming
+    if (m.includes('python') || m.includes('javascript') || m.includes('programming') || m.includes('code') || m.includes('coding') || m.includes('html') || m.includes('css') || m.includes('java') || m.includes('c++')) {
+        return `Let us talk about **Programming**, ${name}! 💻\n\n**Tips for learning to code:**\n• Start with the basics — variables, loops, conditions, functions\n• Practice every day — even just writing small programs\n• Read error messages carefully — they tell you exactly what is wrong\n• Build small projects you actually care about\n• Stack Overflow and documentation are your best friends\n\n**What I can help you with:**\n• Explain any programming concept\n• Debug your code logic\n• Explain how algorithms work\n• Help you understand data structures\n• Web development (HTML, CSS, JavaScript)\n\nWhat specific programming language or concept do you want to learn? Just ask and I will explain it step by step!`;
+    }
+
+    // Science
+    if (m.includes('science') || m.includes('biology') || m.includes('chemistry') || m.includes('physics') || m.includes('earth science')) {
+        return `Let us talk about **Science**, ${name}! 🔬\n\nScience is all about understanding the world around us through observation and experimentation.\n\n**What I can explain:**\n• **Biology** — cells, genetics, ecosystems, human body\n• **Chemistry** — elements, reactions, periodic table, bonding\n• **Physics** — forces, energy, motion, electricity, waves\n• **Earth Science** — weather, geology, space, environment\n\n**Study tips for Science:**\n• Understand concepts first, memorize second\n• Draw diagrams — visual learning works great for science\n• Connect concepts to real life (like how a jeepney engine uses physics!)\n• Practice solving problems, not just reading theory\n\nWhich Science subject do you need help with? Tell me the specific topic and I will explain it clearly!`;
+    }
+
+    // English
+    if (m.includes('english') || m.includes('grammar') || m.includes('writing') || m.includes('essay') || m.includes('reading')) {
+        return `Let us talk about **English**, ${name}! ✍️\n\n**What I can help you with:**\n• Grammar rules and usage\n• Essay writing and structure\n• Reading comprehension strategies\n• Vocabulary building\n• Literary analysis\n\n**Tips for improving English:**\n• Read every day — books, articles, anything you enjoy\n• Write regularly — even a short journal entry helps\n• Watch English shows with subtitles\n• Practice speaking out loud — do not be shy!\n• Learn 5 new vocabulary words per day\n\n**For essays, always remember:**\n1. Strong thesis statement\n2. Body paragraphs with evidence\n3. Clear conclusion that restates your point\n\nWhat specific English topic do you want to practice? Grammar, writing, or something else?`;
+    }
+
+    // Default smart fallback
+    return `Hi ${name}! 😊 I am having a quick connection issue right now, but I am still here to help!\n\nYou can ask me about:\n• **Any subject** — Math, Science, English, Filipino, History, Programming, Networking\n• **Study tips** — the best strategies to learn faster and remember more\n• **Practice questions** — say "quiz me on [subject]" and I will test you\n• **Study roadmaps** — what to study next based on your goals in ${subj}\n• **Tandem credits** — how the platform works\n\nWhat would you like to explore today, ${name}?`;
 }
 
 // ── Active session management ─────────────────────────────────
@@ -449,6 +564,7 @@ function initRatingTags() {
     if (pos) pos.innerHTML = POS_TAGS.map(t => `<span class="feedback-tag" onclick="toggleTag(this,'${t}')">${t}</span>`).join('');
     if (neg) neg.innerHTML = NEG_TAGS.map(t => `<span class="feedback-tag" onclick="toggleTag(this,'${t}')">${t}</span>`).join('');
 }
+
 window.toggleTag = (el, val) => {
     el.classList.toggle('selected');
     if (el.classList.contains('selected')) ratingData.tags.add(val);
@@ -497,7 +613,6 @@ async function doCompleteSession(sessionId, rating, feedback, elapsedSeconds, fe
         const d = await post('/complete-session', { sessionId, rating, feedback, elapsedSeconds: elapsedSeconds || 0, feedbackTags: feedbackTags || [] });
         if (d.success) {
             showToast('Session completed!');
-            // FIX: Use credit-sync.js's syncCredits() instead of the removed local loadCredits()
             if (typeof window.syncCredits === 'function') window.syncCredits();
             await loadActiveSession();
             hideSessionUI();
@@ -632,8 +747,6 @@ async function submitSessionRequest(tutorEmail, tutorName) {
     const notes     = document.getElementById('sessNotes')?.value || '';
     if (!subject) { showToast('Select a subject.'); return; }
     if (!dtInput) { showToast('Choose a date and time.'); return; }
-    // FIX: was parseFloat() which could produce incorrect comparisons on decimal
-    // values like 0.5. Math.round(Number()) ensures a clean integer check.
     const credits = Math.round(Number(localStorage.getItem('tandem_credits') || '5'));
     if (credits < 1) { showToast('Not enough credits!'); return; }
     const d = await post('/send-session-request', {
@@ -757,6 +870,7 @@ function esc(t) {
     if (!t) return '';
     const d = document.createElement('div'); d.textContent = t; return d.innerHTML;
 }
+
 function showToast(msg) {
     const t = document.getElementById('toast'); if (!t) return;
     t.textContent = msg; t.classList.add('toast-show');
@@ -781,9 +895,6 @@ window.mobileBackToList                = mobileBackToList;
 window.loadActiveSession               = loadActiveSession;
 
 // ── Real-time via Socket.io ───────────────────────────────────
-// FIX: Removed the local socket.on('credits-updated') handler that called the
-// now-deleted updateCreditsDisplay(). credit-sync.js registers its own
-// 'credits-updated' listener and is the single handler for real-time updates.
 
 if (typeof io !== 'undefined') {
     const socket = io(API);
@@ -798,7 +909,6 @@ if (typeof io !== 'undefined') {
 // ── Init ──────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-    // FIX: Removed loadCredits() call — credit-sync.js handles this on DOMContentLoaded
     loadConnections();
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
         [messageInterval, sessionInterval, sessionTimerInterval].forEach(i => clearInterval(i));
