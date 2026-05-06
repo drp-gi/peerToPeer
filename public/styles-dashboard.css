@@ -284,7 +284,7 @@ body {
     width: 100% !important; height: 56px; min-height: unset;
     flex-direction: row; justify-content: space-around;
     border-right: none; border-top: 1px solid #e2e8f0;
-    padding: 0 4px; z-index: 200; box-shadow: none;
+    padding: 0 4px; z-index: 50; box-shadow: none;
   }
   .sidebar:hover { width: 100% !important; }
   .logo { display: none; }

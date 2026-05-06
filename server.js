@@ -301,7 +301,7 @@ app.post('/send-connection-request', (req, res) => {
     createNotification(tutorEmail, 'connection_request', `Connection request from @${lName}`, `Wants to learn: "${subject||'General'}"`, { learner_email:learnerEmail, subject, message });
 
     const tn = query('SELECT name,username FROM users WHERE email=?', [tutorEmail]);
-    createNotification(learnerEmail, 'connection_request_sent', 'Request sent!', `Sent to @${tn[0]?.username||tn[0]?.name||'mentor'}.`, { tutor_email:tutorEmail, subject });
+    createNotification(learnerEmail, 'connection_request_sent', 'Connection Request sent!', `Sent to @${tn[0]?.username||tn[0]?.name||'mentor'}.`, { tutor_email:tutorEmail, subject });
 
     logStats();
     res.json({ success: true });
@@ -324,7 +324,9 @@ app.post('/accept-request', (req, res) => {
   try {
     query("UPDATE connection_requests SET status='accepted',updated_at=datetime('now','localtime') WHERE id=?", [requestId]);
     query("INSERT INTO connections (user1_email,user2_email,status,created_at) VALUES (?,?,'active',datetime('now','localtime'))", [learnerEmail,tutorEmail]);
-    createNotification(learnerEmail, 'connection_accepted', 'Connection accepted!', 'You can now request sessions.', {});
+    const tn = query('SELECT name,username FROM users WHERE email=?', [tutorEmail]);
+    const tutorHandle = tn[0]?.username ? `@${tn[0].username}` : (tn[0]?.name || 'Your mentor');
+    createNotification(learnerEmail, 'connection_accepted', 'Connection accepted!', `@${tutorHandle} accepted your connection request. You can now request sessions.`, { tutor_email: tutorEmail });
     checkAndAwardQuest(learnerEmail, 'first_connection');
     logStats();
     res.json({ success: true });
