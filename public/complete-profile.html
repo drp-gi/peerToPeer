@@ -34,8 +34,12 @@
 
             <form id="profileForm" class="profile-form-ui">
 
-                <input type="text" id="usernameInput" placeholder="Enter a username" required> 
-
+                <input type="text" id="usernameInput" placeholder="Enter a username" required>
+                    <div class="username-error" id="usernameError">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="usernameErrorText"></span>
+                    </div>
+                    
                 <label class="profile-label-ui">Grade Level</label>
                 <div class="grade-select-wrapper">
                     <select id="gradeLevelSelect" class="grade-select" required>

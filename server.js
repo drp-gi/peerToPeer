@@ -100,6 +100,9 @@ app.post('/login', (req, res) => {
 app.post('/complete-profile', (req, res) => {
   const { email, username, skills, growth, profile_pic, bio, achievements, grade_level } = req.body;
   try {
+    const taken = query('SELECT id FROM users WHERE username=? AND email!=?', [username, email]);
+    if (taken.length) return res.json({ success: false, message: 'That username is already taken. Please choose another.' });
+
     query(`UPDATE users SET username=?,skills=?,growth=?,profile_pic=?,bio=?,achievements=?,grade_level=?,profile_completed=1 WHERE email=?`,
       [username, JSON.stringify(skills), JSON.stringify(growth), profile_pic || null, bio || '', achievements || '', grade_level || '', email]);
     checkAndAwardQuest(email, 'profile_complete');
@@ -108,12 +111,18 @@ app.post('/complete-profile', (req, res) => {
 });
 
 app.post('/update-profile', (req, res) => {
-  const { email, name, bio, achievements, skills, growth, grade_level, profile_pic } = req.body;
+  const { email, name, username, bio, achievements, skills, growth, grade_level, profile_pic } = req.body;
   try {
-    query(`UPDATE users SET name=COALESCE(?,name),bio=COALESCE(?,bio),achievements=COALESCE(?,achievements),
+    if (username) {
+      const usernameRegex = /^[a-zA-Z0-9._-]{3,30}$/;
+      if (!usernameRegex.test(username)) return res.json({ success: false, message: 'Invalid username format.' });
+      const taken = query('SELECT id FROM users WHERE username=? AND email!=?', [username, email]);
+      if (taken.length) return res.json({ success: false, message: 'Username already taken.' });
+    }
+    query(`UPDATE users SET name=COALESCE(?,name),username=COALESCE(?,username),bio=COALESCE(?,bio),achievements=COALESCE(?,achievements),
            skills=COALESCE(?,skills),growth=COALESCE(?,growth),grade_level=COALESCE(?,grade_level),
            profile_pic=COALESCE(?,profile_pic) WHERE email=?`,
-      [name||null, bio||null, achievements||null, skills?JSON.stringify(skills):null,
+      [name||null, username||null, bio||null, achievements||null, skills?JSON.stringify(skills):null,
        growth?JSON.stringify(growth):null, grade_level||null, profile_pic||null, email]);
     res.json({ success: true });
   } catch(e) { res.json({ success: false }); }
@@ -289,10 +298,10 @@ app.post('/send-connection-request', (req, res) => {
 
     const ln    = query('SELECT name,username FROM users WHERE email=?', [learnerEmail]);
     const lName = ln[0]?.username||ln[0]?.name||'A learner';
-    createNotification(tutorEmail, 'connection_request', `Connection request from ${lName}`, `Wants to learn: "${subject||'General'}"`, { learner_email:learnerEmail, subject, message });
+    createNotification(tutorEmail, 'connection_request', `Connection request from @${lName}`, `Wants to learn: "${subject||'General'}"`, { learner_email:learnerEmail, subject, message });
 
     const tn = query('SELECT name,username FROM users WHERE email=?', [tutorEmail]);
-    createNotification(learnerEmail, 'connection_request_sent', 'Request sent!', `Sent to ${tn[0]?.username||tn[0]?.name||'mentor'}.`, { tutor_email:tutorEmail, subject });
+    createNotification(learnerEmail, 'connection_request_sent', 'Request sent!', `Sent to @${tn[0]?.username||tn[0]?.name||'mentor'}.`, { tutor_email:tutorEmail, subject });
 
     logStats();
     res.json({ success: true });

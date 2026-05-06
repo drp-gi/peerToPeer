@@ -5,6 +5,27 @@ let profilePicData = null;
 
 profileCircle.addEventListener("click", () => profileInput.click());
 
+//for username valdiation, for error showing with design
+function showUsernameError(msg) {
+    const box = document.getElementById('usernameError');
+    const txt = document.getElementById('usernameErrorText');
+    const input = document.getElementById('usernameInput');
+    txt.textContent = msg;
+    input.classList.add('input-error');
+    box.classList.remove('shake');
+    box.classList.add('visible');
+    void box.offsetWidth; // force reflow so shake re-triggers
+    box.classList.add('shake');
+}
+
+function clearUsernameError() {
+    const box = document.getElementById('usernameError');
+    const input = document.getElementById('usernameInput');
+    box.classList.remove('visible', 'shake');
+    input.classList.remove('input-error');
+}
+
+
 profileInput.addEventListener("change", () => {
     const file = profileInput.files[0];
     if (!file) return;
@@ -268,6 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'growthTrigger', 'growthOptions', 'growthSearch', 'growthList', 'growthTags', 
         ALL_ACADEMIC_SUBJECTS, true, null
     );
+
+    document.getElementById('usernameInput').addEventListener('input', clearUsernameError);
 });
 
 const userName = localStorage.getItem('userName');
@@ -283,9 +306,15 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
     const growth = growthDropdown.getSelectedItems();
 
     if (!username) {
-        alert('Please enter a username');
-        return;
-    }
+            showUsernameError('Please enter a username.');
+            return;
+        }
+
+        const usernameRegex = /^[a-zA-Z0-9._-]{3,30}$/;
+        if (!usernameRegex.test(username)) {
+            showUsernameError('3–30 characters. Letters, numbers, dots (.), underscores (_), and hyphens (-) only.');
+            return;
+        }
 
     if (!gradeLevel) {
         alert('Please select your grade level');
@@ -341,7 +370,11 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
             alert('Profile completed! Redirecting to dashboard...');
             window.location.href = 'dashboard.html';
         } else {
-            alert(data.message || 'Error saving profile');
+            if (data.message?.toLowerCase().includes('username')) {
+                showUsernameError(data.message);
+            } else {
+                alert(data.message || 'Error saving profile');
+}
         }
     } catch (err) {
         console.error(err);
