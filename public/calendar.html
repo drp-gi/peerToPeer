@@ -155,7 +155,13 @@ async function loadSessions() {
   } catch(e) { document.getElementById('sessionsList').innerHTML = '<div class="empty-cal">Error loading sessions</div>'; }
 }
 
-function sessDate(s) { const raw = s.scheduled_time || s.session_start || s.created_at; return raw ? new Date(raw) : null; }
+function sessDate(s) {
+  const raw = s.scheduled_time || s.preferred_time || s.session_start || s.created_at;
+  if (!raw) return null;
+  const iso = raw.replace(' ', 'T');
+  const d = new Date(iso);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
 
 function moveMonth(d) {
   curMonth += d;
@@ -200,8 +206,8 @@ function renderList(sessions) {
     const isLearner = s.user_role === 'learner';
     const peer = isLearner ? (s.tutor_username||s.tutor_name) : (s.learner_username||s.learner_name);
     const peerEmail = isLearner ? s.tutor_email : s.learner_email;
-    const dt = sessDate(s);
-    const dtStr = dt ? dt.toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true }) : '—';
+    const rawDt = s.scheduled_time || s.preferred_time || s.session_start || s.created_at;
+    const dtStr = rawDt ? new Date(rawDt.replace(' ', 'T')).toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true }) : '—';
     const typeLabel = s.session_type==='group' ? `Group (${s.attendee_count||1})` : 'One-on-One';
     const modeLabel = s.session_mode==='face_to_face' ? 'Face-to-Face' : 'Online';
     const statusLabel = { active:'Active', confirmed:'Confirmed', scheduled:'Awaiting Acceptance', rescheduling:'Rescheduling', completed:'Completed' }[s.status] || s.status;

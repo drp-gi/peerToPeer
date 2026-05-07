@@ -326,7 +326,7 @@ app.post('/accept-request', (req, res) => {
     query("INSERT INTO connections (user1_email,user2_email,status,created_at) VALUES (?,?,'active',datetime('now','localtime'))", [learnerEmail,tutorEmail]);
     const tn = query('SELECT name,username FROM users WHERE email=?', [tutorEmail]);
     const tutorHandle = tn[0]?.username ? `@${tn[0].username}` : (tn[0]?.name || 'Your mentor');
-    createNotification(learnerEmail, 'connection_accepted', 'Connection accepted!', `@${tutorHandle} accepted your connection request. You can now request sessions.`, { tutor_email: tutorEmail });
+    createNotification(learnerEmail, 'connection_accepted', 'Connection accepted!', `${tutorHandle} accepted your connection request. You can now request sessions.`, { tutor_email: tutorEmail });
     checkAndAwardQuest(learnerEmail, 'first_connection');
     logStats();
     res.json({ success: true });
@@ -491,9 +491,12 @@ app.post('/accept-session-request', (req, res) => {
     if (!sess.length) return res.json({ success: false, message: 'Session not found' });
     const s = sess[0];
     const now = new Date().toISOString();
-    query(`UPDATE sessions SET status='confirmed',scheduled_time=?,updated_at=datetime('now','localtime') WHERE id=?`, [now,sessionId]);
+    query(`UPDATE sessions SET status='confirmed', scheduled_time = (SELECT COALESCE(preferred_time, datetime('now','localtime')) FROM sessions WHERE id=?), updated_at=datetime('now','localtime') WHERE id=?`, [sessionId, sessionId]);
+      const updatedSess = query('SELECT scheduled_time FROM sessions WHERE id=?', [sessionId])[0];
+      const confirmedTime = updatedSess?.scheduled_time || s.preferred_time;
+    
     createNotification(learnerEmail, 'session_confirmed', 'Session confirmed!', `"${s.subject||'Session'}" confirmed. Join from Calendar.`,
-      { session_id:sessionId, scheduled_time:now, tutor_email:tutorEmail, session_mode:s.session_mode, subject:s.subject });
+       { session_id:sessionId, scheduled_time:confirmedTime, tutor_email:tutorEmail, session_mode:s.session_mode, subject:s.subject });
     createNotification(tutorEmail, 'schedule_accepted', 'Session confirmed', `Ready to start "${s.subject||'Session'}" when you are.`,
       { session_id:sessionId, learner_email:learnerEmail });
     res.json({ success: true });

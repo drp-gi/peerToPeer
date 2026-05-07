@@ -813,7 +813,29 @@ async function loadMessages(chatEmail, chatName, isPolling = false) {
                 const grouped = groupMessagesByDate(data.messages); let html = '';
                 for (const [,msgs] of Object.entries(grouped)) {
                     html += `<div class="message-date-separator"><span>${formatMessageDate(msgs[0].created_at)}</span></div>`;
-                    msgs.forEach(m => { html += `<div class="message ${m.sender_email===userEmail?'message-sent':'message-received'}"><div class="message-text">${esc(m.message)}</div><div class="message-time">${formatMessageTime(m.created_at)}</div></div>`; });
+                    msgs.forEach(m => {
+                        const isMe = m.sender_email === userEmail;
+                        if (isMe) {
+                            html += `<div class="message message-sent"><div class="message-text">${esc(m.message)}</div><div class="message-time">${formatMessageTime(m.created_at)}</div></div>`;
+                        } else {
+                            const connItem = document.getElementById(`connItem_${m.sender_email}`);
+                            const img = connItem?.querySelector('.connection-avatar img');
+                            const initial = (chatName || 'U').charAt(0).toUpperCase();
+                            const avatarHtml = img
+                                ? `<img src="${img.src}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+                                : `<div style="font-size:13px;font-weight:700;color:#29b6d8;">${initial}</div>`;
+                            html += `
+                                <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;">
+                                    <div style="width:28px;height:28px;border-radius:50%;background:#dbeafe;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                                        ${avatarHtml}
+                                    </div>
+                                    <div class="message message-received" style="margin-bottom:0;">
+                                        <div class="message-text">${esc(m.message)}</div>
+                                        <div class="message-time">${formatMessageTime(m.created_at)}</div>
+                                    </div>
+                                </div>`;
+                        }
+                    });
                 }
                 area.innerHTML = html; area.scrollTop = area.scrollHeight;
             } else {
