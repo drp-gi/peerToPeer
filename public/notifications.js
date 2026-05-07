@@ -21,6 +21,23 @@
     if (!s) return ''; return new Date(s).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
   }
 
+
+  function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.35);
+  } catch(e) {}
+}
+
   function showToast(msg) {
     const t=document.getElementById('toast'); if(!t) return;
     t.textContent=msg; t.classList.add('toast-show');
@@ -179,7 +196,14 @@
       list.innerHTML = data.notifications.length
         ? data.notifications.map(renderItem).join('')
         : `<div class="notif-empty"><div class="notif-empty-icon">🔔</div><span>You're all caught up!</span></div>`;
-      if (badge) { badge.textContent=unread>9?'9+':unread; badge.style.display=unread>0?'flex':'none'; }
+        const isFirstLoad = !badge?.dataset.prev;
+        const prevUnread = parseInt(badge?.dataset.prev || '0');
+        if (badge) {
+          badge.textContent = unread>9?'9+':unread;
+          badge.style.display = unread>0?'flex':'none';
+          if (!isFirstLoad && unread > prevUnread) playNotifSound();
+          badge.dataset.prev = String(unread);
+        }
     } catch(e){ console.error(e); }
   }
 

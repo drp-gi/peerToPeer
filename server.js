@@ -340,7 +340,7 @@ app.post('/reject-request', (req, res) => {
     query("UPDATE connection_requests SET status='rejected',updated_at=datetime('now','localtime') WHERE id=?", [requestId]);
     if (r.length) {
       const tn = query('SELECT name,username FROM users WHERE email=?', [r[0].tutor_email]);
-      createNotification(r[0].learner_email, 'connection_rejected', 'Connection declined', `${tn[0]?.username||tn[0]?.name||'Mentor'} could not accept.`, { tutor_email: r[0].tutor_email });
+      createNotification(r[0].learner_email, 'connection_rejected', 'Connection declined', `@${tn[0]?.username||tn[0]?.name||'Mentor'} could not accept.`, { tutor_email: r[0].tutor_email });
     }
     res.json({ success: true });
   } catch(e) { res.json({ success: false }); }

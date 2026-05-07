@@ -357,7 +357,7 @@ function formatBotText(t) {
 
 // ── Build layered system prompt ───────────────────────────────
 function buildSystemPrompt(mode, userName, grade, growth, skills, credits, confusionCount, memory) {
-    const base = `You are Tandem Study AI — a warm, brilliant peer learning companion on Tandem, a Filipino peer-to-peer learning platform. You are NOT a lecturer. You think through things WITH the learner, not at them.
+    const base = `You are Tandem Study AI — a warm, brilliant peer learning companion on Tandem, a Filipino peer-to-peer learning platform. You think through things WITH the learner, not at them.
 
 LEARNER PROFILE:
 - Name: ${userName}
@@ -368,18 +368,27 @@ LEARNER PROFILE:
 ${memory.weakTopics?.length ? `- Previously struggled with: ${memory.weakTopics.slice(0,5).join(', ')}` : ''}
 ${memory.masteredTopics?.length ? `- Has shown mastery in: ${memory.masteredTopics.slice(0,5).join(', ')}` : ''}
 
+RESPONSE QUALITY RULES — CRITICAL:
+- NEVER give a one-liner. Every response must be at least 3-5 sentences minimum.
+- When someone says "Explain something to me" or clicks a chip — ASK what topic they want help with AND give a warm, engaging opener. Never just say "Sure! What topic?" alone.
+- When someone says "Quiz me!" — immediately pick a subject from their learning goals and ask a real question. Don't just say you'll quiz them.
+- When someone says "Build me a study plan" — immediately ask 2 specific questions (deadline? hours per day?) in an engaging way, not just one bland sentence.
+- When someone says "I'm stuck and frustrated" — give a warm 3-4 sentence emotional acknowledgment before anything else.
+- When someone asks to explain a topic — actually START explaining it right away, step by step. Don't just ask what they know first every single time.
+- Match response length to the request: casual greetings = 2-3 sentences, explanations = detailed paragraphs, quiz = full question with context.
+- Use **bold** for key terms. Use bullet points for lists. Be visually organized.
+- Speak like a smart, warm Filipino student peer — not a robot, not a textbook.
+
 ALWAYS:
-- Address ${userName} naturally by name (not every message — only when it fits)
+- Address ${userName} by name occasionally (not every message)
 - Use Filipino-friendly relaxed English; occasional "oo", "ganon", "kaya mo yan" are fine
-- Bold **key terms** when first introduced
 - Never make the learner feel bad for not knowing something
 - Celebrate effort, not just correct answers
-- Be honest: "I'm not 100% sure, let's think it through" is fine
 
 SUGGESTIONS — MANDATORY AT END OF EVERY RESPONSE:
 Output exactly this on the last line (no extra whitespace inside):
 [SUGGESTIONS:{"s":["chip 1","chip 2","chip 3"]}]
-Max 3-4 chips. Each under 38 chars. Make them feel like natural next things to tap.`;
+Max 3-4 chips. Each under 38 chars. Make them contextually relevant to what was just discussed — NOT generic.`;
 
     const modes = {
         tutor: `
@@ -535,25 +544,52 @@ async function sendBotMessage() {
 // ── Mode-aware fallback ───────────────────────────────────────
 function getFallback(msg, mode, growth, userName, credits, memory) {
     const m = msg.toLowerCase().trim();
-    const subj = growth[0] || 'your subjects';
+    const subj = growth[0] || 'Math';
+    const subj2 = growth[1] || 'Science';
 
     if (/^(bye|goodbye|salamat|thanks|thank you|ingat|sige na|ok na|done)/.test(m)) {
-        return { text: `Take care, ${userName}! The effort you put in today counts. Come back whenever you want to dig into more. Ingat!`, chips: [{ text: 'One last question', color: 'blue' }, { text: 'Quiz me before I go', color: 'amber' }] };
+        return {
+            text: `Take care, ${userName}! The effort you put in today counts — every session, every question, every "I get it now" moment adds up.\n\nCome back whenever you want to dig deeper. Ingat ka! 💙`,
+            chips: [{ text: 'One last question', color: 'blue' }, { text: 'Quiz me before I go!', color: 'amber' }]
+        };
     }
     if (/^(hi|hello|hey|sup|yo|hoy|kumusta|kamusta|musta|good|magandang|how are you)/.test(m)) {
-        const note = memory.weakTopics?.length ? ` We can also pick up where we left off on **${memory.weakTopics[0]}**.` : '';
-        return { text: `Hey ${userName}! Ready to learn something today?${note}`, chips: [{ text: 'Teach me something', color: 'blue' }, { text: 'Quiz me!', color: 'amber' }, { text: 'Make me a study plan', color: 'purple' }, { text: "I'm stressed", color: 'green' }] };
+        const note = memory.weakTopics?.length
+            ? `\n\nAnd hey — last time we were working through **${memory.weakTopics[0]}**. Want to pick that back up, or try something new?`
+            : `\n\nWhat are we tackling today? I can explain a topic step by step, quiz you, build a study plan, or just be here if things feel overwhelming.`;
+        return {
+            text: `Hey ${userName}! Good to see you. 👋 I'm your Tandem study companion — I learn alongside you, not at you.${note}`,
+            chips: [{ text: `Explain ${subj} to me`, color: 'blue' }, { text: 'Quiz me!', color: 'amber' }, { text: 'Make me a study plan', color: 'purple' }, { text: "I'm stressed about school", color: 'green' }]
+        };
     }
-    if (mode === 'support') {
-        return { text: `Hey ${userName} — I hear you. This stuff can genuinely be hard, and feeling stuck is normal.\n\nTake a breath. Let's slow down together. What specifically feels confusing right now?`, chips: [{ text: 'Start from basics', color: 'blue' }, { text: 'Simpler explanation please', color: 'blue' }, { text: 'I want to try again', color: 'green' }, { text: 'Book a mentor instead', color: 'amber' }] };
+    if (/explain something|explain a topic|teach me/i.test(m)) {
+        return {
+            text: `I'd love to! What topic do you want to dig into, ${userName}?\n\nI can break down anything from **${subj}** to **${subj2}** — or something completely different. Just name it and I'll start from wherever you are right now.\n\nAlso quick question: are you starting fresh on this topic, or do you already have some background and just need a clearer explanation?`,
+            chips: [{ text: `Explain ${subj}`, color: 'blue' }, { text: `Explain ${subj2}`, color: 'blue' }, { text: 'Something from my goals', color: 'purple' }, { text: 'Surprise me!', color: 'amber' }]
+        };
     }
-    if (mode === 'quiz') {
-        return { text: `Let's do it! What topic do you want to be quizzed on? And quick — are you just starting out, kind of familiar, or do you think you've got it?`, chips: [{ text: `Quiz me on ${subj}`, color: 'amber' }, { text: 'Random topic', color: 'blue' }, { text: 'Mix of my subjects', color: 'purple' }] };
+    if (/quiz me/i.test(m)) {
+        return {
+            text: `Let's go! 🧠 I'll quiz you on **${subj}** — one question at a time so we can really track what you know.\n\nHere's your first question:\n\n**${subj === 'Math' ? 'If a jeepney travels 60 km/h for 2.5 hours, how far does it go?' : `What is the first thing you think of when you hear the word "${subj}"? Explain it in your own words.`}**\n\nTake your time — there's no rush. I'll give you feedback after you answer!`,
+            chips: [{ text: 'Easy mode please', color: 'green' }, { text: 'I know this one!', color: 'blue' }, { text: `Quiz me on ${subj2} instead`, color: 'amber' }]
+        };
     }
-    if (mode === 'planner') {
-        return { text: `Smart move building a study plan. Before I draft one — how many days until your next exam? And realistically, how many hours can you study per day?`, chips: [{ text: 'Exam in 3 days', color: 'amber' }, { text: 'Exam next week', color: 'blue' }, { text: 'No deadline, general plan', color: 'purple' }, { text: 'Just 30 mins a day', color: 'blue' }] };
+    if (/study plan|schedule/i.test(m)) {
+        return {
+            text: `Smart move, ${userName} — having a study plan makes everything less overwhelming. Let me build you a personalized one!\n\nI just need two things:\n\n**1.** Do you have a specific deadline? (an exam, a project, a quiz?)\n**2.** Realistically, how many hours can you study per day?\n\nOnce I know that, I'll map out a week-by-week plan that's actually doable — not one of those impossible 8-hours-a-day schedules. 😄`,
+            chips: [{ text: 'Exam in 3 days', color: 'amber' }, { text: 'Exam next week', color: 'blue' }, { text: 'No deadline, general prep', color: 'purple' }, { text: 'Only 1 hour a day', color: 'green' }]
+        };
     }
-    return { text: `Quick connection blip, ${userName} — but I'm still here! What topic do you want to tackle?`, chips: [{ text: 'Explain something to me', color: 'blue' }, { text: 'Quiz me!', color: 'amber' }, { text: `Help with ${subj}`, color: 'purple' }] };
+    if (mode === 'support' || /stuck|frustrated|stressed|overwhelmed|give up|ayaw ko|pagod/i.test(m)) {
+        return {
+            text: `Hey ${userName} — I hear you. 💙 What you're feeling right now is completely normal. Learning is genuinely hard sometimes, and hitting a wall doesn't mean you're bad at this — it means you're pushing yourself.\n\nTake a breath. Seriously.\n\nLet's slow down and figure out what specifically feels confusing. Sometimes it's just one concept blocking everything else, and once we clear that, everything clicks.\n\n**What's the thing that's giving you the most trouble right now?**`,
+            chips: [{ text: 'Start from the very basics', color: 'blue' }, { text: 'Explain it differently', color: 'blue' }, { text: 'I want to try again', color: 'green' }, { text: 'Book a real mentor instead', color: 'amber' }]
+        };
+    }
+    return {
+        text: `I'm here, ${userName}! 💙 Looks like there was a small hiccup on my end, but I'm ready to help.\n\nWhat would you like to work on? I can:\n\n• **Explain** any topic step by step\n• **Quiz** you to test your knowledge\n• **Build** a personalized study plan\n• **Support** you if things feel hard\n\nJust tell me what you need!`,
+        chips: [{ text: `Explain ${subj}`, color: 'blue' }, { text: 'Quiz me!', color: 'amber' }, { text: `Help with ${subj2}`, color: 'purple' }, { text: 'I need support', color: 'green' }]
+    };
 }
 
 // ── Active session management ─────────────────────────────────

@@ -91,8 +91,6 @@ async function setupLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
   if (!logoutBtn) return;
   logoutBtn.addEventListener('click', async () => {
-    const confirmed = confirm('Are you sure you want to log out?');
-    if (!confirmed) return;
     const email = localStorage.getItem('userEmail');
     const currentCredits = getCredits();
     if (email && currentCredits) {
@@ -539,6 +537,105 @@ window.rejectConnectionRequest = rejectConnectionRequest;
 window.acceptSessionRequest = acceptSessionRequest;
 window.rejectSessionRequest = rejectSessionRequest;
  
+//for upcoming sessions page
+async function loadUpcomingSessions() {
+  const email = localStorage.getItem('userEmail');
+  if (!email) return;
+  try {
+    const r = await fetch('http://localhost:3000/get-calendar-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await r.json();
+    const section = document.getElementById('upcomingSessionsSection');
+    const list    = document.getElementById('upcomingSessionsList');
+    if (!data.success || !data.sessions?.length) { section.style.display = 'none'; return; }
+
+    // Filter to upcoming confirmed/scheduled/active, sort by date, take top 3
+    const now = Date.now();
+    const upcoming = data.sessions
+      .filter(s => ['confirmed','scheduled','active'].includes(s.status))
+      .map(s => {
+        const raw = s.scheduled_time || s.preferred_time || s.session_start || s.created_at;
+        return { ...s, _date: raw ? new Date(raw.replace(' ','T')) : null };
+      })
+      .filter(s => s._date)
+      .sort((a, b) => a._date - b._date)
+      .slice(0, 3);
+
+    if (!upcoming.length) { section.style.display = 'none'; return; }
+
+    section.style.display = 'block';
+    list.innerHTML = upcoming.map(s => {
+      const isLearner  = s.user_role === 'learner';
+      const peer       = isLearner ? (s.tutor_username || s.tutor_name) : (s.learner_username || s.learner_name);
+      const peerEmail  = isLearner ? s.tutor_email : s.learner_email;
+      const isOnline   = s.session_mode !== 'face_to_face';
+      const isGroup    = s.session_type === 'group';
+      const d          = s._date;
+      const day        = d.getDate();
+      const month      = d.toLocaleString([], { month: 'short' }).toUpperCase();
+      const time       = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      const myName     = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || email;
+
+      const statusCls  = s.status === 'scheduled' ? 'status-scheduled' : s.status === 'active' ? 'status-active' : '';
+      const statusTag  = `<span class="upcoming-tag ${s.status}">${s.status === 'confirmed' ? 'Confirmed' : s.status === 'scheduled' ? 'Awaiting' : 'Active'}</span>`;
+      const modeTag    = `<span class="upcoming-tag ${isOnline ? 'online' : 'f2f'}">${isOnline ? '💻 Online' : '🏫 In-person'}</span>`;
+      const typeTag    = `<span class="upcoming-tag ${isGroup ? 'group' : 'solo'}">${isGroup ? '👥 Group' : '👤 1-on-1'}</span>`;
+
+      let actionHtml = '';
+      if (s.status === 'active' && isOnline) {
+        const vc = new URLSearchParams({ email, peer: peerEmail, session: s.id, subject: s.subject || 'Session', name: myName, role: s.user_role });
+        actionHtml = `<a href="video-call.html?${vc}" target="_blank">📹 Join</a>`;
+      } else if (s.status === 'confirmed' && !isLearner && isOnline) {
+        actionHtml = `<button onclick="dashStartSession(${s.id},'${peerEmail}','${escapeHtml(s.subject||'')}')">▶ Start</button>`;
+      } else {
+        actionHtml = `<a href="calendar.html">📅 View</a>`;
+      }
+
+      return `
+        <div class="upcoming-card">
+          <div class="upcoming-date-block ${statusCls}">
+            <div class="upcoming-day">${day}</div>
+            <div class="upcoming-month">${month}</div>
+            <div class="upcoming-time">${time}</div>
+          </div>
+          <div class="upcoming-body">
+            <div class="upcoming-subject">${escapeHtml(s.subject || 'Session')}</div>
+            <div class="upcoming-peer">
+              <div class="upcoming-peer-avatar">${peer ? peer.charAt(0).toUpperCase() : '?'}</div>
+              <span>${isLearner ? 'Mentor' : 'Learner'}: <strong>${escapeHtml(peer || '—')}</strong></span>
+            </div>
+            <div class="upcoming-tags">${statusTag}${modeTag}${typeTag}</div>
+          </div>
+          <div class="upcoming-action">${actionHtml}</div>
+        </div>`;
+    }).join('');
+
+  } catch(e) { console.error('Upcoming sessions error:', e); }
+}
+
+async function dashStartSession(sessionId, peerEmail, subject) {
+  const email  = localStorage.getItem('userEmail');
+  const myName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || email;
+  try {
+    const r = await fetch('http://localhost:3000/start-session', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, tutorEmail: email })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast('✅ Session started!');
+      const vc = new URLSearchParams({ email, peer: peerEmail, session: sessionId, subject: subject || 'Session', name: myName, role: 'tutor' });
+      window.open(`video-call.html?${vc}`, '_blank', 'width=1100,height=700,resizable=yes');
+      loadUpcomingSessions();
+    } else showToast(d.message || 'Error starting session');
+  } catch(e) { showToast('Error'); }
+}
+window.dashStartSession = dashStartSession;
+
+
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
   const userEmail = localStorage.getItem('userEmail');
@@ -552,6 +649,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadPendingRequests();
   await loadPendingSessionRequests();
   checkActiveSession();
+  loadUpcomingSessions();
   setupLogout();
  
   document.getElementById('profileModalOverlay').addEventListener('click', (e) => {
@@ -564,5 +662,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(() => {
     refreshAllRequests();
     checkActiveSession();
+     loadUpcomingSessions();
   }, 5000);
 });
