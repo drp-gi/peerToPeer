@@ -1,182 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tandem - Home</title>
-  <link rel="stylesheet" href="styles-dashboard.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-dashboard.css"/>
   <link rel="stylesheet" href="styles-notifications.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Baloo 2', sans-serif; }
+    /* Pending cards */
+    .pending-section { margin-bottom: 28px; }
+    .pending-section-header { margin-bottom: 12px; }
+    .pending-list { display: flex; flex-direction: column; gap: 10px; }
+    .pending-card {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: #fff; border: 1px solid #eaecf0; border-radius: 12px; padding: 16px 18px;
+    }
+    .pending-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .session-request-card { border-left: 3px solid #f5a623; }
+    .pending-avatar { width: 46px; height: 46px; border-radius: 50%; background: #d0e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .pending-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-placeholder { font-size: 18px; font-weight: 700; color: #29b6d8; }
+    .pending-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .pending-name { font-size: 14px; font-weight: 600; color: #1a2a3a; }
+    .pending-type-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; width: fit-content; }
+    .connection-badge { background: #e6f1fb; color: #185fa5; }
+    .session-badge { background: #faeeda; color: #854f0b; }
+    .pending-subjects { display: flex; flex-wrap: wrap; gap: 5px; }
+    .subject-tag { display: inline-block; background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 500; }
+    .pending-message { font-size: 12px; color: #778899; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pending-grade   { font-size: 11px; color: #aab; }
+    .pending-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; align-self: center; }
+    .btn-accept { background: #22c55e; color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; min-width: 84px; text-align: center; }
+    .btn-accept:hover { background: #16a34a; }
+    .btn-accept:disabled { background: #86efac; cursor: not-allowed; }
+    .btn-reject { background: #fff; color: #ef4444; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; min-width: 84px; text-align: center; }
+    .btn-reject:hover { background: #fff1f2; border-color: #ef4444; }
+    .btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
+    @media (max-width: 600px) { .pending-card { flex-direction: column; } .pending-actions { flex-direction: row; width: 100%; } .btn-accept, .btn-reject { flex: 1; } }
+
+    /* Profile header on dashboard */
+    .profile-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; background: #f9fafb; border: 1px solid #e5e5e5; border-radius: 12px; padding: 14px 18px; }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #29b6d8; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #d0e8f0; flex-shrink: 0; }
+    .avatar img, .avatar svg { width: 100%; height: 100%; object-fit: cover; }
+    .profile-info { flex: 1; }
+    .profile-top-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .profile-name { font-size: 15px; font-weight: 700; color: #1a2a3a; }
+    .profile-rating { display: flex; align-items: center; gap: 3px; font-size: 13px; color: #f5a623; font-weight: 600; }
+    .rating-star { color: #f5a623; }
+    .profile-email { font-size: 12px; color: #aaa; margin-bottom: 2px; }
+    .profile-credits { font-size: 13px; color: #29b6d8; font-weight: 600; }
+
+    /* Welcome */
+    .welcome-section { margin-bottom: 18px; }
+
+    /* Terms */
+    .terms-section { background: #f9fafb; border: 1px solid #e5e5e5; border-radius: 12px; padding: 18px; margin-bottom: 22px; }
+    .term-item { display: flex; gap: 12px; align-items: flex-start; margin-top: 12px; }
+    .term-icon { flex-shrink: 0; }
+    .term-coin { width: 26px; height: 26px; object-fit: contain; }
+    .term-text strong { display: block; font-size: 13px; font-weight: 600; color: #1a2a3a; margin-bottom: 3px; }
+    .term-text p { font-size: 12px; color: #666; line-height: 1.6; }
+
+    .about { font-size: 12px; color: #ccc; text-align: center; padding: 18px 0; }
+
+    /* Session History */
+    .session-history-list { display: flex; flex-direction: column; gap: 10px; }
+    .sh-card {
+      display: flex; align-items: center; gap: 14px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px;
+      transition: box-shadow 0.2s;
+    }
+    .sh-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+    .sh-role-badge {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 56px; padding: 8px 10px; border-radius: 10px; flex-shrink: 0;
+    }
+    .sh-role-badge.learner { background: #e6f1fb; }
+    .sh-role-badge.tutor   { background: #fef3c7; }
+    .sh-role-icon { font-size: 20px; }
+    .sh-role-label { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; margin-top: 3px; color: #555; }
+    .sh-info { flex: 1; min-width: 0; }
+    .sh-subject { font-size: 14px; font-weight: 700; color: #1a2a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sh-peer { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .sh-date { font-size: 11px; color: #aab; margin-top: 2px; }
+    .sh-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .sh-duration {
+      background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;
+      border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700;
+    }
+    .sh-rating { display: flex; align-items: center; gap: 3px; font-size: 12px; color: #f5a623; font-weight: 600; }
+    .sh-no-rating { font-size: 11px; color: #cbd5e1; }
+    .sh-empty { text-align: center; padding: 28px; color: #94a3b8; font-size: 13px; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; }
+    .sh-empty-icon { font-size: 28px; margin-bottom: 6px; }
+
+    /* Learner modal */
+    .profile-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,20,40,.55); z-index: 9999; align-items: center; justify-content: center; padding: 1rem; }
+    .profile-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; }
+    .pm-header { background: linear-gradient(135deg,#e6f1fb,#eeedfe); border-radius: 14px 14px 0 0; padding: 1.5rem 1.5rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .4rem; position: relative; }
+    .pm-close { position: absolute; top: .75rem; right: .75rem; background: rgba(255,255,255,.7); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 15px; cursor: pointer; }
+    .pm-avatar { width: 72px; height: 72px; border-radius: 50%; background: #b5d4f4; display: flex; align-items: center; justify-content: center; border: 3px solid #fff; overflow: hidden; }
+    .pm-name { font-size: 1.1rem; font-weight: 700; color: #1a2a3a; text-align: center; }
+    .pm-meta-row { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; justify-content: center; }
+    .pm-badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .pm-rating-row { display: flex; align-items: center; gap: 5px; }
+    .pm-stars { color: #ef9f27; font-size: 14px; }
+    .pm-rating-num { font-weight: 600; color: #444; font-size: 13px; }
+    .pm-body { padding: 1rem 1.5rem 1.25rem; }
+    .pm-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8899aa; margin: 0 0 6px; }
+    .pm-bio { font-size: 13px; color: #445566; line-height: 1.6; margin: 0 0 1rem; }
+    .pm-skills-wrap { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1rem; }
+    .pm-skill-tag { display: inline-block; padding: 3px 10px; background: #e6f1fb; color: #185fa5; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .pm-loading { text-align: center; padding: 2rem; color: #aab; font-size: 13px; }
+
+    .upcoming-section { margin-bottom: 28px; }
+.upcoming-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.upcoming-view-all { font-size: 12px; font-weight: 700; color: #29b6d8; text-decoration: none; padding: 4px 12px; border: 1.5px solid #29b6d8; border-radius: 20px; transition: all 0.2s; white-space: nowrap; }
+.upcoming-view-all:hover { background: #29b6d8; color: #fff; }
+
+.upcoming-list { display: flex; flex-direction: column; gap: 10px; }
+
+.upcoming-card {
+  display: flex; align-items: stretch; gap: 0;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+  overflow: hidden; transition: box-shadow 0.2s, transform 0.2s;
+}
+.upcoming-card:hover { box-shadow: 0 6px 24px rgba(41,182,216,.12); transform: translateY(-2px); }
+
+.upcoming-date-block {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 64px; padding: 14px 10px;
+  background: linear-gradient(135deg, #29b6d8, #1a8fad);
+  color: #fff; flex-shrink: 0;
+}
+.upcoming-date-block.status-scheduled { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.upcoming-date-block.status-active    { background: linear-gradient(135deg, #16a34a, #15803d); }
+.upcoming-day   { font-size: 26px; font-weight: 800; line-height: 1; font-family: 'Baloo 2', sans-serif; }
+.upcoming-month { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.88; margin-top: 2px; }
+.upcoming-time  { font-size: 10px; font-weight: 600; opacity: 0.78; margin-top: 4px; background: rgba(255,255,255,.2); border-radius: 8px; padding: 1px 6px; }
+
+.upcoming-body { flex: 1; padding: 14px 16px; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+.upcoming-subject { font-size: 14px; font-weight: 700; color: #1a2a3a; font-family: 'Baloo 2', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upcoming-peer { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 5px; }
+.upcoming-peer-avatar { width: 20px; height: 20px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #29b6d8; overflow: hidden; flex-shrink: 0; }
+.upcoming-peer-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.upcoming-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.upcoming-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+.upcoming-tag.online    { background: #dbeafe; color: #1e40af; }
+.upcoming-tag.f2f       { background: #d1fae5; color: #065f46; }
+.upcoming-tag.group     { background: #fef3c7; color: #92400e; }
+.upcoming-tag.solo      { background: #f1f5f9; color: #475569; }
+.upcoming-tag.confirmed { background: #dbeafe; color: #1e40af; }
+.upcoming-tag.scheduled { background: #fef3c7; color: #92400e; }
+.upcoming-tag.active    { background: #d1fae5; color: #065f46; }
+
+.upcoming-action { display: flex; align-items: center; padding: 0 14px; flex-shrink: 0; }
+.upcoming-action a, .upcoming-action button {
+  display: flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, #29b6d8, #1a8fad);
+  color: #fff; border: none; border-radius: 10px;
+  padding: 8px 14px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Baloo 2', sans-serif;
+  text-decoration: none; white-space: nowrap; transition: opacity 0.2s;
+}
+.upcoming-action a:hover, .upcoming-action button:hover { opacity: 0.88; }
+.upcoming-empty { text-align: center; padding: 28px; color: #94a3b8; font-size: 13px; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; }
+.upcoming-empty-icon { font-size: 28px; margin-bottom: 6px; }
+
+@media (max-width: 600px) {
+  .upcoming-action { display: none; }
+  .upcoming-date-block { min-width: 54px; }
+}
+  </style>
 </head>
 <body>
-
 <div class="wrap">
-
   <div class="sidebar">
-    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
-
-    <div class="nav-item active">
-      <img src="/icons/home.png" alt="home" class="nav-icon">
-      <span>HOME</span>
+    <div class="logo" onclick="window.location.href='dashboard.html'">
+      <div class="logo-icon">T</div>
+      <span class="logo-text">Tandem</span>
     </div>
-
-    <div class="nav-item" onclick="window.location.href='mentors.html'">
-      <img src="/icons/help.png" alt="mentors" class="nav-icon">
-      <span>MENTORS</span>
-    </div>
-
-    <div class="nav-item" onclick="window.location.href='profile.html'">
-      <img src="/icons/profile.png" alt="profile" class="nav-icon">
-      <span>PROFILE</span>
-    </div>
-
-    <div class="nav-item" onclick="window.location.href='messages.html'">
-      <img src="/icons/message.png" alt="messages" class="nav-icon">
-      <span>MESSAGES</span>
-    </div>
-
-    <div class="nav-item" onclick="window.location.href='ledger.html'">
-      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
-      <span>LEDGER</span>
-    </div>
-
-    <div class="nav-item logout-btn" id="logoutBtn">
-      <img src="/icons/logout.png" alt="logout" class="nav-icon">
-      <span>LOGOUT</span>
-    </div>
+    <div class="nav-item active" onclick="window.location.href='dashboard.html'"><img src="/icons/home.png" alt="home" class="nav-icon"><span class="nav-label">Home</span></div>
+    <div class="nav-item" onclick="window.location.href='mentors.html'"><img src="/icons/friendship.png" alt="mentors" class="nav-icon"><span class="nav-label">Mentors</span></div>
+    <div class="nav-item" onclick="window.location.href='profile.html'"><img src="/icons/profile.png" alt="profile" class="nav-icon"><span class="nav-label">Profile</span></div>
+    <div class="nav-item" onclick="window.location.href='messages.html'"><img src="/icons/message.png" alt="messages" class="nav-icon"><span class="nav-label">Messages</span></div>
+    <div class="nav-item" onclick="window.location.href='ledger.html'"><img src="/icons/crypto.png" alt="ledger" class="nav-icon"><span class="nav-label">Ledger</span></div>
+    <div class="nav-item" onclick="window.location.href='calendar.html'"><img src="/icons/calendar.png" alt="calendar" class="nav-icon"><span class="nav-label">Calendar</span></div>
+    <div class="nav-item" onclick="window.location.href='quests.html'"><img src="/icons/badge.png" alt="quests" class="nav-icon"><span class="nav-label">Quests</span></div>
+    <div class="nav-item logout-btn" id="logoutBtn"><img src="/icons/logout.png" alt="logout" class="nav-icon"><span class="nav-label">Logout</span></div>
   </div>
 
   <div class="main">
-
     <div class="topbar">
-  <div class="credits-badge">
-    <span id="topCreditsBadge">5</span>
-    <div class="coin">
-      <img src="/icons/crypto.png" alt="crypto">
-    </div>
-  </div>
-  <div class="notif-bell-wrap" id="notifBellWrap">
-    <img src="/icons/bell.png" alt="bell" class="mini-coin">
-    <span class="notif-badge" id="notifBadge" style="display:none;"></span>
-    <div class="notif-dropdown" id="notifDropdown">
-      <div class="notif-dropdown-header">
-        <h4>🔔 Notifications</h4>
-        <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
+      <div class="credits-badge">
+        <span id="topCreditsBadge">5</span>
+        <div class="coin"><img src="/icons/crypto.png" alt="credits"></div>
       </div>
-      <div class="notif-list" id="notifList"></div>
+      <div class="notif-bell-wrap" id="notifBellWrap">
+        <img src="/icons/bell.png" alt="bell" class="mini-coin">
+        <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-dropdown-header"><h4>Notifications</h4><button class="notif-mark-all" id="notifMarkAll">Mark all read</button></div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     <div class="profile-header">
       <div class="avatar" id="avatarContainer">
         <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="30" cy="22" r="13" fill="#a0c4d8"/>
           <ellipse cx="30" cy="52" rx="20" ry="14" fill="#a0c4d8"/>
-          <rect x="22" y="18" width="16" height="12" rx="4" fill="#666" opacity="0.5"/>
-          <rect x="24" y="20" width="4" height="7" rx="1" fill="#ccc" opacity="0.8"/>
         </svg>
       </div>
-
       <div class="profile-info">
         <div class="profile-top-row">
-          <div class="profile-name" id="profileUsername">LOADING...</div>
-          <div class="profile-rating"><span class="rating-star">★</span>0.0</div>
+          <div class="profile-name" id="profileUsername">Loading...</div>
+          <div class="profile-rating"><span class="rating-star">&#9733;</span><span id="profileRating">0.0</span></div>
         </div>
-        <div class="profile-email" id="profileEmail" style="font-size:18px; color:#aaa; margin-bottom:4px; font-family: 'Baloo 2', sans-serif;"></div>
+        <div class="profile-email" id="profileEmail"></div>
         <div class="profile-credits"><span id="totalCredits">5</span> Credits</div>
       </div>
     </div>
 
     <div class="welcome-section">
-      <div class="section-title">Welcome to Tandem!</div>
+      <div class="section-title">Welcome to Tandem</div>
       <div class="section-sub">Connect with mentors, earn credits, and grow together.</div>
     </div>
 
     <div class="quick-actions">
       <div class="action-card" onclick="window.location.href='mentors.html'">
-        <div class="action-icon">🎯</div>
+        <div class="action-icon">&#127919;</div>
         <div class="action-title">Find Mentors</div>
-        <div class="action-desc">Swipe right to connect with mentors who match your goals</div>
+        <div class="action-desc">Browse mentors matched to your learning goals</div>
       </div>
       <div class="action-card" onclick="window.location.href='profile.html'">
-        <div class="action-icon">👤</div>
+        <div class="action-icon">&#128100;</div>
         <div class="action-title">Complete Profile</div>
         <div class="action-desc">Update your skills and learning preferences</div>
       </div>
       <div class="action-card" onclick="window.location.href='messages.html'">
-        <div class="action-icon">💬</div>
+        <div class="action-icon">&#128172;</div>
         <div class="action-title">Messages</div>
         <div class="action-desc">Chat with your connected mentors</div>
       </div>
     </div>
 
-    <!-- Pending Requests Section for Tutors -->
+
+        <div id="upcomingSessionsSection" class="upcoming-section" style="display:none;">
+      <div class="upcoming-header">
+        <div>
+          <div class="section-title">Upcoming Sessions</div>
+          <div class="section-sub">Your next confirmed and scheduled sessions</div>
+        </div>
+        <a href="calendar.html" class="upcoming-view-all">View all →</a>
+      </div>
+      <div id="upcomingSessionsList" class="upcoming-list"></div>
+    </div>
+
     <div id="pendingRequestsSection" class="pending-section" style="display:none;">
-      <div class="section-title">📋 Pending Connection Requests</div>
-      <div class="section-sub">Learners want to connect with you</div>
+      <div class="pending-section-header">
+        <div class="section-title">Incoming Requests</div>
+        <div class="section-sub">Review and respond to connection and session requests</div>
+      </div>
       <div id="pendingRequestsList" class="pending-list"></div>
+    </div>
+
+    <!-- SESSION HISTORY -->
+    <div id="sessionHistorySection" class="session-history-section" style="display:none; margin-bottom:28px;">
+      <div class="upcoming-header">
+        <div>
+          <div class="section-title">Session History</div>
+          <div class="section-sub">Your completed tutoring sessions and time allotted</div>
+        </div>
+      </div>
+      <div id="sessionHistoryList" class="session-history-list"></div>
     </div>
 
     <div class="terms-section">
       <div class="section-title">Quick Guide</div>
-      <div class="section-heading">Everything you need to know</div>
       <div class="term-item">
-        <div class="term-icon">
-          <img src="/icons/crypto.png" alt="crypto" class="term-coin">
-        </div>
+        <div class="term-icon"><img src="/icons/crypto.png" alt="credits" class="term-coin"></div>
         <div class="term-text">
           <strong>Credits</strong>
-          <p>Credits are the currency of learning. Each credit equals 30 minutes of mentoring time, learners spend them to book sessions, and mentors earn them by teaching. Everyone starts with 5 credits, creating a fair cycle of growth and sharing.</p>
+          <p>Credits are the currency of learning. Each credit equals 30 minutes of mentoring time. Learners spend them to book sessions, and mentors earn them by teaching. Everyone starts with 5 credits.</p>
         </div>
       </div>
-
       <div class="term-item">
-        <div class="term-icon">
-          <img src="/icons/rating.png" alt="rating" class="term-coin">
-        </div>
+        <div class="term-icon"><img src="/icons/rating.png" alt="rating" class="term-coin"></div>
         <div class="term-text">
           <strong>Rating</strong>
-          <p>At the end of each session, learners rate their mentors, showing how satisfied they were with the guidance received.</p>
+          <p>At the end of each session, learners rate their mentors. Your rating helps others find the best mentors for them.</p>
         </div>
       </div>
     </div>
 
-    <div class="upcoming-section">
-      <div class="up-heading">Upcoming Sessions</div>
-      <div class="session-box">
-        <div class="filter-row">
-          <div class="filter-select">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            All subjects
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
-        </div>
-        <div class="no-session">No session yet.</div>
+    <div class="about">Tandem — Peer-to-Peer Tutoring Platform</div>
+  </div>
+</div>
+
+<!-- Learner profile modal -->
+<div class="profile-modal-overlay" id="profileModalOverlay">
+  <div class="profile-modal" id="profileModal">
+    <div class="pm-header">
+      <button class="pm-close" onclick="closeProfileModal()">&#x2715;</button>
+      <div class="pm-avatar" id="pmAvatar"></div>
+      <p class="pm-name" id="pmName"></p>
+      <div class="pm-rating-row">
+        <span class="pm-stars" id="pmStars">&#9734;&#9734;&#9734;&#9734;&#9734;</span>
+        <span class="pm-rating-num" id="pmRatingNum">0.0</span>
       </div>
+      <div class="pm-meta-row"><span class="pm-badge" id="pmBadge">Foundational</span></div>
     </div>
-
-    <div class="about">About Tandem</div>
-
-    <!-- QUESTS PANEL -->
-    <div id="questsPanel" style="margin:28px 0 8px;">
-      <div class="section-title">⚔️ Daily Quests</div>
-      <div class="section-sub">Complete quests to earn bonus credits!</div>
-      <div id="questsList" style="display:flex;flex-direction:column;gap:12px;margin-top:14px;"></div>
-    </div>
-
+    <div class="pm-body" id="pmBody"><div class="pm-loading">Loading profile...</div></div>
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
-
 <script src="notifications.js"></script>
 <script src="dashboard.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="credit-sync.js"></script>
 </body>
 </html>

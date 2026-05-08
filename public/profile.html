@@ -7,50 +7,51 @@
 
   <link rel="stylesheet" href="styles-dashboard.css"/>
   <link rel="stylesheet" href="styles-profile.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-notifications.css">
+  <style>
+    /* My Ratings cards */
+    .rating-card {
+      background: #fafbfc; border: 1px solid #e8eaed; border-radius: 12px;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .rating-card-top { display: flex; align-items: center; gap: 10px; }
+    .rating-card-avatar {
+      width: 36px; height: 36px; border-radius: 50%; background: #d0e8f0;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+      font-weight: 700; color: #29b6d8; flex-shrink: 0; overflow: hidden;
+    }
+    .rating-card-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .rating-card-info { flex: 1; }
+    .rating-card-learner { font-size: 13px; font-weight: 700; color: #1a2a3a; }
+    .rating-card-subject { font-size: 11px; color: #64748b; }
+    .rating-card-stars { display: flex; align-items: center; gap: 4px; color: #f5a623; font-size: 15px; font-weight: 700; }
+    .rating-card-date { font-size: 11px; color: #aab; margin-left: auto; flex-shrink: 0; }
+    .rating-card-comment { font-size: 13px; color: #445566; font-style: italic; line-height: 1.5; }
+    .rating-card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .rating-tag { font-size: 11px; padding: 2px 9px; border-radius: 20px; background: #e6f1fb; color: #185fa5; font-weight: 600; }
+    .rating-empty { font-size: 13px; color: #aab; padding: 8px 0; }
+  </style>
 </head>
 <body>
 
 <div class="wrap">
-
   <div class="sidebar">
-    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
-
-    <div class="nav-item" onclick="window.location.href='dashboard.html'">
-      <img src="/icons/home.png" alt="home" class="nav-icon">
-      <span>HOME</span>
+    <div class="logo" onclick="window.location.href='dashboard.html'">
+      <div class="logo-icon">T</div>
+      <span class="logo-text">Tandem</span>
     </div>
-
-    <div class="nav-item" onclick="window.location.href='mentors.html'">
-      <img src="/icons/help.png" alt="mentors" class="nav-icon">
-      <span>MENTORS</span>
-    </div>
-
-    <div class="nav-item active" onclick="window.location.href='profile.html'">
-      <img src="/icons/profile.png" alt="profile" class="nav-icon">
-      <span>PROFILE</span>
-    </div>
-
-    <div class="nav-item" onclick="window.location.href='messages.html'">
-      <img src="/icons/message.png" alt="messages" class="nav-icon">
-      <span>MESSAGES</span>
-    </div>
-
-    <div class="nav-item" onclick="window.location.href='ledger.html'">
-      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
-      <span>LEDGER</span>
-    </div>
-
-    <div class="nav-item logout-btn" id="logoutBtn">
-      <img src="/icons/logout.png" alt="logout" class="nav-icon">
-      <span>LOGOUT</span>
-    </div>
+    <div class="nav-item" onclick="window.location.href='dashboard.html'"><img src="/icons/home.png" alt="home" class="nav-icon"><span class="nav-label">Home</span></div>
+    <div class="nav-item" onclick="window.location.href='mentors.html'"><img src="/icons/friendship.png" alt="mentors" class="nav-icon"><span class="nav-label">Mentors</span></div>
+    <div class="nav-item active" onclick="window.location.href='profile.html'"><img src="/icons/profile.png" alt="profile" class="nav-icon"><span class="nav-label">Profile</span></div>
+    <div class="nav-item" onclick="window.location.href='messages.html'"><img src="/icons/message.png" alt="messages" class="nav-icon"><span class="nav-label">Messages</span></div>
+    <div class="nav-item" onclick="window.location.href='ledger.html'"><img src="/icons/crypto.png" alt="ledger" class="nav-icon"><span class="nav-label">Ledger</span></div>
+    <div class="nav-item" onclick="window.location.href='calendar.html'"><img src="/icons/calendar.png" alt="calendar" class="nav-icon"><span class="nav-label">Calendar</span></div>
+    <div class="nav-item" onclick="window.location.href='quests.html'"><img src="/icons/badge.png" alt="quests" class="nav-icon"><span class="nav-label">Quests</span></div>
+    <div class="nav-item logout-btn" id="logoutBtn"><img src="/icons/logout.png" alt="logout" class="nav-icon"><span class="nav-label">Logout</span></div>
   </div>
 
   <div class="main">
-
     <div class="topbar">
       <div class="credits-badge">
         <span id="topCreditsBadge">5</span>
@@ -63,7 +64,7 @@
         <span class="notif-badge" id="notifBadge" style="display:none;"></span>
         <div class="notif-dropdown" id="notifDropdown">
           <div class="notif-dropdown-header">
-            <h4>🔔 Notifications</h4>
+            <h4>Notifications</h4>
             <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
           </div>
           <div class="notif-list" id="notifList"></div>
@@ -72,12 +73,10 @@
     </div>
 
     <div id="viewMode">
-
       <div class="pg-title">PROFILE</div>
       <div class="pg-subtitle">Manage your information, track your progress, and showcase your expertise.</div>
 
       <div class="pf-card">
-
         <div class="pf-left">
           <div class="pf-avatar" id="pfAvatar">
             <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -98,9 +97,7 @@
             Edit profile
           </button>
         </div>
-
         <div class="pf-divider"></div>
-
         <div class="pf-stats">
           <div class="stat-item">
             <div class="stat-icon stat-blue">
@@ -115,7 +112,6 @@
             <div class="stat-label">Sessions</div>
             <div class="stat-sub">Completed</div>
           </div>
-
           <div class="stat-item">
             <div class="stat-icon stat-yellow">
               <svg viewBox="0 0 24 24" fill="#f5a623" stroke="#f5a623" stroke-width="1">
@@ -126,7 +122,6 @@
             <div class="stat-label">Average Rating</div>
             <div class="stat-sub">From Learners</div>
           </div>
-
           <div class="stat-item">
             <div class="stat-icon stat-orange">🔥</div>
             <div class="stat-number">0</div>
@@ -134,7 +129,6 @@
             <div class="stat-sub">Mentored</div>
           </div>
         </div>
-
       </div>
 
       <div class="pf-tabs">
@@ -142,12 +136,10 @@
       </div>
 
       <div class="overview-grid">
-
         <div class="ov-box">
           <div class="ov-title">About Me</div>
           <div class="ov-content" id="viewBio">Edit caption.</div>
         </div>
-
         <div class="ov-box">
           <div class="ov-title-row">
             <div class="ov-title">Achievements</div>
@@ -155,27 +147,31 @@
           </div>
           <div class="ov-content muted" id="pfAchievements">No achievements yet.</div>
         </div>
-
         <div class="ov-box ov-full">
           <div class="ov-title">Skills</div>
           <div class="skill-tags" id="viewSkills"></div>
         </div>
-
         <div class="ov-box ov-full">
-          <div class="ov-title-row">
-            <div class="ov-title">Growth Subjects</div>
+          <div class="ov-title">Growth Subjects</div>
+          <div class="ov-subtitle" id="viewGradeLabel" style="font-size:12px;color:#aaa;margin-bottom:10px;"></div>
+          <div class="ov-title-row" style="margin-bottom:8px;">
             <span class="grade-badge" id="viewGradeBadge" style="display:none;"></span>
           </div>
-          <div class="ov-subtitle" id="viewGradeLabel" style="font-size:12px;color:#aaa;margin-bottom:10px;"></div>
           <div class="skill-tags" id="viewGrowth"></div>
         </div>
 
+        <!-- My Ratings section – visible to tutors who have received feedback -->
+        <div class="ov-box ov-full" id="myRatingsBox" style="display:none;">
+          <div class="ov-title-row">
+            <div class="ov-title">⭐ My Ratings</div>
+            <span id="ratingSummaryBadge" style="font-size:12px;font-weight:700;color:#f5a623;"></span>
+          </div>
+          <div id="myRatingsList" style="margin-top:10px;display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
       </div>
-
     </div>
 
     <div id="editMode" style="display:none;">
-
       <div class="pg-title">PROFILE</div>
       <div class="pg-subtitle-sm">Edit Profile</div>
 
@@ -186,62 +182,32 @@
       </div>
 
       <div class="edit-form">
-
         <div class="ef-group">
           <label class="ef-label">Name</label>
-          <input type="text" class="ef-input" id="editName" placeholder="Your name">
+          <input id="editName" class="ef-input" type="text" placeholder="Your full name">
         </div>
-
         <div class="ef-group">
           <label class="ef-label">BIO</label>
           <input type="text" class="ef-input" id="editBio" placeholder="Enter Bio">
         </div>
-
         <div class="ef-group">
           <label class="ef-label">Grade Level</label>
           <div class="grade-grid" id="gradeGrid">
-            <div class="grade-card" data-grade="elementary">
-              <div class="grade-icon">🎒</div>
-              <div class="grade-name">Elementary</div>
-              <div class="grade-range">Grades 1–6</div>
-            </div>
-            <div class="grade-card" data-grade="junior_high">
-              <div class="grade-icon">📚</div>
-              <div class="grade-name">Junior High</div>
-              <div class="grade-range">Grades 7–10</div>
-            </div>
-            <div class="grade-card" data-grade="senior_high">
-              <div class="grade-icon">🎓</div>
-              <div class="grade-name">Senior High</div>
-              <div class="grade-range">Grades 11–12</div>
-            </div>
-            <div class="grade-card" data-grade="college">
-              <div class="grade-icon">🏛️</div>
-              <div class="grade-name">College</div>
-              <div class="grade-range">Undergraduate</div>
-            </div>
-            <div class="grade-card" data-grade="postgrad">
-              <div class="grade-icon">🔬</div>
-              <div class="grade-name">Post-Grad</div>
-              <div class="grade-range">Masters / PhD</div>
-            </div>
-            <div class="grade-card" data-grade="professional">
-              <div class="grade-icon">💼</div>
-              <div class="grade-name">Professional</div>
-              <div class="grade-range">Working Adult</div>
-            </div>
+            <div class="grade-card" data-grade="elementary"><div class="grade-icon">🎒</div><div class="grade-name">Elementary</div><div class="grade-range">Grades 1–6</div></div>
+            <div class="grade-card" data-grade="junior_high"><div class="grade-icon">📚</div><div class="grade-name">Junior High</div><div class="grade-range">Grades 7–10</div></div>
+            <div class="grade-card" data-grade="senior_high"><div class="grade-icon">🎓</div><div class="grade-name">Senior High</div><div class="grade-range">Grades 11–12</div></div>
+            <div class="grade-card" data-grade="college"><div class="grade-icon">🏛️</div><div class="grade-name">College</div><div class="grade-range">Undergraduate</div></div>
+            <div class="grade-card" data-grade="postgrad"><div class="grade-icon">🔬</div><div class="grade-name">Post-Grad</div><div class="grade-range">Masters / PhD</div></div>
+            <div class="grade-card" data-grade="professional"><div class="grade-icon">💼</div><div class="grade-name">Professional</div><div class="grade-range">Working Adult</div></div>
           </div>
           <input type="hidden" id="editGradeLevel" value="">
         </div>
-
         <div class="ef-group">
           <label class="ef-label">My Skills</label>
           <div class="ef-select-wrap" id="skillsWrap">
             <div class="ef-select-trigger" id="editSkillsTrigger">
               <span>Your Skills</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             <div class="ef-dropdown" id="editSkillsDropdown">
               <input type="text" class="ef-search" id="editSkillsSearch" placeholder="Search skills...">
@@ -250,15 +216,12 @@
             <div class="ef-tags" id="editSkillsTags"></div>
           </div>
         </div>
-
         <div class="ef-group">
           <label class="ef-label">Growth Subjects <span class="ef-label-sub">— areas you want to improve</span></label>
           <div class="ef-select-wrap" id="growthWrap">
             <div class="ef-select-trigger" id="editGrowthTrigger">
               <span id="editGrowthPlaceholder">Select subjects...</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             <div class="ef-dropdown" id="editGrowthDropdown">
               <input type="text" class="ef-search" id="editGrowthSearch" placeholder="Search growth areas...">
@@ -268,20 +231,16 @@
           </div>
           <div class="ef-hint">💡 These help us match you with the right mentors.</div>
         </div>
-
         <div class="ef-group">
           <label class="ef-label">Achievements</label>
           <input type="text" class="ef-input" id="editAchievements" placeholder="e.g. Certified Web Designer">
         </div>
-        
         <div class="ef-actions">
           <button class="ef-btn-cancel" id="cancelEditBtn">Cancel</button>
           <button class="ef-btn-save" id="saveEditBtn">Save Changes</button>
         </div>
-
       </div>
     </div>
-
   </div>
 </div>
 
@@ -289,5 +248,7 @@
 
 <script src="notifications.js"></script>
 <script src="profile.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="credit-sync.js"></script>
 </body>
 </html>
