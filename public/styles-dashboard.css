@@ -171,6 +171,924 @@ body {
 .coin img { width: 100%; height: 100%; object-fit: contain; }
 .mini-coin { width: 24px; height: 24px; cursor: pointer; }
 
+/* Dark mode toggle */
+.dark-mode-toggle {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.theme-icon {
+  font-size: 16px;
+  line-height: 1;
+  color: #1a2a3a;
+}
+
+.theme-icon::before {
+  content: '🌙';
+}
+
+.dark-mode-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  background: #050b1f;
+  color: #e2e8f0;
+}
+
+body.dark-mode .sidebar {
+  background: #0a1122;
+  border-right-color: #1f2937;
+}
+
+body.dark-mode .sidebar .logo-text {
+  color: #38bdf8;
+}
+
+body.dark-mode .sidebar .nav-item {
+  background: transparent;
+  color: #cbd5e1;
+  border-color: transparent;
+}
+
+body.dark-mode .sidebar .nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+}
+
+body.dark-mode .sidebar .nav-item.active {
+  background: rgba(56, 189, 248, 0.16);
+  color: #7dd3fc;
+  border-right-color: #38bdf8;
+}
+
+body.dark-mode .logout-btn:hover {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+
+body.dark-mode .main,
+body.dark-mode .profile-header,
+body.dark-mode .calendar-card,
+body.dark-mode .details-panel,
+body.dark-mode .action-card,
+body.dark-mode .pending-card,
+body.dark-mode .sess-card,
+body.dark-mode .credit-banner,
+body.dark-mode .notif-dropdown,
+body.dark-mode .subject-tag,
+body.dark-mode .toast,
+body.dark-mode .section-title,
+body.dark-mode .section-sub,
+body.dark-mode .ledger-item,
+body.dark-mode .terms-section,
+body.dark-mode .term-item,
+body.dark-mode .profile-modal,
+body.dark-mode .pm-header,
+body.dark-mode .pm-body,
+body.dark-mode .recs-panel,
+body.dark-mode .ledger-container,
+body.dark-mode .stat-card,
+body.dark-mode .chat-area,
+body.dark-mode .connection-item,
+body.dark-mode .chat-container,
+body.dark-mode .connections-sidebar,
+body.dark-mode .connections-list,
+body.dark-mode .chat-header,
+body.dark-mode .messages-area,
+body.dark-mode .message-input-area,
+body.dark-mode .session-modal-content,
+body.dark-mode .rating-box,
+body.dark-mode .subject-modal,
+body.dark-mode .profile-card,
+body.dark-mode .mentor-card,
+body.dark-mode .conversation-item,
+body.dark-mode .message-input,
+body.dark-mode .conversation-list,
+body.dark-mode .mentor-connect-btn,
+body.dark-mode .skill-chip,
+body.dark-mode .feedback-tag,
+body.dark-mode .growth-tag,
+body.dark-mode .modal-close-btn,
+body.dark-mode .profile-box,
+body.dark-mode .pf-card,
+body.dark-mode .pf-left,
+body.dark-mode .pf-right,
+body.dark-mode .ov-box,
+body.dark-mode .pf-tabs,
+body.dark-mode .pf-tab,
+body.dark-mode .calendar-grid,
+body.dark-mode .day-cell,
+body.dark-mode .nav-btn,
+body.dark-mode .session-input,
+body.dark-mode .rating-textarea,
+body.dark-mode .empty-state,
+body.dark-mode .empty-cal,
+body.dark-mode .loading-spinner,
+body.dark-mode .spinner,
+body.dark-mode .badge-active,
+body.dark-mode .badge-confirmed,
+body.dark-mode .badge-scheduled,
+body.dark-mode .badge-rescheduling,
+body.dark-mode .badge-completed,
+body.dark-mode [class*="card"],
+body.dark-mode [class*="panel"],
+body.dark-mode [class*="box"],
+body.dark-mode [class*="modal"],
+body.dark-mode [class*="list"],
+body.dark-mode [class*="row"],
+body.dark-mode [class*="grid"] {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .topbar {
+  background: transparent;
+}
+
+body.dark-mode .credits-badge {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+body.dark-mode .dark-mode-toggle {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+body.dark-mode .theme-icon {
+  color: #f8fafc;
+}
+
+body.dark-mode .theme-icon::before {
+  content: '☀️';
+}
+
+body.dark-mode .term-text strong {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .term-text p {
+  color: #cbd5e1 !important;
+}
+
+body.dark-mode .nav-label,
+body.dark-mode .profile-rating,
+body.dark-mode .action-icon,
+body.dark-mode .section-sub,
+body.dark-mode .pending-message,
+body.dark-mode .message-text,
+body.dark-mode .message-date-separator span,
+body.dark-mode .rating-btn-skip,
+body.dark-mode .rating-box,
+body.dark-mode .skill-chip,
+body.dark-mode .mentor-bio,
+body.dark-mode .connection-item,
+body.dark-mode .conversation-item,
+body.dark-mode .mentor-connect-btn,
+body.dark-mode .card-label,
+body.dark-mode .message-time,
+body.dark-mode .connection-name,
+body.dark-mode .connection-preview,
+body.dark-mode .chat-header-name,
+body.dark-mode .chat-header-status,
+body.dark-mode .no-connection h4,
+body.dark-mode .no-connection p,
+body.dark-mode .empty-state h4,
+body.dark-mode .empty-state p,
+body.dark-mode .pg-title,
+body.dark-mode .pg-subtitle,
+body.dark-mode .section-title,
+body.dark-mode .section-sub,
+body.dark-mode .stat-number,
+body.dark-mode .ledger-title,
+body.dark-mode .ledger-desc,
+body.dark-mode .ledger-date,
+body.dark-mode .sc-subject,
+body.dark-mode .sc-meta,
+body.dark-mode .sc-badge,
+body.dark-mode .notif-dropdown-header h4,
+body.dark-mode .notif-mark-all,
+body.dark-mode .pm-name,
+body.dark-mode .pm-bio,
+body.dark-mode .pm-label,
+body.dark-mode .toast {
+  color: #d1d5db !important;
+}
+
+body.dark-mode .pg-subtitle {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .subject-tag {
+  color: #cbd5e1 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .notif-dropdown {
+  color: #e5e7eb !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dark-mode .notif-dropdown-header button,
+body.dark-mode .notif-mark-all,
+body.dark-mode .profile-email,
+body.dark-mode .profile-credits,
+body.dark-mode .sc-meta,
+body.dark-mode .pm-label,
+body.dark-mode .pm-bio,
+body.dark-mode .ledger-title,
+body.dark-mode .ledger-desc {
+  color: #cbd5e1 !important;
+}
+
+body.dark-mode .btn-accept {
+  background: #0f766e !important;
+  color: #fff !important;
+}
+
+body.dark-mode .btn-reject {
+  background: #111827 !important;
+  border-color: #dc2626 !important;
+  color: #fecaca !important;
+}
+
+body.dark-mode .message-input,
+body.dark-mode .session-input,
+body.dark-mode .rating-textarea,
+body.dark-mode .exit-chat-btn,
+body.dark-mode .sc-btn,
+body.dark-mode .sc-btn-view,
+body.dark-mode .sc-btn-start,
+body.dark-mode .sc-btn-join,
+body.dark-mode .session-btn-reject,
+body.dark-mode .session-btn-cancel,
+body.dark-mode .send-btn,
+body.dark-mode .video-call-btn,
+body.dark-mode .edit-btn,
+body.dark-mode .nav-btn {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .message-input:focus,
+body.dark-mode .session-input:focus,
+body.dark-mode .rating-textarea:focus,
+body.dark-mode .nav-btn:hover,
+body.dark-mode .edit-btn:hover,
+body.dark-mode .theme-icon:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .sc-btn-start,
+body.dark-mode .sc-btn-join {
+  background: linear-gradient(135deg, #22c55e, #047857) !important;
+  color: #fff !important;
+}
+
+body.dark-mode .sc-btn-view {
+  background: #1f2937 !important;
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .sc-face {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+body.dark-mode .badge-active {
+  background: #0f766e !important;
+  color: #d1fae5 !important;
+}
+
+body.dark-mode .badge-confirmed {
+  background: #0f172a !important;
+  color: #38bdf8 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .badge-scheduled,
+body.dark-mode .badge-rescheduling {
+  background: #78350f !important;
+  color: #fde68a !important;
+}
+
+body.dark-mode .badge-completed {
+  background: #1f2937 !important;
+  color: #cbd5e1 !important;
+}
+
+body.dark-mode .calendar-grid {
+  background: transparent !important;
+}
+
+body.dark-mode .weekday {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .day-cell {
+  background: #0f172a !important;
+  border-color: #1f2937 !important;
+}
+
+body.dark-mode .day-cell:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+body.dark-mode .day-cell.day-today {
+  border-color: #38bdf8 !important;
+}
+
+body.dark-mode .day-num {
+  color: #7dd3fc !important;
+}
+
+body.dark-mode .day-num-inner {
+  background: #38bdf8 !important;
+  color: #fff !important;
+}
+
+body.dark-mode .marker {
+  background: #1f2937 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .m-confirmed,
+body.dark-mode .m-active {
+  background: #065f46 !important;
+  color: #d1fae5 !important;
+}
+
+body.dark-mode .m-sched {
+  background: #92400e !important;
+  color: #fff !important;
+}
+
+body.dark-mode .m-reschedule {
+  background: #831843 !important;
+  color: #fce7f3 !important;
+}
+
+body.dark-mode .m-complete {
+  background: #1f2937 !important;
+  color: #cbd5e1 !important;
+}
+
+/* ── All text elements get bright text ── */
+body.dark-mode,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode div,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode li,
+body.dark-mode td,
+body.dark-mode th,
+body.dark-mode label,
+body.dark-mode a,
+body.dark-mode a:hover,
+body.dark-mode .ov-link,
+body.dark-mode .toast,
+body.dark-mode .pg-title,
+body.dark-mode .pg-subtitle,
+body.dark-mode .section-title,
+body.dark-mode .section-sub,
+body.dark-mode .no-connection,
+body.dark-mode .empty-cal,
+body.dark-mode .empty-state {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .pg-subtitle,
+body.dark-mode .section-sub,
+body.dark-mode .no-connection,
+body.dark-mode .empty-cal,
+body.dark-mode .empty-state {
+  color: #94a3b8 !important;
+}
+
+/* ── Form inputs get dark bg with light text ── */
+body.dark-mode input:not([type="checkbox"]):not([type="radio"]),
+body.dark-mode textarea,
+body.dark-mode select {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode ::placeholder,
+body.dark-mode ::-webkit-input-placeholder,
+body.dark-mode ::-moz-placeholder,
+body.dark-mode :-ms-input-placeholder {
+  color: #94a3b8 !important;
+}
+
+/* ── Buttons with colored backgrounds keep white text ── */
+body.dark-mode .send-btn,
+body.dark-mode .session-btn-send,
+body.dark-mode .session-btn-accept,
+body.dark-mode .session-btn-complete,
+body.dark-mode .sc-btn-start,
+body.dark-mode .sc-btn-join,
+body.dark-mode .rating-btn-submit,
+body.dark-mode .video-call-btn,
+body.dark-mode .bot-bubble-user,
+body.dark-mode .message-sent .message-text,
+body.dark-mode .rating-head,
+body.dark-mode .rating-head h3,
+body.dark-mode .rating-head p,
+body.dark-mode .logo-icon,
+body.dark-mode .feedback-tag.selected {
+  color: #fff !important;
+}
+
+body.dark-mode .bot-chip {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .bot-chip.chip-amber {
+  background: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: #fbbf24 !important;
+}
+
+body.dark-mode .bot-chip.chip-green {
+  background: rgba(22, 163, 74, 0.18) !important;
+  border-color: rgba(22, 163, 74, 0.35) !important;
+  color: #86efac !important;
+}
+
+body.dark-mode .bot-chip.chip-purple {
+  background: rgba(168, 85, 247, 0.18) !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
+  color: #c4b5fd !important;
+}
+
+body.dark-mode .bot-chip:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+body.dark-mode .botSuggestionsBar,
+body.dark-mode #botSuggestionsBar {
+  background: #0f172a !important;
+  border-top: 1px solid #334155 !important;
+}
+
+body.dark-mode .send-btn {
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+}
+
+body.dark-mode .message-input-area,
+body.dark-mode .chat-header,
+body.dark-mode .connections-sidebar,
+body.dark-mode .messages-area {
+  background: #0f172a !important;
+}
+
+body.dark-mode .message-input-area {
+  border-color: #334155 !important;
+}
+
+body.dark-mode .chat-header-actions button,
+body.dark-mode .session-request-btn,
+body.dark-mode .exit-chat-btn,
+body.dark-mode .mobile-back-btn {
+  background: #111827 !important;
+  border: 1px solid #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .session-request-btn:hover,
+body.dark-mode .exit-chat-btn:hover,
+body.dark-mode .mobile-back-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .session-btn-accept,
+body.dark-mode .session-btn-reject,
+body.dark-mode .session-btn-complete,
+body.dark-mode .session-btn-send,
+body.dark-mode .rating-btn-skip,
+body.dark-mode .rating-btn-submit {
+  color: #fff !important;
+}
+
+body.dark-mode .session-btn-cancel,
+body.dark-mode .rating-btn-skip,
+body.dark-mode .session-btn-send {
+  background: #111827 !important;
+  border: 1px solid #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Buttons with light backgrounds need dark text ── */
+body.dark-mode .exit-chat-btn,
+body.dark-mode .session-btn-cancel,
+body.dark-mode .rating-btn-skip,
+body.dark-mode .sc-btn-view,
+body.dark-mode .nav-btn,
+body.dark-mode .feedback-tag:not(.selected),
+body.dark-mode .rating-textarea,
+body.dark-mode .edit-btn,
+body.dark-mode .message-input,
+body.dark-mode .session-input {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .theme-icon {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .theme-icon::before {
+  color: #f8fafc !important;
+}
+
+/* ── Profile page dark mode ── */
+body.dark-mode .pf-name,
+body.dark-mode .stat-number,
+body.dark-mode .stat-label,
+body.dark-mode .ov-title,
+body.dark-mode .ov-content,
+body.dark-mode .ov-subtitle,
+body.dark-mode .muted,
+body.dark-mode .skill-tag,
+body.dark-mode .growth-tag,
+body.dark-mode .grade-badge,
+body.dark-mode .pf-bio,
+body.dark-mode .pf-handle {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .skill-tag,
+body.dark-mode .growth-tag,
+body.dark-mode .grade-badge {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: #334155 !important;
+}
+
+/* ── Mentors page dark mode ── */
+body.dark-mode .filter-group label,
+body.dark-mode .empty-state h3,
+body.dark-mode .empty-state,
+body.dark-mode .mentor-card-name,
+body.dark-mode .rating-val,
+body.dark-mode .mentor-card-bio,
+body.dark-mode .skill-chip,
+body.dark-mode .skill-chip.muted,
+body.dark-mode .modal-name,
+body.dark-mode .modal-bio-text,
+body.dark-mode .modal-skill-tag,
+body.dark-mode .subject-name,
+body.dark-mode .subject-num,
+body.dark-mode .modal-section-label,
+body.dark-mode .subject-modal-title,
+body.dark-mode .subject-modal-sub,
+body.dark-mode .modal-badge,
+body.dark-mode .modal-match-chip,
+body.dark-mode .modal-rating-num,
+body.dark-mode .modal-btn-pass,
+body.dark-mode .subject-cancel-btn,
+body.dark-mode .modal-close-btn {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .skill-chip,
+body.dark-mode .skill-chip.muted,
+body.dark-mode .modal-skill-tag {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .modal-btn-pass,
+body.dark-mode .subject-cancel-btn {
+  background: #111827 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .modal-btn-pass:hover {
+  background: #1f2937 !important;
+}
+
+body.dark-mode .feedback-pill {
+  background: rgba(217, 119, 6, 0.16) !important;
+  color: #fbbf24 !important;
+  border-color: #f59e0b !important;
+}
+
+body.dark-mode .modal-header-band,
+body.dark-mode .modal-avatar-wrap {
+  background: rgba(56, 189, 248, 0.16) !important;
+}
+
+body.dark-mode .subject-modal input,
+body.dark-mode .subject-modal textarea {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .skill-checkbox-label {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .skill-checkbox-label:hover {
+  background: rgba(56, 189, 248, 0.24) !important;
+  border-color: #38bdf8 !important;
+  color: #7dd3fc !important;
+}
+
+body.dark-mode .skill-checkbox-label.checked {
+  background: linear-gradient(135deg, #38bdf8, #0f766e) !important;
+  border-color: #38bdf8 !important;
+  color: #fff !important;
+}
+
+body.dark-mode .mentor-avatar-initials {
+  color: #1a8fad !important;
+  background: linear-gradient(135deg, #e0f7fd, #dbeafe) !important;
+  border-color: #e0f7fd !important;
+}
+
+body.dark-mode .match-pill {
+  background: linear-gradient(135deg, #29b6d8, #1a8fad) !important;
+  color: #fff !important;
+  border-color: #0f172a !important;
+}
+
+body.dark-mode .skill-chip,
+body.dark-mode .skill-chip.muted,
+body.dark-mode .modal-skill-tag,
+body.dark-mode .mentor-badge-chip {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .modal-badge,
+body.dark-mode .modal-match-chip {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #0f172a !important;
+  border-color: transparent !important;
+}
+
+/* ── Quests page dark mode ── */
+body.dark-mode .section-head,
+body.dark-mode .quest-title,
+body.dark-mode .quest-desc,
+body.dark-mode .quest-reward,
+body.dark-mode .quest-done-badge,
+body.dark-mode .quest-done-date,
+body.dark-mode .recs-panel h3,
+body.dark-mode .rec-title,
+body.dark-mode .rec-reason,
+body.dark-mode .rec-find {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .quest-desc,
+body.dark-mode .rec-reason,
+body.dark-mode .quest-done-date {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .quest-card {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .quest-card.done {
+  background: rgba(22, 163, 74, 0.16) !important;
+  border-color: #059669 !important;
+}
+
+body.dark-mode .recs-panel {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .rec-card {
+  background: #111827 !important;
+}
+
+body.dark-mode .quest-done-badge {
+  background: rgba(22, 163, 74, 0.24) !important;
+  color: #86efac !important;
+}
+
+/* ── Ledger page dark mode ── */
+body.dark-mode .ledger-title,
+body.dark-mode .ledger-type,
+body.dark-mode .ledger-date {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .ledger-type,
+body.dark-mode .ledger-date {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .ledger-amount.positive {
+  color: #86efac !important;
+}
+
+body.dark-mode .ledger-amount.negative {
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .stat-card .stat-label {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .stat-card {
+  background: #111827 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .stat-card .stat-value {
+  color: #38bdf8 !important;
+}
+
+body.dark-mode .ledger-stats {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .bot-item,
+body.dark-mode .bot-item.active {
+  background: #111827 !important;
+  background-image: none !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .bot-item.active {
+  border-left-color: #38bdf8 !important;
+}
+
+body.dark-mode .bot-item.active .bot-name,
+body.dark-mode .bot-item.active .bot-sub,
+body.dark-mode .bot-item .bot-name,
+body.dark-mode .bot-item .bot-sub {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .connection-item,
+body.dark-mode .connection-item.active {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .connection-item.active {
+  border-left-color: #38bdf8 !important;
+}
+
+body.dark-mode .connection-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark-mode .connection-item.active .connection-name,
+body.dark-mode .connection-item.active .connection-preview {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .chat-area,
+body.dark-mode .messages-area {
+  background: #0f172a !important;
+}
+
+body.dark-mode .message-input-area {
+  background: #111827 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .bot-item,
+body.dark-mode .bot-item.active {
+  background: #111827 !important;
+  background-image: none !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .bot-item.active {
+  border-left-color: #38bdf8 !important;
+}
+
+body.dark-mode .bot-item .bot-name,
+body.dark-mode .bot-item .bot-sub,
+body.dark-mode .bot-item.active .bot-name,
+body.dark-mode .bot-item.active .bot-sub {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .bot-bubble,
+body.dark-mode .message-received .message-text {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .bot-bubble-user {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #fff !important;
+}
+
+body.dark-mode .chat-header,
+body.dark-mode .connections-sidebar {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+/* ── Messages page dark mode ── */
+body.dark-mode .bot-name,
+body.dark-mode .bot-sub,
+body.dark-mode .connection-name,
+body.dark-mode .connection-preview,
+body.dark-mode .chat-header-name,
+body.dark-mode .chat-header-status,
+body.dark-mode .message-received .message-text,
+body.dark-mode .message-date-separator span,
+body.dark-mode .bot-bubble,
+body.dark-mode .star-label,
+body.dark-mode .tag-section-label,
+body.dark-mode .feedback-tag,
+body.dark-mode .rating-btn-skip,
+body.dark-mode .session-info p,
+body.dark-mode .session-timer {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .bot-sub,
+body.dark-mode .connection-preview,
+body.dark-mode .chat-header-status,
+body.dark-mode .message-date-separator span,
+body.dark-mode .star-label,
+body.dark-mode .feedback-tag,
+body.dark-mode .session-info p {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .message-received .message-text {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .message-date-separator span {
+  background: #1f2937 !important;
+}
+
+body.dark-mode .session-request-btn {
+  background: #78350f !important;
+  border-color: #f59e0b !important;
+  color: #fbbf24 !important;
+}
+
+body.dark-mode .session-request-btn:hover {
+  background: #92400e !important;
+}
+
+body.dark-mode .session-modal-content,
+body.dark-mode .subject-modal {
+  background: #0f172a !important;
+}
+
+body.dark-mode .session-modal-header,
+body.dark-mode .session-modal-body {
+  border-color: #334155 !important;
+}
+
+body.dark-mode .session-modal-header h3 {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .subject-modal-title {
+  color: #e2e8f0 !important;
+}
+
 /* ── Page titles ── */
 .pg-title {
   font-size: 24px;
