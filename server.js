@@ -197,6 +197,7 @@ app.post('/ai-chat', async (req, res) => {
   if (!messages?.length) return res.json({ success: false, reply: null });
 
   const keys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2].filter(Boolean);
+console.log('Keys loaded:', keys.length, keys.map(k => k?.slice(-6)));
   const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 
   const callGemini = async (model, apiKey) => {
