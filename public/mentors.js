@@ -46,12 +46,12 @@ async function loadMentors() {
   try {
     // Fetch matches and pending requests in parallel
     const [matchRes, pendingRes] = await Promise.all([
-      fetch('http://localhost:3000/get-swipe-matches', {
+      fetch('/get-swipe-matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       }),
-      fetch('http://localhost:3000/get-pending-requests', {
+      fetch('/get-pending-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // get requests I SENT (as learner) — tutor_email is the mentor
@@ -342,7 +342,7 @@ async function sendConnectionRequest(mentor, subject, message) {
   const learnerGrade = localStorage.getItem('tandem_grade') || '';
  
   try {
-    const response = await fetch('http://localhost:3000/send-connection-request', {
+    const response = await fetch('/send-connection-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -382,7 +382,7 @@ async function setupLogout() {
     const currentCredits = getCredits();
     if (email && currentCredits) {
       try {
-        await fetch('http://localhost:3000/update-credits', {
+        await fetch('/update-credits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, credits: currentCredits })
@@ -398,7 +398,7 @@ async function loadCredits() {
   const email = localStorage.getItem('userEmail');
   if (!email) return;
   try {
-    const response = await fetch('http://localhost:3000/get-user-data', {
+    const response = await fetch('/get-user-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })

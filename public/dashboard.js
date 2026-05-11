@@ -43,7 +43,7 @@ async function setCredits(amount) {
   const email = localStorage.getItem('userEmail');
   if (email) {
     try {
-      await fetch('http://localhost:3000/update-credits', {
+      await fetch('/update-credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, credits: amount })
@@ -95,7 +95,7 @@ async function setupLogout() {
     const currentCredits = getCredits();
     if (email && currentCredits) {
       try {
-        await fetch('http://localhost:3000/update-credits', {
+        await fetch('/update-credits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, credits: currentCredits })
@@ -111,7 +111,7 @@ async function loadCreditsFromDatabase() {
   const email = localStorage.getItem('userEmail');
   if (!email) return false;
   try {
-    const response = await fetch('http://localhost:3000/get-user-data', {
+    const response = await fetch('/get-user-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -188,7 +188,7 @@ async function openProfileModal(email, name, profilePic) {
  
   // Fetch full user data
   try {
-    const response = await fetch('http://localhost:3000/get-user-data', {
+    const response = await fetch('/get-user-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -274,12 +274,12 @@ async function refreshAllRequests() {
   try {
     // Fetch both in parallel
     const [connRes, sessRes] = await Promise.all([
-      fetch('http://localhost:3000/get-pending-requests', {
+      fetch('/get-pending-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       }),
-      fetch('http://localhost:3000/get-pending-session-requests', {
+      fetch('/get-pending-session-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tutorEmail: email })
@@ -383,7 +383,7 @@ async function acceptConnectionRequest(requestId, learnerEmail, btn) {
   btn.textContent = '...';
   const tutorEmail = localStorage.getItem('userEmail');
   try {
-    const response = await fetch('http://localhost:3000/accept-request', {
+    const response = await fetch('/accept-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ requestId, tutorEmail, learnerEmail })
@@ -414,7 +414,7 @@ async function rejectConnectionRequest(requestId, btn) {
   btn.disabled = true;
   btn.textContent = '...';
   try {
-    const response = await fetch('http://localhost:3000/reject-request', {
+    const response = await fetch('/reject-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ requestId })
@@ -444,7 +444,7 @@ async function acceptSessionRequest(sessionId, tutorEmail, learnerEmail, btn) {
   btn.disabled = true;
   btn.textContent = '...';
   try {
-    const response = await fetch('http://localhost:3000/accept-session-request', {
+    const response = await fetch('/accept-session-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, tutorEmail, learnerEmail })
@@ -475,7 +475,7 @@ async function rejectSessionRequest(sessionId, btn) {
   btn.disabled = true;
   btn.textContent = '...';
   try {
-    const response = await fetch('http://localhost:3000/reject-session-request', {
+    const response = await fetch('/reject-session-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId })
@@ -514,7 +514,7 @@ async function checkActiveSession() {
   const email = localStorage.getItem('userEmail');
   if (!email) return false;
   try {
-    const response = await fetch('http://localhost:3000/get-active-session', {
+    const response = await fetch('/get-active-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -542,7 +542,7 @@ async function loadUpcomingSessions() {
   const email = localStorage.getItem('userEmail');
   if (!email) return;
   try {
-    const r = await fetch('http://localhost:3000/get-calendar-sessions', {
+    const r = await fetch('/get-calendar-sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -620,7 +620,7 @@ async function dashStartSession(sessionId, peerEmail, subject) {
   const email  = localStorage.getItem('userEmail');
   const myName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || email;
   try {
-    const r = await fetch('http://localhost:3000/start-session', {
+    const r = await fetch('/start-session', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, tutorEmail: email })
     });
