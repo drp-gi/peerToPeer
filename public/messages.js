@@ -1,5 +1,5 @@
 // API base URL
-const API = 'http://localhost:3000';
+const API = '';
 const BOT_EMAIL = '__tandem_ai_bot__';
 
 const userEmail = localStorage.getItem('userEmail');
@@ -640,7 +640,8 @@ async function mentorProposeSchedule(sessionId, learnerEmail) {
     const input = document.getElementById('mentorScheduleInput');
     if (!input?.value) { showToast('Pick a date and time.'); return; }
     const tutorName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || 'Your mentor';
-    const d = await post('/propose-schedule', { sessionId, tutorEmail: userEmail, learnerEmail, scheduledTime: input.value, tutorName });
+   const d = await post('/propose-schedule', { sessionId, tutorEmail: userEmail, learnerEmail, scheduledTime: new Date(input.value).toISOString(), tutorName });
+
     if (d.success) { showToast('Schedule sent!'); hideSessionUI(); await loadActiveSession(); }
     else showToast(d.message || 'Failed');
 }
@@ -792,8 +793,9 @@ async function submitSessionRequest(tutorEmail, tutorName) {
     const subject=document.getElementById('sessSubjectSelect')?.value, typeRadio=document.querySelector('input[name="sessType"]:checked'), modeRadio=document.querySelector('input[name="sessMode"]:checked'), dtInput=document.getElementById('sessDateTime')?.value, notes=document.getElementById('sessNotes')?.value||'';
     if (!subject) { showToast('Select a subject.'); return; }
     if (!dtInput) { showToast('Choose a date and time.'); return; }
+    const preferredTimeISO = new Date(dtInput).toISOString();
     if (Math.round(Number(localStorage.getItem('tandem_credits')||'5')) < 1) { showToast('Not enough credits!'); return; }
-    const d = await post('/send-session-request', { learnerEmail:userEmail, tutorEmail, subject, sessionNotes:notes, sessionType:typeRadio?.value||'solo', sessionMode:modeRadio?.value||'online', preferredTime:dtInput });
+    const d = await post('/send-session-request', { learnerEmail:userEmail, tutorEmail, subject, sessionNotes:notes, sessionType:typeRadio?.value||'solo', sessionMode:modeRadio?.value||'online', preferredTime:preferredTimeISO });
     if (d.success) { showToast('Request sent!'); closeSessionRequestModal(); await loadActiveSession(); }
     else showToast(d.message || 'Failed');
 }
