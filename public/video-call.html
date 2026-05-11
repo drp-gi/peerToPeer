@@ -144,7 +144,7 @@ const subject   = p.get('subject') || 'Session';
 const myName    = p.get('name')    || localStorage.getItem('tandem_username') || myEmail;
 const myRole    = p.get('role')    || 'learner'; // 'tutor' or 'learner'
 const isTutor   = myRole === 'tutor';
-const API       = '';
+const API       = 'http://localhost:3000';
 
 const roomId = [myEmail, peerEmail].sort().join('__');
 

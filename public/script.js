@@ -36,7 +36,7 @@ registerForm.onsubmit = async (e) => {
     const password = document.getElementById('registerPassword').value;
 
     try {
-        const res = await fetch('/register', {
+        const res = await fetch('http://localhost:3000/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password })
@@ -69,7 +69,7 @@ loginForm.onsubmit = async (e) => {
     const password = document.getElementById('loginPassword').value;
 
     try {
-        const res = await fetch('/login', {
+        const res = await fetch('http://localhost:3000/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })

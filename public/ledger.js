@@ -20,7 +20,7 @@ function formatLedgerDate(dateString) {
 
 async function loadLedger() {
     try {
-        const response = await fetch('/get-ledger', {
+        const response = await fetch('http://localhost:3000/get-ledger', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: userEmail })

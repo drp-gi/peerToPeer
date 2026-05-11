@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const API = '';
+  const API = 'http://localhost:3000';
   const POLL = 5000;
 
   function esc(t) {
