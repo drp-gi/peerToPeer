@@ -155,7 +155,7 @@ if (!userEmail) window.location.href = 'index.html';
 
 async function loadQuests() {
   try {
-    const r = await fetch(`http://localhost:3000/get-quests?email=${encodeURIComponent(userEmail)}`);
+    const r = await fetch(`/get-quests?email=${encodeURIComponent(userEmail)}`);
     const d = await r.json();
     const grid = document.getElementById('questsGrid');
     if (!d.quests?.length) { grid.innerHTML = '<p style="color:#aaa;">No quests available yet.</p>'; return; }
@@ -178,7 +178,7 @@ async function loadQuests() {
 
 async function loadRecs() {
   try {
-    const r = await fetch('http://localhost:3000/get-study-recommendations', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: userEmail }) });
+    const r = await fetch('/get-study-recommendations', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: userEmail }) });
     const d = await r.json();
     const el = document.getElementById('recsList');
     if (!d.recommendations?.length) { el.innerHTML = '<p style="color:#aaa;font-size:13px;">Complete your profile and join sessions to get personalized recommendations.</p>'; return; }

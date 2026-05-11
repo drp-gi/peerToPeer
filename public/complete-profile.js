@@ -332,7 +332,7 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/complete-profile', {
+        const res = await fetch('/complete-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
