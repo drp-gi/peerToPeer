@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const API = '';
+  const API = 'http://localhost:3000';
 
   function updateAllCreditDisplays(amount) {
     const rounded = Math.round(Number(amount));

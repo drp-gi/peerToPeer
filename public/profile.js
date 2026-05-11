@@ -64,7 +64,7 @@ async function loadProfileStats() {
     const email = localStorage.getItem('userEmail');
     if (!email) return;
     try {
-        const res  = await fetch('/get-profile-stats', {
+        const res  = await fetch('http://localhost:3000/get-profile-stats', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -96,7 +96,7 @@ async function loadCreditsFromServer() {
     const email = localStorage.getItem('userEmail');
     if (!email) return;
     try {
-        const res  = await fetch('/get-user-data', {
+        const res  = await fetch('http://localhost:3000/get-user-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -370,7 +370,7 @@ async function saveProfile() {
 
     if (email) {
         try {
-            const res = await fetch('/complete-profile', {
+            const res = await fetch('http://localhost:3000/complete-profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -410,7 +410,7 @@ function setupLogout() {
         const credits = getCredits();
         if (email) {
             try {
-                await fetch('/update-credits', {
+                await fetch('http://localhost:3000/update-credits', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, credits })
                 });

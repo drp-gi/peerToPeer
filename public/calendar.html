@@ -144,14 +144,14 @@ const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 async function loadCredits() {
   try {
-    const r = await (await fetch('/get-user-data', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:userEmail }) })).json();
+    const r = await (await fetch('http://localhost:3000/get-user-data', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:userEmail }) })).json();
     if (r.success) document.getElementById('topCreditsBadge').textContent = r.credits;
   } catch(e) {}
 }
 
 async function loadSessions() {
   try {
-    const r = await (await fetch('/get-calendar-sessions', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:userEmail }) })).json();
+    const r = await (await fetch('http://localhost:3000/get-calendar-sessions', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:userEmail }) })).json();
     allSessions = r.sessions || [];
     renderCalendar();
     renderList(allSessions);
@@ -250,7 +250,7 @@ function renderList(sessions) {
 async function startSession(sessionId, peerEmail, subject) {
   const myName = localStorage.getItem('tandem_username') || localStorage.getItem('userName') || userEmail;
   try {
-    const r = await (await fetch('/start-session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId, tutorEmail:userEmail }) })).json();
+    const r = await (await fetch('http://localhost:3000/start-session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId, tutorEmail:userEmail }) })).json();
     if (r.success) {
       showToast('Session started!');
       await loadSessions();
