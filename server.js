@@ -192,37 +192,49 @@ app.post('/reset-password', (req, res) => {
 });
 
 // ─── AI CHAT ──────────────────────────────────────────────────
+
 app.post('/ai-chat', async (req, res) => {
   const { messages, systemPrompt } = req.body;
   if (!messages?.length) return res.json({ success: false, reply: null });
   const apiKey = process.env.GEMINI_API_KEY;
   console.log('AI chat called, apiKey present:', !!apiKey);
-
   if (!apiKey) return res.json({ success: false, reply: null });
-  try {
+
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+
+  const callGemini = async (model) => {
     const history = messages.slice(0, -1).map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
     }));
     const lastMsg = messages[messages.length - 1].content;
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt || 'You are a helpful academic tutor assistant.' }] },
         contents: [...history, { role: 'user', parts: [{ text: lastMsg }] }],
-        generationConfig: {
-          temperature: 0.85,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        },
+        generationConfig: { temperature: 0.85, topP: 0.95, maxOutputTokens: 1024 },
       })
     });
-    const data = await response.json();
-    console.log('Gemini response:', JSON.stringify(data).slice(0, 300));
+    return response.json();
+  };
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response. Please try again.";
-    res.json({ success: true, reply });
+  try {
+    let data = null;
+    for (const model of models) {
+      data = await callGemini(model);
+      if (data?.error?.code === 503 || data?.error?.code === 429) {
+        console.log(`${model} failed (${data.error.code}), retrying in 2s...`);
+        await new Promise(r => setTimeout(r, 2000));
+        data = await callGemini(model);
+      }
+      if (!data?.error) break;
+      console.log(`${model} failed (${data.error.code}), trying next model...`);
+    }
+    console.log('Gemini response:', JSON.stringify(data).slice(0, 300));
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    res.json({ success: !!reply, reply });
   } catch(e) { console.error('AI chat error:', e); res.json({ success: false, reply: null }); }
 });
 
