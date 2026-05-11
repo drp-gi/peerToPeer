@@ -192,17 +192,14 @@ app.post('/reset-password', (req, res) => {
 });
 
 // ─── AI CHAT ──────────────────────────────────────────────────
-
 app.post('/ai-chat', async (req, res) => {
   const { messages, systemPrompt } = req.body;
   if (!messages?.length) return res.json({ success: false, reply: null });
-  const apiKey = process.env.GEMINI_API_KEY;
-  console.log('AI chat called, apiKey present:', !!apiKey);
-  if (!apiKey) return res.json({ success: false, reply: null });
 
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+  const keys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2].filter(Boolean);
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 
-  const callGemini = async (model) => {
+  const callGemini = async (model, apiKey) => {
     const history = messages.slice(0, -1).map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
@@ -222,17 +219,18 @@ app.post('/ai-chat', async (req, res) => {
 
   try {
     let data = null;
-    for (const model of models) {
-      data = await callGemini(model);
-      if (data?.error?.code === 503 || data?.error?.code === 429) {
-        console.log(`${model} failed (${data.error.code}), retrying in 2s...`);
-        await new Promise(r => setTimeout(r, 3000));
-        data = await callGemini(model);
+    // Try every key + model combination until one works
+    outer: for (const apiKey of keys) {
+      for (const model of models) {
+        data = await callGemini(model, apiKey);
+        if (data?.error?.code === 429 || data?.error?.code === 503) {
+          console.log(`${model} key:${apiKey.slice(-6)} failed (${data.error.code}), trying next...`);
+          continue;
+        }
+        if (!data?.error) break outer; // success
       }
-      if (!data?.error) break;
-      console.log(`${model} failed (${data.error.code}), trying next model...`);
     }
-    console.log('Gemini response:', JSON.stringify(data).slice(0, 300));
+    console.log('Gemini response:', JSON.stringify(data).slice(0, 200));
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
     res.json({ success: !!reply, reply });
   } catch(e) { console.error('AI chat error:', e); res.json({ success: false, reply: null }); }
