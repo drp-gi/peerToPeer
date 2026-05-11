@@ -15,7 +15,8 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
-const db = new Database('tandem.db');
+const db = new Database(process.env.DB_PATH || 'tandem.db');
+
 db.pragma('journal_mode = WAL');
 console.log('📁 Database:', path.resolve('tandem.db'));
 
@@ -1195,7 +1196,7 @@ function initDatabase() {
   logStats();
 }
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   initDatabase();
