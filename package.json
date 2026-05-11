@@ -13,14 +13,10 @@
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.9.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-session": "^1.19.0",
-    "mysql2": "^3.22.2",
-    "socket.io": "^4.7.4",
-    "sqlite3": "^6.0.1"
+    "socket.io": "^4.7.4"
   }
 }
