@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: tandem
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    disk:
+      name: tandem-db
+      mountPath: /data
+      sizeGB: 1
