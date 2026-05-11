@@ -15,6 +15,16 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/debug-files', (req, res) => {
+  const fs = require('fs');
+  const iconsPath = path.join(__dirname, 'public', 'icons');
+  try {
+    const files = fs.readdirSync(iconsPath);
+    res.json({ iconsPath, files });
+  } catch(e) {
+    res.json({ error: e.message, iconsPath });
+  }
+});
 
 const db = new Database(process.env.DB_PATH || 'tandem.db');
 
