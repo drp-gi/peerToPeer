@@ -200,7 +200,7 @@ app.post('/ai-chat', async (req, res) => {
   console.log('AI chat called, apiKey present:', !!apiKey);
   if (!apiKey) return res.json({ success: false, reply: null });
 
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
 
   const callGemini = async (model) => {
     const history = messages.slice(0, -1).map(m => ({
@@ -226,7 +226,7 @@ app.post('/ai-chat', async (req, res) => {
       data = await callGemini(model);
       if (data?.error?.code === 503 || data?.error?.code === 429) {
         console.log(`${model} failed (${data.error.code}), retrying in 2s...`);
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 3000));
         data = await callGemini(model);
       }
       if (!data?.error) break;
