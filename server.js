@@ -18,7 +18,8 @@ app.use(express.static('public'));
 const db = new Database(process.env.DB_PATH || 'tandem.db');
 
 db.pragma('journal_mode = WAL');
-console.log('📁 Database:', path.resolve('tandem.db'));
+console.log('📁 Database:', path.resolve(process.env.DB_PATH || 'tandem.db'));
+
 
 // ─── Core helpers ─────────────────────────────────────────────
 function query(sql, params = []) {
