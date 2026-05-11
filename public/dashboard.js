@@ -659,6 +659,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') closeProfileModal();
   });
  
+  // Dark mode toggle
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDark);
+    });
+  }
+ 
+  // Load dark mode preference
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode === 'true') {
+    document.body.classList.add('dark-mode');
+  }
+ 
   setInterval(() => {
     refreshAllRequests();
     checkActiveSession();

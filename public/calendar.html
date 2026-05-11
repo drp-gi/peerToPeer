@@ -98,6 +98,9 @@
           <div class="notif-list" id="notifList"></div>
         </div>
       </div>
+      <div class="dark-mode-toggle" id="darkModeToggle">
+        <div class="theme-icon"></div>
+      </div>
     </div>
 
     <div class="pg-title">Schedule</div>
@@ -261,7 +264,27 @@ function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.
 function showToast(msg) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.classList.add('toast-show'); setTimeout(() => t.classList.remove('toast-show'), 3500); }
 
 document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.href = 'index.html'; });
-document.addEventListener('DOMContentLoaded', () => { loadCredits(); loadSessions(); setInterval(loadSessions, 30000); });
+document.addEventListener('DOMContentLoaded', () => { 
+  loadCredits(); 
+  loadSessions(); 
+  setInterval(loadSessions, 30000);
+  
+  // Dark mode toggle
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDark);
+    });
+  }
+
+  // Load dark mode preference
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode === 'true') {
+    document.body.classList.add('dark-mode');
+  }
+});
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="credit-sync.js"></script>
