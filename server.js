@@ -172,7 +172,7 @@ app.post('/forgot-password', (req, res) => {
     const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
     query(`INSERT INTO password_resets (email,token,expires_at,used,created_at) VALUES (?,?,?,0,datetime('now','localtime'))`,
       [email, token, expires]);
-    const resetLink = `http://localhost:3000/index.html?token=${token}`;
+    const resetLink = `${process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN : 'http://localhost:3000'}/index.html?token=${token}`;
     console.log(`Password reset for ${email}: ${resetLink}`);
     res.json({ success: true, message: 'Reset link generated', resetLink, token });
   } catch(e) { console.error(e); res.json({ success: false, message: 'Server error' }); }
