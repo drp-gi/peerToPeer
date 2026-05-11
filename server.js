@@ -192,20 +192,24 @@ app.post('/reset-password', (req, res) => {
 app.post('/ai-chat', async (req, res) => {
   const { messages, systemPrompt } = req.body;
   if (!messages?.length) return res.json({ success: false, reply: null });
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.json({ success: false, reply: null });
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const history = messages.slice(0, -1).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+    const lastMsg = messages[messages.length - 1].content;
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 800,
-        system: systemPrompt || 'You are a helpful academic tutor assistant.',
-        messages: messages.map(m => ({ role: m.role, content: m.content }))
+        system_instruction: { parts: [{ text: systemPrompt || 'You are a helpful academic tutor assistant.' }] },
+        contents: [...history, { role: 'user', parts: [{ text: lastMsg }] }]
       })
     });
     const data = await response.json();
-    const reply = data.content?.[0]?.text || "I couldn't generate a response. Please try again.";
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response. Please try again.";
     res.json({ success: true, reply });
   } catch(e) { console.error('AI chat error:', e); res.json({ success: false, reply: null }); }
 });
