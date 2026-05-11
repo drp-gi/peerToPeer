@@ -6,6 +6,7 @@ const path     = require('path');
 const http     = require('http');
 const crypto   = require('crypto');
 const { Server } = require('socket.io');
+require('dotenv').config();
 
 const app    = express();
 const server = http.createServer(app);
@@ -195,6 +196,8 @@ app.post('/ai-chat', async (req, res) => {
   const { messages, systemPrompt } = req.body;
   if (!messages?.length) return res.json({ success: false, reply: null });
   const apiKey = process.env.GEMINI_API_KEY;
+  console.log('AI chat called, apiKey present:', !!apiKey);
+
   if (!apiKey) return res.json({ success: false, reply: null });
   try {
     const history = messages.slice(0, -1).map(m => ({
@@ -202,15 +205,22 @@ app.post('/ai-chat', async (req, res) => {
       parts: [{ text: m.content }]
     }));
     const lastMsg = messages[messages.length - 1].content;
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt || 'You are a helpful academic tutor assistant.' }] },
-        contents: [...history, { role: 'user', parts: [{ text: lastMsg }] }]
+        contents: [...history, { role: 'user', parts: [{ text: lastMsg }] }],
+        generationConfig: {
+          temperature: 0.85,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        },
       })
     });
     const data = await response.json();
+    console.log('Gemini response:', JSON.stringify(data).slice(0, 300));
+
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response. Please try again.";
     res.json({ success: true, reply });
   } catch(e) { console.error('AI chat error:', e); res.json({ success: false, reply: null }); }
@@ -429,6 +439,14 @@ app.post('/check-unrated-session', (req, res) => {
     }
     res.json({ success: true, hasUnrated: false });
   } catch(e) { res.json({ success: false, hasUnrated: false }); }
+});
+
+
+app.get('/debug-models', async (req, res) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+  const d = await r.json();
+  res.json(d.models?.map(m => m.name) || d);
 });
 
 // ─── ADD THIS ROUTE to server.js (before initDatabase) ───────
