@@ -14,7 +14,7 @@ const io     = new Server(server, { cors: { origin: '*', methods: ['GET','POST']
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const db = new Database(process.env.DB_PATH || 'tandem.db');
 
@@ -526,7 +526,7 @@ app.post('/accept-session-request', (req, res) => {
     if (!sess.length) return res.json({ success: false, message: 'Session not found' });
     const s = sess[0];
     const now = new Date().toISOString();
-    query(`UPDATE sessions SET status='confirmed', scheduled_time = (SELECT COALESCE(preferred_time, datetime('now','localtime')) FROM sessions WHERE id=?), updated_at=datetime('now','localtime') WHERE id=?`, [sessionId, sessionId]);
+query(`UPDATE sessions SET status='confirmed', scheduled_time = COALESCE(preferred_time, datetime('now','localtime')), updated_at=datetime('now','localtime') WHERE id=?`, [sessionId]);
       const updatedSess = query('SELECT scheduled_time FROM sessions WHERE id=?', [sessionId])[0];
       const confirmedTime = updatedSess?.scheduled_time || s.preferred_time;
     
