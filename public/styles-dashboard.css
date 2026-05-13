@@ -850,7 +850,7 @@ body.dark-mode .mentor-badge-chip {
 body.dark-mode .modal-badge,
 body.dark-mode .modal-match-chip {
   background: rgba(255, 255, 255, 0.16) !important;
-  color: #0f172a !important;
+  color: #ffffff !important;
   border-color: transparent !important;
 }
 

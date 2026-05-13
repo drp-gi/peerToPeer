@@ -127,17 +127,17 @@ function renderMentors(mentors) {
           ${mentor.matchScore ? `<div class="match-pill">${Math.round(mentor.matchScore)}%</div>` : ''}
         </div>
         <div class="mentor-card-info">
-              <div class="mentor-card-name">
-                ${mentor.name || mentor.username || 'Unknown'}
-                <span style="display:block; font-size:12px; font-weight:400; color:#94a3b8; margin-top:1px;">
-                  @${mentor.username || mentor.name || ''}
-                </span>
-              </div>
-          <div class="mentor-card-rating">
-            <span class="stars-display">${stars}</span>
-            <span class="rating-val">${rating.toFixed(1)}</span>
+          <div class="mentor-card-name-row">
+            <span class="mentor-card-name">${mentor.name || mentor.username || 'Unknown'}</span>
+            <span class="mentor-card-username">@${mentor.username || mentor.name || ''}</span>
           </div>
-          <span class="mentor-badge-chip" style="background:${badge.bg};color:${badge.color};">${badge.label}</span>
+          <div class="mentor-card-meta-row">
+            <div class="mentor-card-rating">
+              <span class="stars-display">${stars}</span>
+              <span class="rating-val">${rating.toFixed(1)}</span>
+            </div>
+            <span class="mentor-badge-chip" style="background:${badge.bg};color:${badge.color};">${badge.label}</span>
+          </div>
         </div>
       </div>
  
@@ -148,12 +148,7 @@ function renderMentors(mentors) {
           ? mentor.skills.slice(0, 4).map(s => `<span class="skill-chip">${s}</span>`).join('')
           : '<span class="skill-chip muted">No skills listed</span>'}
       </div>
- 
-      <button class="mentor-connect-btn ${isPending ? 'btn-pending' : ''}"
-              onclick="event.stopPropagation(); ${isPending ? '' : `openMentorModal(window._mentorList[${idx}])`}"
-              ${isPending ? 'disabled' : ''}>
-        ${isPending ? 'Request Pending' : 'View Profile & Connect'}
-      </button>
+      ${isPending ? '<div class="mentor-status-pill">Request Pending</div>' : ''}
     </div>`;
   }).join('');
 }
@@ -224,12 +219,13 @@ document.getElementById('modalName').innerHTML = `
   const badgeEl = document.getElementById('modalBadge');
   badgeEl.textContent = badge.label;
   badgeEl.style.background = badge.bg;
-  badgeEl.style.color = badge.color;
+  badgeEl.style.color = 'white';
  
   const matchEl = document.getElementById('modalMatch');
   if (mentor.matchScore) {
     matchEl.textContent = `${Math.round(mentor.matchScore)}% Match`;
     matchEl.style.display = 'inline-block';
+    matchEl.style.color = 'white';
   } else {
     matchEl.style.display = 'none';
   }

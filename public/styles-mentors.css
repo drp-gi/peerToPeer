@@ -97,15 +97,15 @@
   border-color: #29b6d8;
 }
 
-.mentor-card-top { display: flex; align-items: center; gap: 14px; padding: 18px 18px 12px; }
+.mentor-card-top { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
 .mentor-avatar-wrap { position: relative; flex-shrink: 0; }
-.mentor-avatar-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #e0f7fd; }
+.mentor-avatar-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 1.5px solid #e0f7fd; }
 .mentor-avatar-initials {
-  width: 60px; height: 60px; border-radius: 50%;
+  width: 48px; height: 48px; border-radius: 50%;
   background: linear-gradient(135deg, #e0f7fd, #dbeafe);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; font-weight: 800; color: #1a8fad;
-  border: 2px solid #e0f7fd; font-family: 'Baloo 2', sans-serif;
+  font-size: 1.2rem; font-weight: 800; color: #1a8fad;
+  border: 1.5px solid #e0f7fd; font-family: 'Baloo 2', sans-serif;
 }
 .match-pill {
   position: absolute; bottom: -4px; right: -6px;
@@ -114,30 +114,34 @@
   padding: 2px 7px; border-radius: 8px; border: 2px solid #fff;
   white-space: nowrap; font-family: 'Baloo 2', sans-serif;
 }
-.mentor-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.mentor-card-name { font-size: 15px; font-weight: 700; color: #1a2a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Baloo 2', sans-serif; }
-.mentor-card-rating { display: flex; align-items: center; gap: 5px; }
-.stars-display { color: #f59e0b; font-size: 13px; letter-spacing: 0.5px; }
-.rating-val { font-size: 12px; color: #64748b; font-weight: 600; }
-.mentor-badge-chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 6px; width: fit-content; font-family: 'Baloo 2', sans-serif; }
+.mentor-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mentor-card-name-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.mentor-card-name { font-size: 13px; font-weight: 700; color: #1a2a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Baloo 2', sans-serif; }
+.mentor-card-username { font-size: 11px; color: #94a3b8; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mentor-card-meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mentor-card-rating { display: flex; align-items: center; gap: 4px; }
+.stars-display { color: #f59e0b; font-size: 11px; letter-spacing: 0.5px; }
+.rating-val { font-size: 10px; color: #64748b; font-weight: 600; }
+.mentor-badge-chip { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; width: fit-content; font-family: 'Baloo 2', sans-serif; }
 
-.mentor-card-bio { font-size: 13px; color: #64748b; line-height: 1.5; padding: 0 18px 10px; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mentor-card-bio { font-size: 12px; color: #64748b; line-height: 1.45; padding: 0 14px 8px; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-.mentor-skills-row { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 18px 14px; }
-.skill-chip { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 7px; padding: 3px 10px; font-size: 11px; font-weight: 600; font-family: 'Baloo 2', sans-serif; }
+.mentor-skills-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 14px 10px; }
+.skill-chip { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 7px; padding: 3px 9px; font-size: 10px; font-weight: 600; font-family: 'Baloo 2', sans-serif; }
 .skill-chip.muted { background: #f8fafc; color: #94a3b8; border-color: #f1f5f9; }
 
-.mentor-connect-btn {
-  margin: 0 18px 18px;
-  padding: 11px;
-  background: linear-gradient(135deg, #29b6d8, #1a8fad);
-  color: #fff; border: none; border-radius: 10px;
-  font-size: 13px; font-weight: 700; cursor: pointer;
-  transition: opacity 0.15s, transform 0.12s;
-  font-family: 'Baloo 2', sans-serif; text-align: center;
+.mentor-status-pill {
+  display: inline-block;
+  margin: 0 14px 14px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Baloo 2', sans-serif;
 }
-.mentor-connect-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-.mentor-connect-btn.btn-pending { background: #f1f5f9 !important; color: #94a3b8 !important; cursor: not-allowed !important; transform: none !important; }
 
 /* ── Mentor modal ── */
 .tandem-modal-overlay {
