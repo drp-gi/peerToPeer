@@ -189,6 +189,7 @@ function renderView() {
     // Always pull live stats and credits
     loadProfileStats();
     loadCreditsFromServer();
+    loadMyRatings();
 }
 
 // ── EDIT mode ─────────────────────────────────────────────────
@@ -403,6 +404,62 @@ function switchToView() {
     renderView();
 }
 
+// ─── MY RATINGS (tutor view) ──────────────────────────────────
+async function loadMyRatings() {
+    const email = localStorage.getItem('userEmail');
+    if (!email) return;
+    try {
+        const res = await fetch('http://localhost:3000/get-my-ratings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!data.success || !data.ratings.length) return;
+
+        const box = document.getElementById('myRatingsBox');
+        const list = document.getElementById('myRatingsList');
+        const badge = document.getElementById('ratingSummaryBadge');
+        if (!box || !list) return;
+
+        box.style.display = 'block';
+        if (badge && data.summary.count > 0) {
+            badge.textContent = `★ ${data.summary.avg} avg · ${data.summary.count} rating${data.summary.count !== 1 ? 's' : ''}`;
+        }
+
+        function renderStarsText(r) {
+            const full = Math.floor(r); const empty = 5 - full;
+            return '★'.repeat(full) + '☆'.repeat(empty);
+        }
+
+        list.innerHTML = data.ratings.map(r => {
+            const dateStr = r.created_at
+                ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : '';
+            const tags = (() => { try { return JSON.parse(r.feedback_tags || '[]'); } catch(e) { return []; } })();
+            const initials = (r.learner_name || '?').charAt(0).toUpperCase();
+            const avatarHtml = r.learner_pic
+                ? `<img src="${r.learner_pic}" alt="${initials}">`
+                : initials;
+
+            return `
+            <div class="rating-card">
+              <div class="rating-card-top">
+                <div class="rating-card-avatar">${avatarHtml}</div>
+                <div class="rating-card-info">
+                  <div class="rating-card-learner">${r.learner_name || r.learner_username || 'Learner'}</div>
+                  ${r.subject ? `<div class="rating-card-subject">📚 ${r.subject}</div>` : ''}
+                </div>
+                <div class="rating-card-stars">${renderStarsText(r.rating || 0)} <span style="font-size:12px;color:#555;">${parseFloat(r.rating||0).toFixed(1)}</span></div>
+                <div class="rating-card-date">${dateStr}</div>
+              </div>
+              ${r.comment ? `<div class="rating-card-comment">"${r.comment}"</div>` : ''}
+              ${tags.length ? `<div class="rating-card-tags">${tags.map(t=>`<span class="rating-tag">${t}</span>`).join('')}</div>` : ''}
+            </div>`;
+        }).join('');
+    } catch(e) { console.warn('Could not load ratings:', e); }
+}
+
 function setupLogout() {
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
         if (!confirm('Are you sure you want to log out?')) return;
@@ -442,22 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     setupLogout();
-
-    // Dark mode toggle
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('darkMode', isDark);
-      });
-    }
-
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode === 'true') {
-      document.body.classList.add('dark-mode');
-    }
 
     // Refresh stats every 30 seconds
     setInterval(() => { loadProfileStats(); loadCreditsFromServer(); }, 30000);

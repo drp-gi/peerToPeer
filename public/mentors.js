@@ -1,3 +1,11 @@
+// Encrypt email
+function encryptEmail(email) {
+  if (!email || !email.includes('@')) return email;
+  const [local, domain] = email.split('@');
+  if (local.length <= 1) return email;
+  return local[0] + '*'.repeat(local.length - 1) + '@' + domain;
+}
+
 // Credits system
 function getCredits() {
   const stored = localStorage.getItem('tandem_credits');
@@ -7,12 +15,12 @@ function getCredits() {
   }
   return parseInt(stored, 10);
 }
- 
+
 function updateCreditsDisplay(amount) {
-  const el = document.getElementById('topCreditsBadge');
-  if (el) el.textContent = amount;
+  const totalEl = document.getElementById('topCreditsBadge');
+  if (totalEl) totalEl.textContent = amount;
 }
- 
+
 function showToast(message) {
   const toast = document.getElementById('toast');
   if (!toast) return;
@@ -20,323 +28,167 @@ function showToast(message) {
   toast.classList.add('toast-show');
   setTimeout(() => toast.classList.remove('toast-show'), 3500);
 }
- 
+
+// Check if profile is completed
 function checkProfileCompletion() {
   const profileCompleted = localStorage.getItem('profile_completed') === 'true';
   const hasSkills = localStorage.getItem('tandem_skills') && JSON.parse(localStorage.getItem('tandem_skills') || '[]').length > 0;
   const hasGrowth = localStorage.getItem('tandem_growth') && JSON.parse(localStorage.getItem('tandem_growth') || '[]').length > 0;
   const hasGrade = localStorage.getItem('tandem_grade');
+  
   if (!profileCompleted || !hasSkills || !hasGrowth || !hasGrade) {
     window.location.href = 'complete-profile.html';
     return false;
   }
   return true;
 }
- 
-// ============ DATA ============
-let allMentors = [];
-// Track pending requests from the server (not localStorage — avoids stale data)
-let pendingEmails = new Set();
- 
-// ============ LOAD MENTORS ============
-async function loadMentors() {
+
+// Tinder-style Swipe Matching State
+let currentMatches = [];
+let currentIndex = 0;
+let swipedMentors = JSON.parse(localStorage.getItem('swipedMentors') || '{}');
+let allMentorsForList = [];
+
+// View toggle
+let currentView = 'swipe';
+
+async function loadSwipeMatches() {
   const email = localStorage.getItem('userEmail');
-  if (!email) { renderMentors([]); return; }
- 
-  try {
-    // Fetch matches and pending requests in parallel
-    const [matchRes, pendingRes] = await Promise.all([
-      fetch('http://localhost:3000/get-swipe-matches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      }),
-      fetch('http://localhost:3000/get-pending-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // get requests I SENT (as learner) — tutor_email is the mentor
-        // We'll use a different approach: check connection_requests where learner_email = me
-        body: JSON.stringify({ email })
-      })
-    ]);
- 
-    const matchData = await matchRes.json();
- 
-    // Filter out system/AI accounts
-    const SYSTEM_EMAILS = ['system', '__tandem_ai_bot__'];
-    allMentors = (matchData.matches || [])
-      .filter(m => !SYSTEM_EMAILS.includes(m.email) && m.email !== 'system')
-      .map(m => ({
-        ...m,
-        skills: Array.isArray(m.skills) ? m.skills
-          : (() => { try { return JSON.parse(m.skills || '[]'); } catch(e) { return []; } })(),
-        growth: Array.isArray(m.growth) ? m.growth
-          : (() => { try { return JSON.parse(m.growth || '[]'); } catch(e) { return []; } })(),
-      }));
-    allMentors.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
- 
-    // Users excluded by backend = already have pending/accepted requests with them
-    // The backend already removes them from matches, so anyone NOT in matches
-    // who was there before = pending. We track this via a separate endpoint.
-    // For now: pending is derived from what the backend already excluded.
-    // We reset pendingEmails each load so it stays fresh.
-    pendingEmails = new Set();
- 
-  } catch (error) {
-    console.error('Error loading mentors:', error);
-    allMentors = [];
+  if (!email) return;
+
+  const swipeLoading = document.getElementById('swipeLoading');
+  const swipeCardContainer = document.getElementById('swipeCardContainer');
+  const swipeEmpty = document.getElementById('swipeEmpty');
+
+  if (currentView === 'swipe') {
+    swipeLoading.style.display = 'flex';
+    swipeCardContainer.style.display = 'none';
+    swipeEmpty.style.display = 'none';
   }
- 
-  renderMentors(allMentors);
+
+  try {
+    const response = await fetch('http://localhost:3000/get-swipe-matches', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await response.json();
+
+    if (data.success && data.matches && data.matches.length > 0) {
+      allMentorsForList = data.matches;
+      
+      currentMatches = data.matches.filter(mentor => {
+        return !swipedMentors[mentor.email];
+      });
+      
+      currentMatches.sort((a, b) => b.matchScore - a.matchScore);
+      allMentorsForList.sort((a, b) => b.matchScore - a.matchScore);
+      
+      if (currentMatches.length > 0 && currentView === 'swipe') {
+        currentIndex = 0;
+        swipeLoading.style.display = 'none';
+        swipeCardContainer.style.display = 'block';
+        swipeEmpty.style.display = 'none';
+        displayCurrentMatch();
+        updateSwipeCounter();
+      } else if (currentView === 'swipe') {
+        swipeLoading.style.display = 'none';
+        swipeCardContainer.style.display = 'none';
+        swipeEmpty.style.display = 'flex';
+      }
+      
+      if (currentView === 'list') {
+        renderListMentors(allMentorsForList);
+      }
+    } else {
+      if (currentView === 'swipe') {
+        swipeLoading.innerHTML = `
+          <div class="no-matches">
+            <p>✨ No users available at the moment. Check back later!</p>
+          </div>
+        `;
+        swipeLoading.style.display = 'flex';
+        swipeCardContainer.style.display = 'none';
+        swipeEmpty.style.display = 'none';
+      } else {
+        renderListMentors([]);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading matches:', error);
+    if (currentView === 'swipe') {
+      swipeLoading.innerHTML = `
+        <div class="no-matches">
+          <p>Unable to load matches. Please try again later.</p>
+        </div>
+      `;
+    }
+  }
 }
- 
-// ============ RENDER MENTORS ============
-function renderMentors(mentors) {
-  const spinner = document.getElementById('listLoadingSpinner');
-  const grid = document.getElementById('mentorsGrid');
- 
-  if (spinner) spinner.style.display = 'none';
-  if (!grid) return;
-  grid.style.display = 'grid';
- 
-  if (!mentors || mentors.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <h3>No mentors found</h3>
-        <p>Try adjusting your search or check back later for new matches.</p>
-      </div>`;
+
+function displayCurrentMatch() {
+  if (currentIndex >= currentMatches.length) {
+    showNoMoreMatches();
     return;
   }
- 
-  window._mentorList = mentors;
-  grid.innerHTML = mentors.map((mentor, idx) => {
-    const isPending = pendingEmails.has(mentor.email);
-    const badge = getBadgeLabel(mentor.skills);
-    const rating = parseFloat(mentor.rating) || 0;
-    const stars = renderStars(rating);
- 
-    return `
-    <div class="mentor-card" onclick="openMentorModal(window._mentorList[${idx}])">
-      <div class="mentor-card-top">
-        <div class="mentor-avatar-wrap">
-          ${mentor.profile_pic
-            ? `<img src="${mentor.profile_pic}" alt="${mentor.username || mentor.name}" class="mentor-avatar-img">`
-            : `<div class="mentor-avatar-initials">${(mentor.username || mentor.name || '?').charAt(0).toUpperCase()}</div>`
-          }
-          ${mentor.matchScore ? `<div class="match-pill">${Math.round(mentor.matchScore)}%</div>` : ''}
-        </div>
-        <div class="mentor-card-info">
-          <div class="mentor-card-name-row">
-            <span class="mentor-card-name">${mentor.name || mentor.username || 'Unknown'}</span>
-            <span class="mentor-card-username">@${mentor.username || mentor.name || ''}</span>
-          </div>
-          <div class="mentor-card-meta-row">
-            <div class="mentor-card-rating">
-              <span class="stars-display">${stars}</span>
-              <span class="rating-val">${rating.toFixed(1)}</span>
-            </div>
-            <span class="mentor-badge-chip" style="background:${badge.bg};color:${badge.color};">${badge.label}</span>
-          </div>
-        </div>
-      </div>
- 
-      <p class="mentor-card-bio">${mentor.bio || 'Ready to help you learn and grow!'}</p>
- 
-      <div class="mentor-skills-row">
-        ${mentor.skills && mentor.skills.length
-          ? mentor.skills.slice(0, 4).map(s => `<span class="skill-chip">${s}</span>`).join('')
-          : '<span class="skill-chip muted">No skills listed</span>'}
-      </div>
-      ${isPending ? '<div class="mentor-status-pill">Request Pending</div>' : ''}
-    </div>`;
-  }).join('');
-}
- 
-// ============ FILTER & SORT ============
-function applyFilterSort() {
-  const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase();
-  const sortBy = document.getElementById('sortSelect')?.value || 'match';
- 
-  let results = [...allMentors];
- 
-  if (searchTerm) {
-    results = results.filter(m =>
-      (m.username && m.username.toLowerCase().includes(searchTerm)) ||
-      (m.name && m.name.toLowerCase().includes(searchTerm)) ||
-      (m.skills && m.skills.some(s => s.toLowerCase().includes(searchTerm)))
-    );
-  }
- 
-  if (sortBy === 'match') results.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-  else if (sortBy === 'rating') results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-  else if (sortBy === 'name') results.sort((a, b) => (a.username || a.name || '').localeCompare(b.username || b.name || ''));
- 
-  renderMentors(results);
-}
- 
-// ============ BADGE ============
-function getBadgeLabel(skills) {
-  const count = (skills && skills.length) || 0;
-  if (count >= 8) return { label: 'Expert', color: '#7F77DD', bg: '#EEEDFE' };
-  if (count >= 4) return { label: 'Average', color: '#185FA5', bg: '#E6F1FB' };
-  return { label: 'Foundational', color: '#0F6E56', bg: '#E1F5EE' };
-}
- 
-function renderStars(rating) {
-  const full = Math.floor(rating);
-  const half = rating % 1 >= 0.5 ? 1 : 0;
-  const empty = 5 - full - half;
-  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(empty);
-}
- 
-// ============ MENTOR PROFILE MODAL ============
-function openMentorModal(mentor) {
-  const overlay = document.getElementById('mentorModalOverlay');
-  if (overlay.parentElement !== document.body) document.body.appendChild(overlay);
-  const modal = document.getElementById('mentorModal');
- 
-  const avatarEl = document.getElementById('modalAvatar');
-  if (mentor.profile_pic) {
-    avatarEl.innerHTML = `<img src="${mentor.profile_pic}" alt="${mentor.username || mentor.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  } else {
-    avatarEl.innerHTML = `<span style="font-size:2rem;font-weight:600;color:#185FA5;">${(mentor.username || mentor.name || '?').charAt(0).toUpperCase()}</span>`;
-  }
- 
 
-document.getElementById('modalName').innerHTML = `
-  ${mentor.name || mentor.username || 'Unknown'}
-  <span style="display:block; font-size:14px; font-weight:400; color:#778899; margin-top:2px;">
-    @${mentor.username || mentor.name || ''}
-  </span>`;
-  document.getElementById('modalBio').textContent = mentor.bio || 'Passionate about helping others learn and grow.';
- 
-  const rating = parseFloat(mentor.rating) || 0;
-  document.getElementById('modalRatingStars').textContent = renderStars(rating);
-  document.getElementById('modalRatingNum').textContent = rating.toFixed(1);
- 
-  const badge = getBadgeLabel(mentor.skills);
-  const badgeEl = document.getElementById('modalBadge');
-  badgeEl.textContent = badge.label;
-  badgeEl.style.background = badge.bg;
-  badgeEl.style.color = 'white';
- 
-  const matchEl = document.getElementById('modalMatch');
-  if (mentor.matchScore) {
-    matchEl.textContent = `${Math.round(mentor.matchScore)}% Match`;
-    matchEl.style.display = 'inline-block';
-    matchEl.style.color = 'white';
+  const mentor = currentMatches[currentIndex];
+  const swipeCard = document.getElementById('swipeCard');
+  
+  swipeCard.classList.remove('swipe-left-animation', 'swipe-right-animation');
+  void swipeCard.offsetWidth;
+  
+  const swipeAvatar = document.getElementById('swipeAvatar');
+  if (mentor.profile_pic) {
+    swipeAvatar.innerHTML = `<img src="${mentor.profile_pic}" alt="${mentor.username || mentor.name}">`;
   } else {
-    matchEl.style.display = 'none';
+    swipeAvatar.innerHTML = `<svg viewBox="0 0 60 60" fill="none">
+      <circle cx="30" cy="22" r="13" fill="#a0c4d8"/>
+      <ellipse cx="30" cy="52" rx="20" ry="14" fill="#a0c4d8"/>
+    </svg>`;
   }
- 
-  const skillsEl = document.getElementById('modalSkills');
-  skillsEl.innerHTML = mentor.skills && mentor.skills.length
-    ? mentor.skills.map(s => `<span class="modal-skill-tag">${s}</span>`).join('')
-    : '<span style="color:#aaa;font-size:13px;">No skills listed</span>';
- 
-  const subjectRatingsEl = document.getElementById('modalSubjectRatings');
-  if (mentor.skills && mentor.skills.length && rating > 0) {
-    subjectRatingsEl.innerHTML = mentor.skills.slice(0, 4).map(skill => {
-      const variance = (Math.random() * 0.8 - 0.4);
-      const subRating = Math.min(5, Math.max(1, rating + variance)).toFixed(1);
-      return `<div class="subject-rating-row">
-        <span class="subject-name">${skill}</span>
-        <span class="subject-stars">${renderStars(parseFloat(subRating))}</span>
-        <span class="subject-num">${subRating}</span>
-      </div>`;
-    }).join('');
-    document.getElementById('modalSubjectSection').style.display = 'block';
-  } else {
-    document.getElementById('modalSubjectSection').style.display = 'none';
-  }
- 
-  document.getElementById('modalFeedback').innerHTML = rating >= 4
-    ? `<div class="feedback-pill">"Very helpful and patient!"</div>`
-    : rating >= 2
-    ? `<div class="feedback-pill">"Good at explaining concepts."</div>`
-    : `<div class="feedback-pill">No feedback yet — be the first to connect!</div>`;
- 
-  const isPending = pendingEmails.has(mentor.email);
-  const connectBtn = document.getElementById('modalConnectBtn');
-  if (isPending) {
-    connectBtn.textContent = 'Request Pending';
-    connectBtn.disabled = true;
-    connectBtn.style.opacity = '0.6';
-    connectBtn.onclick = null;
-  } else {
-    connectBtn.textContent = 'Connect';
-    connectBtn.disabled = false;
-    connectBtn.style.opacity = '1';
-    connectBtn.onclick = () => { closeMentorModal(); openSubjectModal(mentor); };
-  }
- 
-  document.getElementById('modalPassBtn').onclick = () => closeMentorModal();
- 
-  overlay.style.display = 'flex';
-  requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('modal-open')));
+  
+  document.getElementById('swipeName').textContent = mentor.username || mentor.name;
+  document.getElementById('swipeBio').textContent = mentor.bio || 'Passionate about helping others learn and grow.';
+  
+  const skillsHtml = mentor.skills && mentor.skills.length 
+    ? mentor.skills.slice(0, 5).map(s => `<span class="skill-tag">${s}</span>`).join('')
+    : '<span style="color:#aaa;">No skills listed</span>';
+  document.getElementById('swipeSkills').innerHTML = skillsHtml;
+  
+  const matchPercent = Math.round(mentor.matchScore || 0);
+  document.getElementById('swipeMatchBadge').innerHTML = `<span class="match-badge-large">${matchPercent}% Match</span>`;
 }
- 
-function closeMentorModal() {
-  const modal = document.getElementById('mentorModal');
-  const overlay = document.getElementById('mentorModalOverlay');
-  modal.classList.remove('modal-open');
-  setTimeout(() => { overlay.style.display = 'none'; }, 220);
+
+function updateSwipeCounter() {
+  const remaining = currentMatches.length - currentIndex;
+  document.getElementById('swipeCounter').textContent = remaining;
 }
- 
-// ============ SUBJECT MODAL ============
-function openSubjectModal(mentor) {
-  const subOverlay = document.getElementById('subjectModalOverlay');
-  if (subOverlay.parentElement !== document.body) document.body.appendChild(subOverlay);
-  const subModal = document.getElementById('subjectModal');
- 
-  document.getElementById('subjectMentorName').textContent = mentor.username || mentor.name;
-  document.getElementById('subjectMessage').value = '';
- 
-  const group = document.getElementById('subjectInput');
-  const skills = mentor.skills && mentor.skills.length ? mentor.skills : [];
-  group.classList.remove('error');
-  group.innerHTML = skills.length
-    ? skills.map(s => `
-        <label class="skill-checkbox-label">
-          <input type="checkbox" value="${s}"> ${s}
-        </label>`).join('')
-    : '<span style="color:#aaa;font-size:13px;">No skills listed</span>';
- 
-  group.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    cb.addEventListener('change', () => {
-      cb.parentElement.classList.toggle('checked', cb.checked);
-    });
-  });
- 
-  document.getElementById('subjectConfirmBtn').onclick = async () => {
-    const checked = [...group.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
-    const message = document.getElementById('subjectMessage').value.trim();
-    if (!checked.length) { group.classList.add('error'); return; }
-    group.classList.remove('error');
-    const subject = checked.join(', ');
-    closeSubjectModal();
-    await sendConnectionRequest(mentor, subject, message);
-  };
- 
-  document.getElementById('subjectCancelBtn').onclick = closeSubjectModal;
- 
-  subOverlay.style.display = 'flex';
-  requestAnimationFrame(() => requestAnimationFrame(() => subModal.classList.add('modal-open')));
+
+function showNoMoreMatches() {
+  const swipeCardContainer = document.getElementById('swipeCardContainer');
+  const swipeEmpty = document.getElementById('swipeEmpty');
+  
+  swipeCardContainer.style.display = 'none';
+  swipeEmpty.style.display = 'flex';
 }
- 
-function closeSubjectModal() {
-  const subModal = document.getElementById('subjectModal');
-  const subOverlay = document.getElementById('subjectModalOverlay');
-  subModal.classList.remove('modal-open');
-  setTimeout(() => { subOverlay.style.display = 'none'; }, 220);
-}
- 
-// ============ SEND CONNECTION REQUEST ============
-async function sendConnectionRequest(mentor, subject, message) {
+
+// SEND CONNECTION REQUEST (instead of auto-connect)
+async function swipeRight() {
+  if (currentIndex >= currentMatches.length) return;
+  
+  const mentor = currentMatches[currentIndex];
+  const swipeCard = document.getElementById('swipeCard');
+  
+  const subject = prompt(`What subject would you like to learn from ${mentor.username || mentor.name}?`);
+  if (!subject) return;
+  
+  const message = prompt('Optional: Add a message (e.g., your current level, what you want to focus on)');
+  
   const learnerEmail = localStorage.getItem('userEmail');
   const learnerGrade = localStorage.getItem('tandem_grade') || '';
- 
+  
   try {
     const response = await fetch('http://localhost:3000/send-connection-request', {
       method: 'POST',
@@ -350,15 +202,162 @@ async function sendConnectionRequest(mentor, subject, message) {
         tutorGradeLevel: mentor.grade_level || ''
       })
     });
- 
+    
     const data = await response.json();
- 
+    
     if (data.success) {
-      showToast(`✅ Connection request sent to ${mentor.username || mentor.name}!`);
-      pendingEmails.add(mentor.email);
-      renderMentors(allMentors);
-      // Refresh notifications immediately so the sent confirmation appears
-      if (typeof fetchNotifications === 'function') fetchNotifications();
+      showToast(`✅ Connection request sent to ${mentor.username || mentor.name}! They will respond soon.`);
+      
+      swipedMentors[mentor.email] = 'right';
+      localStorage.setItem('swipedMentors', JSON.stringify(swipedMentors));
+      
+      swipeCard.classList.add('swipe-right-animation');
+      
+      setTimeout(() => {
+        currentIndex++;
+        updateSwipeCounter();
+        
+        if (currentIndex < currentMatches.length) {
+          displayCurrentMatch();
+        } else {
+          showNoMoreMatches();
+        }
+      }, 300);
+    } else {
+      showToast(data.message || 'Failed to send request');
+    }
+  } catch (error) {
+    console.error('Error sending request:', error);
+    showToast('Error sending request');
+  }
+}
+
+async function swipeLeft() {
+  if (currentIndex >= currentMatches.length) return;
+  
+  const mentor = currentMatches[currentIndex];
+  const swipeCard = document.getElementById('swipeCard');
+  
+  swipedMentors[mentor.email] = 'left';
+  localStorage.setItem('swipedMentors', JSON.stringify(swipedMentors));
+  
+  swipeCard.classList.add('swipe-left-animation');
+  
+  setTimeout(() => {
+    currentIndex++;
+    updateSwipeCounter();
+    
+    if (currentIndex < currentMatches.length) {
+      displayCurrentMatch();
+    } else {
+      showNoMoreMatches();
+    }
+  }, 300);
+}
+
+// List View Functions
+function renderListMentors(mentors) {
+  const listLoadingSpinner = document.getElementById('listLoadingSpinner');
+  const mentorsGrid = document.getElementById('mentorsGrid');
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect = document.getElementById('sortSelect');
+
+  if (listLoadingSpinner) listLoadingSpinner.style.display = 'none';
+  if (mentorsGrid) mentorsGrid.style.display = 'grid';
+
+  let filteredMentors = [...mentors];
+
+  function filterAndSort() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    let results = filteredMentors;
+
+    if (searchTerm) {
+      results = results.filter(mentor => 
+        (mentor.username && mentor.username.toLowerCase().includes(searchTerm)) ||
+        (mentor.name && mentor.name.toLowerCase().includes(searchTerm)) ||
+        (mentor.skills && mentor.skills.some(s => s.toLowerCase().includes(searchTerm)))
+      );
+    }
+
+    const sortBy = sortSelect ? sortSelect.value : 'match';
+    if (sortBy === 'match') {
+      results.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+    } else if (sortBy === 'rating') {
+      results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (sortBy === 'name') {
+      results.sort((a, b) => ((a.username || a.name) || '').localeCompare((b.username || b.name) || ''));
+    }
+
+    if (mentorsGrid) {
+      mentorsGrid.innerHTML = results.map(mentor => `
+        <div class="mentor-card">
+          <div class="mentor-card-header">
+            <div class="mentor-avatar">
+              ${mentor.profile_pic ? 
+                `<img src="${mentor.profile_pic}" alt="${mentor.username || mentor.name}">` :
+                `<svg viewBox="0 0 60 60" fill="none">
+                  <circle cx="30" cy="22" r="13" fill="#a0c4d8"/>
+                  <ellipse cx="30" cy="52" rx="20" ry="14" fill="#a0c4d8"/>
+                </svg>`
+              }
+            </div>
+            <div class="mentor-info">
+              <div class="mentor-name">${mentor.username || mentor.name}</div>
+              <div class="mentor-rating">
+                <span class="rating-star">★</span> ${(mentor.rating || 0).toFixed(1)}
+              </div>
+              ${mentor.matchScore ? `<div class="match-badge">${Math.round(mentor.matchScore)}% Match</div>` : ''}
+            </div>
+          </div>
+          <div class="mentor-bio">${mentor.bio || 'Ready to learn and help others grow!'}</div>
+          <div class="mentor-skills">
+            ${mentor.skills && mentor.skills.length ? mentor.skills.slice(0, 5).map(s => `<span class="skill-tag">${s}</span>`).join('') : ''}
+          </div>
+          <button class="btn-book" onclick="sendConnectionRequest('${mentor.email}', '${mentor.username || mentor.name}', '${mentor.grade_level || ''}')">📚 Request Session</button>
+        </div>
+      `).join('');
+    }
+  }
+
+  if (searchInput) searchInput.addEventListener('input', filterAndSort);
+  if (sortSelect) sortSelect.addEventListener('change', filterAndSort);
+  filterAndSort();
+}
+
+// Send connection request from list view
+async function sendConnectionRequest(tutorEmail, tutorName, tutorGrade) {
+  const credits = getCredits();
+  if (credits < 1) {
+    showToast('❌ Not enough credits! You need at least 1 credit to request a session.');
+    return;
+  }
+
+  const subject = prompt(`What would you like to learn from ${tutorName}?`);
+  if (!subject) return;
+  
+  const message = prompt('Add a message for the tutor (optional)');
+
+  const learnerEmail = localStorage.getItem('userEmail');
+  const learnerGrade = localStorage.getItem('tandem_grade') || '';
+
+  try {
+    const response = await fetch('http://localhost:3000/send-connection-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        learnerEmail,
+        tutorEmail,
+        subject,
+        message: message || '',
+        learnerGradeLevel: learnerGrade,
+        tutorGradeLevel: tutorGrade
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast(`✅ Connection request sent to ${tutorName}!`);
     } else {
       showToast(data.message || 'Failed to send request.');
     }
@@ -367,15 +366,53 @@ async function sendConnectionRequest(mentor, subject, message) {
     showToast('Error sending request. Please try again.');
   }
 }
- 
-// ============ LOGOUT ============
+
+// Make functions global
+window.sendConnectionRequest = sendConnectionRequest;
+
+// Toggle between views
+function toggleView() {
+  const swipeView = document.getElementById('swipeView');
+  const listView = document.getElementById('listView');
+  const showListViewBtn = document.getElementById('showListViewBtn');
+  
+  if (currentView === 'swipe') {
+    currentView = 'list';
+    swipeView.style.display = 'none';
+    listView.style.display = 'block';
+    showListViewBtn.innerHTML = '🃏 Swipe View';
+    renderListMentors(allMentorsForList);
+  } else {
+    currentView = 'swipe';
+    swipeView.style.display = 'block';
+    listView.style.display = 'none';
+    showListViewBtn.innerHTML = '📋 List View';
+    loadSwipeMatches();
+  }
+}
+
+// Refresh matches
+function refreshMatches() {
+  if (confirm('Refresh will reset your swipe history and show you all users again. Continue?')) {
+    localStorage.removeItem('swipedMentors');
+    swipedMentors = {};
+    loadSwipeMatches();
+    showToast('🔄 Matches refreshed!');
+  }
+}
+
+// Logout
 async function setupLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
   if (!logoutBtn) return;
+
   logoutBtn.addEventListener('click', async () => {
-    if (!confirm('Are you sure you want to log out?')) return;
+    const confirmed = confirm('Are you sure you want to log out?');
+    if (!confirmed) return;
+
     const email = localStorage.getItem('userEmail');
     const currentCredits = getCredits();
+
     if (email && currentCredits) {
       try {
         await fetch('http://localhost:3000/update-credits', {
@@ -383,73 +420,82 @@ async function setupLogout() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, credits: currentCredits })
         });
-      } catch (err) { console.error('Error saving credits:', err); }
+      } catch(err) {
+        console.error('Error saving credits:', err);
+      }
     }
-    setTimeout(() => { localStorage.clear(); window.location.href = 'index.html'; }, 300);
+
+    setTimeout(() => {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }, 300);
   });
 }
- 
-// ============ LOAD CREDITS ============
+
+// Load credits
 async function loadCredits() {
   const email = localStorage.getItem('userEmail');
   if (!email) return;
+  
   try {
     const response = await fetch('http://localhost:3000/get-user-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
+    
     const data = await response.json();
     if (data.success) {
       localStorage.setItem('tandem_credits', data.credits || 5);
       updateCreditsDisplay(data.credits || 5);
     }
-  } catch (error) { console.error('Error loading credits:', error); }
+  } catch (error) {
+    console.error('Error loading credits:', error);
+  }
 }
- 
-// ============ GLOBALS ============
-window.openMentorModal = openMentorModal;
-window.closeMentorModal = closeMentorModal;
-window.closeSubjectModal = closeSubjectModal;
- 
-// ============ INIT ============
+
+// Initialize swipe buttons
+function initSwipeButtons() {
+  const leftBtn = document.getElementById('swipeLeftBtn');
+  const rightBtn = document.getElementById('swipeRightBtn');
+  const refreshBtn = document.getElementById('refreshMatchesBtn');
+  
+  if (leftBtn) leftBtn.addEventListener('click', swipeLeft);
+  if (rightBtn) rightBtn.addEventListener('click', swipeRight);
+  if (refreshBtn) refreshBtn.addEventListener('click', refreshMatches);
+  
+  document.addEventListener('keydown', (e) => {
+    if (currentView === 'swipe') {
+      if (e.key === 'ArrowLeft') {
+        swipeLeft();
+      } else if (e.key === 'ArrowRight') {
+        swipeRight();
+      }
+    }
+  });
+}
+
+// Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   const userEmail = localStorage.getItem('userEmail');
-  if (!userEmail) { window.location.href = 'index.html'; return; }
-  if (!checkProfileCompletion()) return;
- 
+  if (!userEmail) {
+    window.location.href = 'index.html';
+    return;
+  }
+  
+  if (!checkProfileCompletion()) {
+    return;
+  }
+
   await loadCredits();
   updateCreditsDisplay(getCredits());
   setupLogout();
- 
-  document.getElementById('searchInput')?.addEventListener('input', applyFilterSort);
-  document.getElementById('sortSelect')?.addEventListener('change', applyFilterSort);
- 
-  document.getElementById('mentorModalOverlay').addEventListener('click', (e) => {
-    if (e.target.id === 'mentorModalOverlay') closeMentorModal();
-  });
-  document.getElementById('subjectModalOverlay').addEventListener('click', (e) => {
-    if (e.target.id === 'subjectModalOverlay') closeSubjectModal();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeMentorModal(); closeSubjectModal(); }
-  });
- 
-  // Dark mode toggle
-  const darkModeToggle = document.getElementById('darkModeToggle');
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      const isDark = document.body.classList.contains('dark-mode');
-      localStorage.setItem('darkMode', isDark);
-    });
+  
+  const showListViewBtn = document.getElementById('showListViewBtn');
+  if (showListViewBtn) {
+    showListViewBtn.addEventListener('click', toggleView);
   }
-
-  // Load dark mode preference
-  const savedDarkMode = localStorage.getItem('darkMode');
-  if (savedDarkMode === 'true') {
-    document.body.classList.add('dark-mode');
-  }
- 
-  await loadMentors();
+  
+  await loadSwipeMatches();
+  initSwipeButtons();
 });

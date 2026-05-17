@@ -636,6 +636,67 @@ async function dashStartSession(sessionId, peerEmail, subject) {
 window.dashStartSession = dashStartSession;
 
 
+// ─── SESSION HISTORY ──────────────────────────────────────────
+async function loadSessionHistory() {
+  const email = localStorage.getItem('userEmail');
+  if (!email) return;
+  try {
+    const res = await fetch('http://localhost:3000/get-session-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!data.success || !data.sessions.length) return;
+
+    const section = document.getElementById('sessionHistorySection');
+    const list = document.getElementById('sessionHistoryList');
+    if (!section || !list) return;
+    section.style.display = 'block';
+
+    list.innerHTML = data.sessions.map(s => {
+      const elapsedSec = s.elapsed_seconds || 0;
+      const mins = Math.floor(elapsedSec / 60);
+      const durationLabel = mins >= 60
+        ? `${Math.floor(mins/60)}h ${mins%60}m`
+        : mins > 0 ? `${mins} min` : '< 1 min';
+
+      const isLearner = s.role === 'learner';
+      const roleIcon = isLearner ? '📖' : '🎓';
+      const roleLabel = isLearner ? 'Learner' : 'Tutor';
+
+      const dateStr = s.session_end
+        ? new Date(s.session_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : (s.scheduled_time ? new Date(s.scheduled_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
+
+      const ratingHtml = (s.rating && isLearner)
+        ? `<div class="sh-rating">★ ${parseFloat(s.rating).toFixed(1)}</div>`
+        : `<div class="sh-no-rating">—</div>`;
+
+      return `
+        <div class="sh-card">
+          <div class="sh-role-badge ${s.role}">
+            <div class="sh-role-icon">${roleIcon}</div>
+            <div class="sh-role-label">${roleLabel}</div>
+          </div>
+          <div class="sh-info">
+            <div class="sh-subject">${escapeHtml(s.subject || 'General Session')}</div>
+            <div class="sh-peer">with ${escapeHtml(s.peer_name || 'Peer')}</div>
+            <div class="sh-date">${dateStr}</div>
+          </div>
+          <div class="sh-right">
+            <div class="sh-duration">⏱ ${durationLabel}</div>
+            ${ratingHtml}
+          </div>
+        </div>`;
+    }).join('');
+
+    if (!data.sessions.length) {
+      list.innerHTML = `<div class="sh-empty"><div class="sh-empty-icon">📋</div>No completed sessions yet.</div>`;
+    }
+  } catch(e) { console.warn('Session history unavailable:', e); }
+}
+
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
   const userEmail = localStorage.getItem('userEmail');
@@ -650,6 +711,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadPendingSessionRequests();
   checkActiveSession();
   loadUpcomingSessions();
+  loadSessionHistory();
   setupLogout();
  
   document.getElementById('profileModalOverlay').addEventListener('click', (e) => {
@@ -658,22 +720,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeProfileModal();
   });
- 
-  // Dark mode toggle
-  const darkModeToggle = document.getElementById('darkModeToggle');
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      const isDark = document.body.classList.contains('dark-mode');
-      localStorage.setItem('darkMode', isDark);
-    });
-  }
- 
-  // Load dark mode preference
-  const savedDarkMode = localStorage.getItem('darkMode');
-  if (savedDarkMode === 'true') {
-    document.body.classList.add('dark-mode');
-  }
  
   setInterval(() => {
     refreshAllRequests();

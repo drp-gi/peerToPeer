@@ -6,48 +6,52 @@
   <title>Tandem - Ledger</title>
   <link rel="stylesheet" href="styles-dashboard.css" />
   <link rel="stylesheet" href="styles-ledger.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-notifications.css">
 </head>
 <body>
 
 <div class="wrap">
+
   <div class="sidebar">
-    <div class="logo" onclick="window.location.href='dashboard.html'">
-      <div class="logo-icon">T</div>
-      <span class="logo-text">Tandem</span>
+    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
+
+    <div class="nav-item" onclick="window.location.href='dashboard.html'">
+      <img src="/icons/home.png" alt="home" class="nav-icon">
+      <span>HOME</span>
     </div>
-    <div class="nav-item" onclick="window.location.href='dashboard.html'"><img src="/icons/home.png" alt="home" class="nav-icon"><span class="nav-label">Home</span></div>
-    <div class="nav-item" onclick="window.location.href='mentors.html'"><img src="/icons/friendship.png" alt="mentors" class="nav-icon"><span class="nav-label">Mentors</span></div>
-    <div class="nav-item" onclick="window.location.href='profile.html'"><img src="/icons/profile.png" alt="profile" class="nav-icon"><span class="nav-label">Profile</span></div>
-    <div class="nav-item" onclick="window.location.href='messages.html'"><img src="/icons/message.png" alt="messages" class="nav-icon"><span class="nav-label">Messages</span></div>
-    <div class="nav-item active" onclick="window.location.href='ledger.html'"><img src="/icons/crypto.png" alt="ledger" class="nav-icon"><span class="nav-label">Ledger</span></div>
-    <div class="nav-item" onclick="window.location.href='calendar.html'"><img src="/icons/calendar.png" alt="calendar" class="nav-icon"><span class="nav-label">Calendar</span></div>
-    <div class="nav-item" onclick="window.location.href='quests.html'"><img src="/icons/badge.png" alt="quests" class="nav-icon"><span class="nav-label">Quests</span></div>
-    <div class="nav-item logout-btn" id="logoutBtn"><img src="/icons/logout.png" alt="logout" class="nav-icon"><span class="nav-label">Logout</span></div>
+
+    <div class="nav-item" onclick="window.location.href='mentors.html'">
+      <img src="/icons/help.png" alt="mentors" class="nav-icon">
+      <span>MENTORS</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <img src="/icons/profile.png" alt="profile" class="nav-icon">
+      <span>PROFILE</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='messages.html'">
+      <img src="/icons/message.png" alt="messages" class="nav-icon">
+      <span>MESSAGES</span>
+    </div>
+
+    <div class="nav-item active" onclick="window.location.href='ledger.html'">
+      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
+      <span>LEDGER</span>
+    </div>
+
+    <div class="nav-item logout-btn" id="logoutBtn">
+      <img src="/icons/logout.png" alt="logout" class="nav-icon">
+      <span>LOGOUT</span>
+    </div>
   </div>
 
   <div class="main">
     <div class="topbar">
       <div class="credits-badge">
         <span id="topCreditsBadge">5</span>
-        <div class="coin">
-          <img src="/icons/crypto.png" alt="crypto">
-        </div>
-      </div>
-      <div class="notif-bell-wrap" id="notifBellWrap">
-        <img src="/icons/bell.png" alt="bell" class="mini-coin">
-        <span class="notif-badge" id="notifBadge" style="display:none;"></span>
-        <div class="notif-dropdown" id="notifDropdown">
-          <div class="notif-dropdown-header">
-            <h4>Notifications</h4>
-            <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
-          </div>
-          <div class="notif-list" id="notifList"></div>
-        </div>
-      </div>
-      <div class="dark-mode-toggle" id="darkModeToggle">
-        <div class="theme-icon"></div>
+        <div class="coin"><img src="/icons/crypto.png" alt="crypto"></div>
       </div>
     </div>
 
@@ -77,7 +81,5 @@
 
 <script src="notifications.js"></script>
 <script src="ledger.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="credit-sync.js"></script>
 </body>
 </html>

@@ -5,27 +5,6 @@ let profilePicData = null;
 
 profileCircle.addEventListener("click", () => profileInput.click());
 
-//for username valdiation, for error showing with design
-function showUsernameError(msg) {
-    const box = document.getElementById('usernameError');
-    const txt = document.getElementById('usernameErrorText');
-    const input = document.getElementById('usernameInput');
-    txt.textContent = msg;
-    input.classList.add('input-error');
-    box.classList.remove('shake');
-    box.classList.add('visible');
-    void box.offsetWidth; // force reflow so shake re-triggers
-    box.classList.add('shake');
-}
-
-function clearUsernameError() {
-    const box = document.getElementById('usernameError');
-    const input = document.getElementById('usernameInput');
-    box.classList.remove('visible', 'shake');
-    input.classList.remove('input-error');
-}
-
-
 profileInput.addEventListener("change", () => {
     const file = profileInput.files[0];
     if (!file) return;
@@ -289,8 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'growthTrigger', 'growthOptions', 'growthSearch', 'growthList', 'growthTags', 
         ALL_ACADEMIC_SUBJECTS, true, null
     );
-
-    document.getElementById('usernameInput').addEventListener('input', clearUsernameError);
 });
 
 const userName = localStorage.getItem('userName');
@@ -306,15 +283,9 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
     const growth = growthDropdown.getSelectedItems();
 
     if (!username) {
-            showUsernameError('Please enter a username.');
-            return;
-        }
-
-        const usernameRegex = /^[a-zA-Z0-9._-]{3,30}$/;
-        if (!usernameRegex.test(username)) {
-            showUsernameError('3–30 characters. Letters, numbers, dots (.), underscores (_), and hyphens (-) only.');
-            return;
-        }
+        alert('Please enter a username');
+        return;
+    }
 
     if (!gradeLevel) {
         alert('Please select your grade level');
@@ -353,28 +324,17 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
             if (profilePicData) {
                 localStorage.setItem('tandem_profile_pic', profilePicData);
             }
-
-            // FIX: Use credits returned by the server instead of hardcoding 5.
-            // Only fall back to 5 if the server didn't return a credits value
-            // (e.g. brand-new account before any server-side credit assignment).
-            const serverCredits = (data.credits !== undefined && data.credits !== null)
-                ? Math.round(Number(data.credits))
-                : (localStorage.getItem('tandem_credits') !== null
-                    ? Math.round(Number(localStorage.getItem('tandem_credits')))
-                    : 5);
-            localStorage.setItem('tandem_credits', String(serverCredits));
-
+            if (localStorage.getItem('tandem_credits') === null) {
+                localStorage.setItem('tandem_credits', '5');
+            }
+            
             // Mark profile as completed
             localStorage.setItem('profile_completed', 'true');
 
             alert('Profile completed! Redirecting to dashboard...');
             window.location.href = 'dashboard.html';
         } else {
-            if (data.message?.toLowerCase().includes('username')) {
-                showUsernameError(data.message);
-            } else {
-                alert(data.message || 'Error saving profile');
-}
+            alert(data.message || 'Error saving profile');
         }
     } catch (err) {
         console.error(err);

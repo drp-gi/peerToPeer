@@ -1,359 +1,51 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tandem - Find Mentors</title>
+  <title>Tandem - Find Mentors (AI Matching)</title>
   <link rel="stylesheet" href="styles-dashboard.css" />
   <link rel="stylesheet" href="styles-mentors.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-notifications.css">
-
-  <style>
-    .tandem-modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(10, 20, 40, 0.55);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-
-    .mentor-modal {
-      background: #fff;
-      border-radius: 20px;
-      width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 24px 64px rgba(10,20,40,0.22);
-      transform: translateY(24px) scale(0.97);
-      opacity: 0;
-      transition: transform 0.22s cubic-bezier(.34,1.36,.64,1), opacity 0.18s ease;
-    }
-    .mentor-modal.modal-open { transform: translateY(0) scale(1); opacity: 1; }
-
-    .modal-header-band {
-      background: linear-gradient(135deg, #e6f1fb 0%, #eeedfe 100%);
-      border-radius: 20px 20px 0 0;
-      padding: 2rem 1.75rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      position: relative;
-    }
-
-    .modal-close-btn {
-      position: absolute;
-      top: 1rem; right: 1rem;
-      background: rgba(255,255,255,0.7);
-      border: none;
-      border-radius: 50%;
-      width: 32px; height: 32px;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #444;
-    }
-    .modal-close-btn:hover { background: #fff; }
-
-    .modal-avatar-wrap {
-      width: 84px; height: 84px;
-      border-radius: 50%;
-      background: #b5d4f4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 3px solid #fff;
-      box-shadow: 0 4px 16px rgba(24,95,165,0.18);
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .modal-name {
-      font-family: 'Baloo 2', sans-serif;
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #1a2a3a;
-      text-align: center;
-      margin: 0;
-    }
-
-    .modal-meta-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .modal-badge {
-      display: inline-block;
-      padding: 3px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: white;
-    }
-
-    .modal-match-chip {
-      display: inline-block;
-      padding: 3px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      background: #e1f5ee;
-      color: white;
-    }
-
-    .modal-overall-rating {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .modal-stars { color: #ef9f27; font-size: 16px; letter-spacing: 1px; }
-    .modal-rating-num { font-weight: 600; color: #444; font-size: 14px; }
-
-    .modal-body { padding: 1.25rem 1.75rem 1rem; }
-
-    .modal-section-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #8899aa;
-      margin: 0 0 8px;
-    }
-
-    .modal-bio-text {
-      font-size: 14px;
-      color: #445566;
-      line-height: 1.6;
-      margin: 0 0 1.25rem;
-    }
-
-    .modal-skills-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 1.25rem;
-    }
-
-    .modal-skill-tag {
-      display: inline-block;
-      padding: 4px 12px;
-      background: #e6f1fb;
-      color: #185fa5;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .subject-ratings-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 1.25rem;
-    }
-
-    .subject-rating-row { display: flex; align-items: center; gap: 8px; }
-    .subject-name { flex: 1; font-size: 13px; color: #334; font-weight: 500; }
-    .subject-stars { color: #ef9f27; font-size: 13px; letter-spacing: 1px; }
-    .subject-num { font-size: 13px; font-weight: 600; color: #666; min-width: 28px; text-align: right; }
-
-    .feedback-pill {
-      display: inline-block;
-      background: #f1efe8;
-      border-left: 3px solid #ef9f27;
-      padding: 8px 12px;
-      border-radius: 0 8px 8px 0;
-      font-size: 13px;
-      color: #554;
-      font-style: italic;
-      margin-bottom: 1.25rem;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 0.75rem;
-      padding: 0 1.75rem 1.5rem;
-    }
-
-    .modal-btn-pass {
-      flex: 1;
-      padding: 0.7rem 1rem;
-      border-radius: 12px;
-      border: 1.5px solid #e0e4ea;
-      background: #fff;
-      color: #778899;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: 'Open Sans', sans-serif;
-    }
-    .modal-btn-pass:hover { background: #f7f9fc; }
-
-    .modal-btn-connect {
-      flex: 2;
-      padding: 0.7rem 1rem;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(135deg, #378add 0%, #534ab7 100%);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Open Sans', sans-serif;
-      box-shadow: 0 4px 14px rgba(55,138,221,0.3);
-    }
-    .modal-btn-connect:hover { opacity: 0.92; }
-
-    .subject-modal {
-      background: #fff;
-      border-radius: 18px;
-      width: 100%;
-      max-width: 400px;
-      padding: 2rem 1.75rem 1.5rem;
-      box-shadow: 0 16px 48px rgba(10,20,40,0.2);
-      transform: translateY(20px) scale(0.97);
-      opacity: 0;
-      transition: transform 0.2s cubic-bezier(.34,1.3,.64,1), opacity 0.16s ease;
-    }
-    .subject-modal.modal-open { transform: translateY(0) scale(1); opacity: 1; }
-
-    .subject-modal-title {
-      font-family: 'Baloo 2', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #1a2a3a;
-      margin: 0 0 0.25rem;
-    }
-    .subject-modal-sub { font-size: 13px; color: #778899; margin: 0 0 1.25rem; }
-
-    .subject-modal label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #8899aa;
-      margin-bottom: 5px;
-    }
-
-    .subject-modal input,
-    .subject-modal textarea {
-      width: 100%;
-      box-sizing: border-box;
-      border: 1.5px solid #d8e0ea;
-      border-radius: 10px;
-      padding: 0.65rem 0.85rem;
-      font-size: 14px;
-      font-family: 'Open Sans', sans-serif;
-      color: #1a2a3a;
-      background: #f7f9fc;
-      outline: none;
-      transition: border-color 0.15s;
-      resize: none;
-      margin-bottom: 1rem;
-    }
-    .subject-modal input:focus,
-    .subject-modal textarea:focus { border-color: #378add; background: #fff; }
-
-    .subject-checkbox-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 1rem;
-      padding: 2px 0;
-    }
-    .subject-checkbox-group.error .skill-checkbox-label {
-      outline: 1.5px solid #E24B4A;
-      border-radius: 20px;
-    }
-    .skill-checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: 1.5px solid #d8e0ea;
-      background: #f7f9fc;
-      font-size: 13px;
-      font-weight: 500;
-      color: #445566;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
-      user-select: none;
-    }
-    .skill-checkbox-label input[type="checkbox"] { display: none; }
-    .skill-checkbox-label:hover { background: #e6f1fb; border-color: #378add; color: #185fa5; }
-    .skill-checkbox-label.checked {
-      background: #378add;
-      border-color: #378add;
-      color: #fff;
-    }
-
-    .subject-modal-actions { display: flex; gap: 0.65rem; margin-top: 0.5rem; }
-
-    .subject-cancel-btn {
-      flex: 1;
-      padding: 0.65rem;
-      border-radius: 10px;
-      border: 1.5px solid #e0e4ea;
-      background: #fff;
-      color: #778899;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: 'Open Sans', sans-serif;
-    }
-
-    .subject-confirm-btn {
-      flex: 2;
-      padding: 0.65rem;
-      border-radius: 10px;
-      border: none;
-      background: linear-gradient(135deg, #378add, #534ab7);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Open Sans', sans-serif;
-      box-shadow: 0 4px 12px rgba(55,138,221,0.25);
-    }
-    .subject-confirm-btn:hover { opacity: 0.9; }
-
-    .btn-pending {
-      background: #f1efe8 !important;
-      color: #888 !important;
-      cursor: not-allowed !important;
-      border: 1.5px solid #ddd !important;
-      box-shadow: none !important;
-    }
-  </style>
 </head>
 <body>
 
 <div class="wrap">
+
   <div class="sidebar">
-    <div class="logo" onclick="window.location.href='dashboard.html'">
-      <div class="logo-icon">T</div>
-      <span class="logo-text">Tandem</span>
+    <div class="logo" onclick="window.location.href='dashboard.html'">Tandem</div>
+
+    <div class="nav-item" onclick="window.location.href='dashboard.html'">
+      <img src="/icons/home.png" alt="home" class="nav-icon">
+      <span>HOME</span>
     </div>
-    <div class="nav-item" onclick="window.location.href='dashboard.html'"><img src="/icons/home.png" alt="home" class="nav-icon"><span class="nav-label">Home</span></div>
-    <div class="nav-item active" onclick="window.location.href='mentors.html'"><img src="/icons/friendship.png" alt="mentors" class="nav-icon"><span class="nav-label">Mentors</span></div>
-    <div class="nav-item" onclick="window.location.href='profile.html'"><img src="/icons/profile.png" alt="profile" class="nav-icon"><span class="nav-label">Profile</span></div>
-    <div class="nav-item" onclick="window.location.href='messages.html'"><img src="/icons/message.png" alt="messages" class="nav-icon"><span class="nav-label">Messages</span></div>
-    <div class="nav-item" onclick="window.location.href='ledger.html'"><img src="/icons/crypto.png" alt="ledger" class="nav-icon"><span class="nav-label">Ledger</span></div>
-    <div class="nav-item" onclick="window.location.href='calendar.html'"><img src="/icons/calendar.png" alt="calendar" class="nav-icon"><span class="nav-label">Calendar</span></div>
-    <div class="nav-item" onclick="window.location.href='quests.html'"><img src="/icons/badge.png" alt="quests" class="nav-icon"><span class="nav-label">Quests</span></div>
-    <div class="nav-item logout-btn" id="logoutBtn"><img src="/icons/logout.png" alt="logout" class="nav-icon"><span class="nav-label">Logout</span></div>
+
+    <div class="nav-item active" onclick="window.location.href='mentors.html'">
+      <img src="/icons/help.png" alt="mentors" class="nav-icon">
+      <span>MENTORS</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <img src="/icons/profile.png" alt="profile" class="nav-icon">
+      <span>PROFILE</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='messages.html'">
+      <img src="/icons/message.png" alt="messages" class="nav-icon">
+      <span>MESSAGES</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='ledger.html'">
+      <img src="/icons/crypto.png" alt="ledger" class="nav-icon">
+      <span>LEDGER</span>
+    </div>
+
+    <div class="nav-item logout-btn" id="logoutBtn">
+      <img src="/icons/logout.png" alt="logout" class="nav-icon">
+      <span>LOGOUT</span>
+    </div>
   </div>
 
   <div class="main">
@@ -369,20 +61,18 @@
         <span class="notif-badge" id="notifBadge" style="display:none;"></span>
         <div class="notif-dropdown" id="notifDropdown">
           <div class="notif-dropdown-header">
-            <h4>Notifications</h4>
+            <h4>🔔 Notifications</h4>
             <button class="notif-mark-all" id="notifMarkAll">Mark all read</button>
           </div>
           <div class="notif-list" id="notifList"></div>
         </div>
       </div>
-      <div class="dark-mode-toggle" id="darkModeToggle">
-        <div class="theme-icon"></div>
-      </div>
     </div>
 
-    <div class="pg-title">Find Mentors</div>
-    <div class="pg-subtitle">Browse mentors matched to your learning goals. Click a profile to view details and send a connection request.</div>
+    <div class="pg-title">AI Matchmaking</div>
+    <div class="pg-subtitle">Swipe right on mentors you'd like to connect with, left to pass. Our AI finds the best matches based on your skills and learning goals.</div>
 
+    <!-- Search/Filter Bar -->
     <div class="filter-section">
       <div class="filter-group">
         <label>🔍 Search by name or skill</label>
@@ -396,74 +86,71 @@
           <option value="name">Name A-Z</option>
         </select>
       </div>
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button id="showListViewBtn" class="filter-toggle-btn">📋 List View</button>
+      </div>
     </div>
 
-    <div class="mentors-container">
-      <div class="loading-spinner" id="listLoadingSpinner">
+    <!-- Tinder-style Swipe View (Default) -->
+    <div id="swipeView" class="swipe-view">
+      <div class="swipe-loading" id="swipeLoading">
         <div class="spinner"></div>
-        <p>Loading mentors...</p>
+        <p>Finding your best matches...</p>
       </div>
-      <div class="mentors-grid" id="mentorsGrid"></div>
+      <div class="swipe-card-container" id="swipeCardContainer" style="display:none;">
+        <div class="swipe-card" id="swipeCard">
+          <div class="swipe-card-content">
+            <div class="swipe-avatar" id="swipeAvatar"></div>
+            <div class="swipe-name" id="swipeName"></div>
+            <div class="swipe-bio" id="swipeBio"></div>
+            <div class="swipe-skills" id="swipeSkills"></div>
+            <div class="swipe-match-badge" id="swipeMatchBadge"></div>
+          </div>
+          <div class="swipe-actions">
+            <button class="swipe-btn swipe-left" id="swipeLeftBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              PASS
+            </button>
+            <button class="swipe-btn swipe-right" id="swipeRightBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              CONNECT
+            </button>
+          </div>
+        </div>
+        <div class="swipe-counter">
+          <span id="swipeCounter">0</span> mentors remaining
+        </div>
+      </div>
+      <div class="swipe-empty" id="swipeEmpty" style="display:none;">
+        <div class="swipe-empty-icon">🎉</div>
+        <h3>No more matches!</h3>
+        <p>You've reviewed all available mentors. Check back later for new matches.</p>
+        <button class="btn-explore" id="refreshMatchesBtn">⟳ Refresh Matches</button>
+      </div>
+    </div>
+
+    <!-- List View (Alternative) -->
+    <div id="listView" class="list-view" style="display:none;">
+      <div class="mentors-container">
+        <div class="loading-spinner" id="listLoadingSpinner">
+          <div class="spinner"></div>
+          <p>Loading mentors...</p>
+        </div>
+        <div class="mentors-grid" id="mentorsGrid"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
-<!-- MENTOR PROFILE MODAL -->
-<div class="tandem-modal-overlay" id="mentorModalOverlay">
-  <div class="mentor-modal" id="mentorModal">
-    <div class="modal-header-band">
-      <button class="modal-close-btn" onclick="closeMentorModal()">✕</button>
-      <div class="modal-avatar-wrap" id="modalAvatar"></div>
-      <p class="modal-name" id="modalName"></p>
-      <div class="modal-overall-rating">
-        <span class="modal-stars" id="modalRatingStars">☆☆☆☆☆</span>
-        <span class="modal-rating-num" id="modalRatingNum">0.0</span>
-      </div>
-      <div class="modal-meta-row">
-        <span class="modal-badge" id="modalBadge">Foundational</span>
-        <span class="modal-match-chip" id="modalMatch" style="display:none;"></span>
-      </div>
-    </div>
-    <div class="modal-body">
-      <p class="modal-section-label">About</p>
-      <p class="modal-bio-text" id="modalBio"></p>
-      <p class="modal-section-label">Skills &amp; Interests</p>
-      <div class="modal-skills-wrap" id="modalSkills"></div>
-      <div id="modalSubjectSection">
-        <p class="modal-section-label">Subject Ratings</p>
-        <div class="subject-ratings-list" id="modalSubjectRatings"></div>
-      </div>
-      <p class="modal-section-label">Feedback Highlights</p>
-      <div id="modalFeedback"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="modal-btn-pass" id="modalPassBtn">Not a Good Match</button>
-      <button class="modal-btn-connect" id="modalConnectBtn">Connect</button>
-    </div>
-  </div>
-</div>
-
-<!-- SUBJECT MODAL -->
-<div class="tandem-modal-overlay" id="subjectModalOverlay">
-  <div class="subject-modal" id="subjectModal">
-    <p class="subject-modal-title">Request a Session</p>
-    <p class="subject-modal-sub">with <strong id="subjectMentorName"></strong></p>
-    <label>What subject do you want to learn? *</label>
-    <div id="subjectInput" class="subject-checkbox-group"></div>
-    <label for="subjectMessage">Message (optional)</label>
-    <textarea id="subjectMessage" rows="3" placeholder="Your current level, what you want to focus on…"></textarea>
-    <div class="subject-modal-actions">
-      <button class="subject-cancel-btn" id="subjectCancelBtn">Cancel</button>
-      <button class="subject-confirm-btn" id="subjectConfirmBtn">📨 Send Request</button>
-    </div>
-  </div>
-</div>
-
 <script src="notifications.js"></script>
 <script src="mentors.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="credit-sync.js"></script>
 </body>
 </html>

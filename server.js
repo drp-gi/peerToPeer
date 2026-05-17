@@ -13,11 +13,11 @@ const io     = new Server(server, { cors: { origin: '*', methods: ['GET','POST']
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
-const db = new Database(process.env.DB_PATH || './tandem.db');
+const db = new Database('tandem.db');
 db.pragma('journal_mode = WAL');
-console.log('📁 Database:', process.env.DB_PATH || './tandem.db');
+console.log('📁 Database:', path.resolve('tandem.db'));
 
 // ─── Core helpers ─────────────────────────────────────────────
 function query(sql, params = []) {
@@ -192,24 +192,20 @@ app.post('/reset-password', (req, res) => {
 app.post('/ai-chat', async (req, res) => {
   const { messages, systemPrompt } = req.body;
   if (!messages?.length) return res.json({ success: false, reply: null });
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.json({ success: false, reply: null });
   try {
-    const history = messages.slice(0, -1).map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    }));
-    const lastMsg = messages[messages.length - 1].content;
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt || 'You are a helpful academic tutor assistant.' }] },
-        contents: [...history, { role: 'user', parts: [{ text: lastMsg }] }]
+        model: 'claude-sonnet-4-20250514', max_tokens: 800,
+        system: systemPrompt || 'You are a helpful academic tutor assistant.',
+        messages: messages.map(m => ({ role: m.role, content: m.content }))
       })
     });
     const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response. Please try again.";
+    const reply = data.content?.[0]?.text || "I couldn't generate a response. Please try again.";
     res.json({ success: true, reply });
   } catch(e) { console.error('AI chat error:', e); res.json({ success: false, reply: null }); }
 });
@@ -495,7 +491,7 @@ app.post('/accept-session-request', (req, res) => {
     if (!sess.length) return res.json({ success: false, message: 'Session not found' });
     const s = sess[0];
     const now = new Date().toISOString();
-query(`UPDATE sessions SET status='confirmed', scheduled_time = COALESCE(preferred_time, datetime('now','localtime')), updated_at=datetime('now','localtime') WHERE id=?`, [sessionId]);
+    query(`UPDATE sessions SET status='confirmed', scheduled_time = (SELECT COALESCE(preferred_time, datetime('now','localtime')) FROM sessions WHERE id=?), updated_at=datetime('now','localtime') WHERE id=?`, [sessionId, sessionId]);
       const updatedSess = query('SELECT scheduled_time FROM sessions WHERE id=?', [sessionId])[0];
       const confirmedTime = updatedSess?.scheduled_time || s.preferred_time;
     
@@ -749,6 +745,49 @@ app.post('/extend-session', (req, res) => {
 });
 
 // ─── LEDGER ───────────────────────────────────────────────────
+// ─── SESSION HISTORY ──────────────────────────────────────────
+app.post('/get-session-history', (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.json({ success: false, sessions: [] });
+  try {
+    const sessions = query(
+      `SELECT s.id, s.subject, s.status, s.elapsed_seconds, s.rating,
+              s.session_start, s.session_end, s.scheduled_time,
+              CASE WHEN s.learner_email=? THEN 'learner' ELSE 'tutor' END as role,
+              CASE WHEN s.learner_email=? THEN tu.name ELSE lu.name END as peer_name,
+              CASE WHEN s.learner_email=? THEN tu.profile_pic ELSE lu.profile_pic END as peer_pic
+       FROM sessions s
+       LEFT JOIN users tu ON s.tutor_email=tu.email
+       LEFT JOIN users lu ON s.learner_email=lu.email
+       WHERE (s.learner_email=? OR s.tutor_email=?) AND s.status='completed'
+       ORDER BY s.session_end DESC LIMIT 20`,
+      [email, email, email, email, email]);
+    res.json({ success: true, sessions });
+  } catch(e) { console.error(e); res.json({ success: false, sessions: [] }); }
+});
+
+// ─── TUTOR RATINGS RECEIVED ───────────────────────────────────
+app.post('/get-my-ratings', (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.json({ success: false, ratings: [], summary: {} });
+  try {
+    const ratings = query(
+      `SELECT sf.rating, sf.comment, sf.feedback_tags, sf.sentiment, sf.created_at,
+              u.name as learner_name, u.username as learner_username, u.profile_pic as learner_pic,
+              s.subject
+       FROM session_feedback sf
+       JOIN users u ON sf.learner_email=u.email
+       LEFT JOIN sessions s ON sf.session_id=s.id
+       WHERE sf.tutor_email=?
+       ORDER BY sf.created_at DESC LIMIT 20`,
+      [email]);
+    const summary = query(
+      `SELECT AVG(rating) as avg, COUNT(*) as count FROM session_feedback WHERE tutor_email=?`,
+      [email])[0] || { avg: 0, count: 0 };
+    res.json({ success: true, ratings, summary: { avg: parseFloat((summary.avg||0).toFixed(1)), count: summary.count } });
+  } catch(e) { console.error(e); res.json({ success: false, ratings: [], summary: { avg: 0, count: 0 } }); }
+});
+
 app.post('/get-ledger', (req, res) => {
   const { email } = req.body;
   try {
@@ -1195,9 +1234,8 @@ function initDatabase() {
   logStats();
 }
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   initDatabase();
 });
-

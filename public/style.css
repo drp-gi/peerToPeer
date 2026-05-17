@@ -382,41 +382,23 @@ header {
 .custom-select-trigger.open i {
     transform: rotate(180deg);
 }
-
-
-/* ===== USERNAME ERROR MESSAGE ===== */
-.username-error {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    background: #fff0f0;
-    border: 1px solid #ffb3b3;
-    color: #cc0000;
-    font-size: 12.5px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin: 6px 0 10px 0;
-    font-family: 'Baloo 2', sans-serif;
+/* ===== PASSWORD TOGGLE ===== */
+.password-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
-.username-error.visible {
-    display: flex;
+.password-field-wrap input {
+  flex: 1;
+  padding-right: 40px !important;
 }
-.username-error.shake {
-    animation: shakeError 0.4s ease;
+.eye-toggle {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+  opacity: 0.55;
+  transition: opacity 0.2s;
 }
-@keyframes shakeError {
-    0%   { transform: translateX(0); }
-    20%  { transform: translateX(-7px); }
-    40%  { transform: translateX(7px); }
-    60%  { transform: translateX(-5px); }
-    80%  { transform: translateX(5px); }
-    100% { transform: translateX(0); }
-}
-#usernameInput.input-error {
-    border-color: #ff4444;
-}
-#usernameInput.input-error:focus {
-    outline: none;
-    border-color: #ff4444;
-    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.15);
-}
+.eye-toggle:hover { opacity: 1; }

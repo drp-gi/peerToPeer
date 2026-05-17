@@ -1,3 +1,12 @@
+// Toggle password visibility
+function togglePassword(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  const isHidden = inp.type === "password";
+  inp.type = isHidden ? "text" : "password";
+  btn.style.opacity = isHidden ? "1" : "0.55";
+}
+
 // ELEMENTS
 const authModal = document.getElementById('authModal');
 const loginForm = document.getElementById('loginForm');

@@ -9,6 +9,29 @@
   <link rel="stylesheet" href="styles-profile.css" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-notifications.css">
+  <style>
+    /* My Ratings cards */
+    .rating-card {
+      background: #fafbfc; border: 1px solid #e8eaed; border-radius: 12px;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .rating-card-top { display: flex; align-items: center; gap: 10px; }
+    .rating-card-avatar {
+      width: 36px; height: 36px; border-radius: 50%; background: #d0e8f0;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+      font-weight: 700; color: #29b6d8; flex-shrink: 0; overflow: hidden;
+    }
+    .rating-card-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .rating-card-info { flex: 1; }
+    .rating-card-learner { font-size: 13px; font-weight: 700; color: #1a2a3a; }
+    .rating-card-subject { font-size: 11px; color: #64748b; }
+    .rating-card-stars { display: flex; align-items: center; gap: 4px; color: #f5a623; font-size: 15px; font-weight: 700; }
+    .rating-card-date { font-size: 11px; color: #aab; margin-left: auto; flex-shrink: 0; }
+    .rating-card-comment { font-size: 13px; color: #445566; font-style: italic; line-height: 1.5; }
+    .rating-card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .rating-tag { font-size: 11px; padding: 2px 9px; border-radius: 20px; background: #e6f1fb; color: #185fa5; font-weight: 600; }
+    .rating-empty { font-size: 13px; color: #aab; padding: 8px 0; }
+  </style>
 </head>
 <body>
 
@@ -46,9 +69,6 @@
           </div>
           <div class="notif-list" id="notifList"></div>
         </div>
-      </div>
-      <div class="dark-mode-toggle" id="darkModeToggle">
-        <div class="theme-icon"></div>
       </div>
     </div>
 
@@ -132,12 +152,21 @@
           <div class="skill-tags" id="viewSkills"></div>
         </div>
         <div class="ov-box ov-full">
-          <div class="ov-title-row">
-            <div class="ov-title">Growth Subjects</div>
+          <div class="ov-title">Growth Subjects</div>
+          <div class="ov-subtitle" id="viewGradeLabel" style="font-size:12px;color:#aaa;margin-bottom:10px;"></div>
+          <div class="ov-title-row" style="margin-bottom:8px;">
             <span class="grade-badge" id="viewGradeBadge" style="display:none;"></span>
           </div>
-          <div class="ov-subtitle" id="viewGradeLabel" style="font-size:12px;color:#aaa;margin-bottom:10px;"></div>
           <div class="skill-tags" id="viewGrowth"></div>
+        </div>
+
+        <!-- My Ratings section – visible to tutors who have received feedback -->
+        <div class="ov-box ov-full" id="myRatingsBox" style="display:none;">
+          <div class="ov-title-row">
+            <div class="ov-title">⭐ My Ratings</div>
+            <span id="ratingSummaryBadge" style="font-size:12px;font-weight:700;color:#f5a623;"></span>
+          </div>
+          <div id="myRatingsList" style="margin-top:10px;display:flex;flex-direction:column;gap:10px;"></div>
         </div>
       </div>
     </div>

@@ -1,9 +1,25 @@
 const userEmail = localStorage.getItem('userEmail');
 if (!userEmail) window.location.href = 'index.html';
 
-// FIX: Removed the duplicate loadCredits() function and updateCreditsDisplay() that
-// conflicted with credit-sync.js. The topbar badge is now managed exclusively by
-// credit-sync.js so there is only one poller and one source of truth.
+function updateCreditsDisplay(amount) {
+    document.getElementById('topCreditsBadge').textContent = amount;
+}
+
+async function loadCredits() {
+    try {
+        const response = await fetch('http://localhost:3000/get-user-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail })
+        });
+        const data = await response.json();
+        if (data.success) {
+            updateCreditsDisplay(data.credits);
+        }
+    } catch (error) {
+        console.error('Error loading credits:', error);
+    }
+}
 
 // Format date with user's local timezone
 function formatLedgerDate(dateString) {
@@ -37,8 +53,8 @@ async function loadLedger() {
                 if (t.from_email === userEmail) totalSpent += t.amount;
             });
             
-            document.getElementById('totalEarned').textContent = Math.round(totalEarned);
-            document.getElementById('totalSpent').textContent = Math.round(totalSpent);
+            document.getElementById('totalEarned').textContent = totalEarned;
+            document.getElementById('totalSpent').textContent = totalSpent;
             
             container.innerHTML = data.transactions.map(t => {
                 const isReceived = t.to_email === userEmail;
@@ -74,7 +90,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function setupLogout() {
+async function setupLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
@@ -85,23 +101,7 @@ function setupLogout() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // credit-sync.js handles topbar badge — just load ledger data
+    loadCredits();
     loadLedger();
     setupLogout();
-    
-    // Dark mode toggle
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('darkMode', isDark);
-      });
-    }
-
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode === 'true') {
-      document.body.classList.add('dark-mode');
-    }
 });
